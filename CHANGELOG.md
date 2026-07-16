@@ -6,6 +6,9 @@ All notable changes to this project are documented in this file.
 
 ### Added
 
+- Added immutable subtitle pipeline domain models for words, sentences,
+  segments, subtitles, documents, and pipeline context.
+- Added domain model validation tests and documentation.
 - Added Version 1.0 architecture documentation for DDD, Clean Architecture,
   workflow, infrastructure, and plugin boundaries.
 - Added source-level architecture boundary metadata and package namespaces.

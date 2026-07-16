@@ -36,7 +36,7 @@ Plugin
 
 ## Phase 2 Domain
 
-- [ ] Commit0003 Domain Models
+- [x] Commit0003 Domain Models
 
 Word
 

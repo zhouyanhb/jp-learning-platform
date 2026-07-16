@@ -40,6 +40,10 @@ python -m pytest
 Version 1.0 architecture documentation is maintained in `docs/architecture.md`.
 The source-level layer metadata is defined in `jp_learning_platform.architecture`.
 
+## Domain Models
+
+Core subtitle pipeline models are documented in `docs/domain-models.md`.
+
 ## Roadmap
 
 The implementation roadmap is maintained in `.ai/ROADMAP.md`.
