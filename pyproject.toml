@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jp-learning-platform"
+version = "0.1.0"
+description = "AI-powered Japanese learning platform focused on subtitle pipeline generation."
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [
+  { name = "JP Learning Platform Maintainers" }
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0"
+]
+
+[project.scripts]
+jp-learning-platform = "jp_learning_platform.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = [
+  "--strict-config",
+  "--strict-markers"
+]

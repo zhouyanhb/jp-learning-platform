@@ -6,7 +6,7 @@ Version 1.0
 
 ## Phase 1 Foundation
 
-- [ ] Commit0001 Repository Initialize
+- [x] Commit0001 Repository Initialize
 
 Repository
 
