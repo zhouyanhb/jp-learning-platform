@@ -126,3 +126,9 @@ Layer boundary metadata lives in:
 ```
 src/jp_learning_platform/architecture.py
 ```
+
+Workflow runtime implementation lives in:
+
+```
+src/jp_learning_platform/workflow/runtime.py
+```

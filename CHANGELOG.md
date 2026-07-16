@@ -6,6 +6,9 @@ All notable changes to this project are documented in this file.
 
 ### Added
 
+- Added workflow runtime primitives for stages, pipelines, workflows, stage
+  results, and ordered execution.
+- Added workflow runtime tests and documentation.
 - Added domain services for model construction, document validation, and the
   document repository boundary.
 - Added domain service tests and documentation.

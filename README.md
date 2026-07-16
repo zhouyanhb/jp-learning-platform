@@ -49,6 +49,10 @@ Core subtitle pipeline models are documented in `docs/domain-models.md`.
 Domain factories, validators, and repository boundaries are documented in
 `docs/domain-services.md`.
 
+## Workflow Runtime
+
+Workflow orchestration primitives are documented in `docs/workflow-runtime.md`.
+
 ## Roadmap
 
 The implementation roadmap is maintained in `.ai/ROADMAP.md`.

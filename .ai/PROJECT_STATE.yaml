@@ -7,7 +7,7 @@ project:
 repository:
   branch: master
   working_tree: clean
-  remote_status: ahead_of_origin_by_4_commits
+  remote_status: ahead_of_origin_by_5_commits
   runnable: true
 
 architecture:
@@ -31,18 +31,19 @@ roadmap:
     - Commit0002
     - Commit0003
     - Commit0004
+    - Commit0005
 
-  current: Commit0005
+  current: Commit0006
 
-  next: Commit0006
+  next: Commit0007
 
 latest_commit:
   hash: created_by_this_commit
-  message: feat(domain): implement domain services
+  message: feat(workflow): add workflow runtime
 
 tests:
-  total: 28
-  passed: 28
+  total: 36
+  passed: 36
   failed: 0
 
 checks:
@@ -66,24 +67,29 @@ domain:
       - DocumentValidator
       - DocumentRepository
 
+workflow:
+  runtime:
+    implemented:
+      - Stage
+      - StageResult
+      - Pipeline
+      - Workflow
+      - ExecutionEngine
+
 repository_health:
   build: healthy
   tests: healthy
   documentation: synchronized
 
 current_task:
-  name: Commit0005 Workflow Runtime
+  name: Commit0006 Tool Registry
 
   deliverables:
-    - Workflow
-    - Stage
-    - Pipeline
-    - StageResult
-    - Execution Engine
+    - Tool Registry
 
 next_commit:
   expected_type: feat
-  expected_scope: workflow
+  expected_scope: infrastructure
 
 rules:
   implement_exactly_one_roadmap_item: true

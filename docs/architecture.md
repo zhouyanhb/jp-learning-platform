@@ -47,6 +47,8 @@ communicates through the pipeline context once the domain model is introduced.
 Workflow code coordinates execution order; validation and transformation rules
 belong in the domain layer.
 
+The workflow runtime primitives are documented in `docs/workflow-runtime.md`.
+
 ## Infrastructure
 
 Infrastructure wraps third-party libraries and processes such as Whisper,
