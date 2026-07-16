@@ -1,0 +1,93 @@
+version: "1.0"
+
+project:
+  name: jp-learning-platform
+  scope: subtitle-pipeline
+
+repository:
+  branch: master
+  working_tree: clean
+  remote_status: ahead_of_origin_by_4_commits
+  runnable: true
+
+architecture:
+  frozen: true
+  style:
+    - DDD
+    - Clean Architecture
+    - Workflow Engine
+    - Tool Registry
+    - Plugin System
+  decisions:
+    - Domain owns business rules and validation.
+    - Workflow coordinates stages through PipelineContext.
+    - Infrastructure wraps external SDKs.
+    - Tool registry resolves external tools.
+    - Plugins provide optional capabilities through public contracts.
+
+roadmap:
+  completed:
+    - Commit0001
+    - Commit0002
+    - Commit0003
+    - Commit0004
+
+  current: Commit0005
+
+  next: Commit0006
+
+latest_commit:
+  hash: created_by_this_commit
+  message: feat(domain): implement domain services
+
+tests:
+  total: 28
+  passed: 28
+  failed: 0
+
+checks:
+  compileall: passed
+  package_entry: passed
+  pytest: passed
+
+domain:
+  models:
+    - TimeRange
+    - Word
+    - Sentence
+    - Subtitle
+    - Segment
+    - Document
+    - PipelineContext
+
+  services:
+    implemented:
+      - DomainModelFactory
+      - DocumentValidator
+      - DocumentRepository
+
+repository_health:
+  build: healthy
+  tests: healthy
+  documentation: synchronized
+
+current_task:
+  name: Commit0005 Workflow Runtime
+
+  deliverables:
+    - Workflow
+    - Stage
+    - Pipeline
+    - StageResult
+    - Execution Engine
+
+next_commit:
+  expected_type: feat
+  expected_scope: workflow
+
+rules:
+  implement_exactly_one_roadmap_item: true
+  update_project_state: true
+  append_session_log: true
+  create_commit: true
+  push: false

@@ -227,6 +227,51 @@ Every commit must:
 
 Use Conventional Commits.
 
+# Repository State
+
+PROJECT_STATE.yaml is the authoritative summary of the repository status.
+
+Every completed roadmap item MUST update PROJECT_STATE.yaml before creating the Git commit.
+
+PROJECT_STATE.yaml should always reflect the current repository state.
+
+At minimum it must contain:
+
+- current version
+- completed roadmap items
+- current roadmap item
+- next roadmap item
+- latest commit
+- repository health
+- current test status
+- known architectural decisions
+
+Never allow PROJECT_STATE.yaml to become outdated.
+
+Never skip updating PROJECT_STATE.yaml.
+
+# Session History
+
+SESSION_LOG.md records repository evolution.
+
+Every completed roadmap item MUST append one session entry.
+
+Each session should include:
+
+- date
+- roadmap item
+- summary
+- affected modules
+- tests added
+- commit hash
+
+Never rewrite history.
+
+Always append.
+
+SESSION_LOG.md is chronological.
+
+
 Examples:
 
 feat(workflow): add pipeline runtime

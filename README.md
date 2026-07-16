@@ -44,6 +44,11 @@ The source-level layer metadata is defined in `jp_learning_platform.architecture
 
 Core subtitle pipeline models are documented in `docs/domain-models.md`.
 
+## Domain Services
+
+Domain factories, validators, and repository boundaries are documented in
+`docs/domain-services.md`.
+
 ## Roadmap
 
 The implementation roadmap is maintained in `.ai/ROADMAP.md`.

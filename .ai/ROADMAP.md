@@ -52,7 +52,7 @@ PipelineContext
 
 ---
 
-- [ ] Commit0004 Domain Services
+- [x] Commit0004 Domain Services
 
 Validation
 

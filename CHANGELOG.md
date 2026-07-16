@@ -6,6 +6,9 @@ All notable changes to this project are documented in this file.
 
 ### Added
 
+- Added domain services for model construction, document validation, and the
+  document repository boundary.
+- Added domain service tests and documentation.
 - Added immutable subtitle pipeline domain models for words, sentences,
   segments, subtitles, documents, and pipeline context.
 - Added domain model validation tests and documentation.
