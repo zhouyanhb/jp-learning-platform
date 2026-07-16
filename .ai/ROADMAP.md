@@ -20,7 +20,7 @@ Project Configuration
 
 ---
 
-- [ ] Commit0002 Architecture
+- [x] Commit0002 Architecture
 
 Architecture Documentation
 

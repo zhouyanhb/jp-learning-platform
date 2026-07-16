@@ -35,6 +35,11 @@ python -m compileall src tests
 python -m pytest
 ```
 
+## Architecture
+
+Version 1.0 architecture documentation is maintained in `docs/architecture.md`.
+The source-level layer metadata is defined in `jp_learning_platform.architecture`.
+
 ## Roadmap
 
 The implementation roadmap is maintained in `.ai/ROADMAP.md`.

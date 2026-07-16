@@ -110,3 +110,19 @@ diagrams/
 Repository structure is stable.
 
 Avoid unnecessary restructuring.
+
+---
+
+# Architecture Specification
+
+Detailed implementation documentation lives in:
+
+```
+docs/architecture.md
+```
+
+Layer boundary metadata lives in:
+
+```
+src/jp_learning_platform/architecture.py
+```
