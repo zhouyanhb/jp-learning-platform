@@ -57,6 +57,11 @@ Workflow orchestration primitives are documented in `docs/workflow-runtime.md`.
 
 Whisper transcription stage contracts are documented in `docs/whisper-stage.md`.
 
+## WhisperX Alignment Stage
+
+WhisperX alignment stage contracts are documented in
+`docs/whisperx-alignment-stage.md`.
+
 ## Tool Registry
 
 External tool adapter resolution is documented in `docs/tool-registry.md`.

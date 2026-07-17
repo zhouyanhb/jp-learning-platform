@@ -156,3 +156,9 @@ Whisper stage implementation lives in:
 ```
 src/jp_learning_platform/workflow/whisper_stage.py
 ```
+
+WhisperX alignment stage implementation lives in:
+
+```
+src/jp_learning_platform/workflow/whisperx_alignment_stage.py
+```

@@ -6,6 +6,7 @@ All notable changes to this project are documented in this file.
 
 ### Added
 
+- Added workflow WhisperX alignment stage contracts and orchestration tests.
 - Added workflow Whisper stage contracts and orchestration tests.
 - Added infrastructure audio loader for supported local audio files.
 - Added audio loader tests and documentation.

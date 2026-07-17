@@ -431,3 +431,55 @@ created by this commit
 ```
 feat(workflow): add whisper stage
 ```
+
+---
+
+# Session 010
+
+Date
+
+2026-07-17
+
+Roadmap
+
+Commit0010 WhisperX Alignment
+
+Summary
+
+Implemented the workflow WhisperX alignment stage for coordinating segment
+alignment through an injected aligner contract.
+
+Changes
+
+Added
+
+- WhisperXAlignmentRequest
+- WhisperXAlignment
+- WhisperXAligner
+- WhisperXAlignmentStage
+- WhisperXAlignmentStageError
+- InvalidWhisperXAlignerError
+- MissingWhisperSegmentsError
+- InvalidWhisperXAlignmentError
+
+Documentation
+
+- docs/whisperx-alignment-stage.md
+
+Tests
+
+- test_whisperx_alignment_stage.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (77 passed)
+
+Commit
+
+created by this commit
+
+```
+feat(workflow): add whisperx alignment stage
+```
