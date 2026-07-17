@@ -69,6 +69,9 @@ Tool adapter resolution is handled by the registry documented in
 `docs/tool-registry.md`.
 Local audio loading is documented in `docs/audio-loader.md`.
 Local SRT writing is implemented by the SRT subtitle writer adapter.
+Local CLI quality adapters provide optional WhisperX alignment, optional Qwen
+repair, subtitle merging, readability optimization, and final domain
+validation while preserving the workflow stage contracts.
 
 ## Plugins
 

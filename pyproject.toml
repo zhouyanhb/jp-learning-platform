@@ -17,6 +17,12 @@ dependencies = []
 asr = [
   "faster-whisper>=1.0"
 ]
+align = [
+  "whisperx>=3.3"
+]
+qwen = [
+  "llama-cpp-python>=0.2"
+]
 dev = [
   "pytest>=8.0"
 ]

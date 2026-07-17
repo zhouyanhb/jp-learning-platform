@@ -32,6 +32,8 @@ Install ASR support when generating subtitles from audio:
 
 ```bash
 python -m pip install -e ".[asr]"
+python -m pip install -e ".[align]"
+python -m pip install -e ".[qwen]"
 ```
 
 ## Run
@@ -43,6 +45,8 @@ python -m jp_learning_platform --version
 python -m jp_learning_platform transcribe audio.mp3
 python -m jp_learning_platform transcribe ./audios
 python -m jp_learning_platform transcribe audio.mp3 --model-size small --device cpu --compute-type int8
+python -m jp_learning_platform transcribe audio.mp3 --enable-whisperx
+python -m jp_learning_platform transcribe audio.mp3 --qwen-model-path models/qwen.gguf
 ```
 
 The entrypoint reports the Version 1.0 subtitle pipeline status. External SDK

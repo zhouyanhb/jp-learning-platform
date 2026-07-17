@@ -993,3 +993,58 @@ created by this commit
 ```
 feat(cli): add asr model options
 ```
+
+---
+
+# Session 021
+
+Date
+
+2026-07-17
+
+Roadmap
+
+Maintenance Subtitle Quality CLI Stages
+
+Summary
+
+Connected the local audio SRT CLI to the full subtitle quality workflow while
+keeping external WhisperX and Qwen model integrations optional.
+
+Changes
+
+Added
+
+- WhisperX alignment adapter and pass-through alignment adapter
+- Qwen repair adapter and pass-through repair adapter
+- Local subtitle merger adapter
+- Local readability optimizer adapter
+- Domain subtitle validator adapter
+- CLI options for WhisperX alignment and Qwen repair model selection
+- Full quality stage wiring in the local subtitle pipeline runner
+
+Documentation
+
+- docs/local-audio-srt-cli.md
+- docs/architecture.md
+- README.md
+
+Tests
+
+- test_subtitle_pipeline_runner.py
+- test_subtitle_quality_adapters.py
+- test_package.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (149 passed)
+
+Commit
+
+created by this commit
+
+```
+feat(cli): wire subtitle quality stages
+```

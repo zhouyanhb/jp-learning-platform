@@ -8,7 +8,7 @@ project:
 repository:
   branch: master
   working_tree: clean
-  remote_status: ahead_of_origin_by_2_commits
+  remote_status: ahead_of_origin_by_3_commits
   runnable: true
 
 architecture:
@@ -52,11 +52,11 @@ roadmap:
 
 latest_commit:
   hash: created_by_this_commit
-  message: feat(cli): add asr model options
+  message: feat(cli): wire subtitle quality stages
 
 tests:
-  total: 142
-  passed: 142
+  total: 149
+  passed: 149
   failed: 0
 
 checks:
@@ -195,10 +195,20 @@ infrastructure:
     implemented:
       - FasterWhisperTranscriber
       - FasterWhisperDependencyError
+      - WhisperXAlignerAdapter
+      - WhisperXDependencyError
+      - PassthroughWhisperXAligner
+      - LlamaCppQwenRepairer
+      - QwenDependencyError
+      - QwenModelNotFoundError
+      - PassthroughQwenRepairer
   subtitle_adapters:
     implemented:
       - WordSubtitleBuilder
       - SrtSubtitleWriter
+      - ConservativeSubtitleMerger
+      - LocalReadabilityOptimizer
+      - DomainSubtitleValidator
 
 application:
   subtitle_pipeline:

@@ -10,13 +10,33 @@ from jp_learning_platform.application import (
     NoAudioInputsFoundError,
     SubtitlePipelineRequest,
 )
-from jp_learning_platform.domain import Segment, Sentence, TimeRange, Word
-from jp_learning_platform.infrastructure import AudioLoader, SrtSubtitleWriter, WordSubtitleBuilder
+from jp_learning_platform.domain import (
+    Segment,
+    Sentence,
+    TimeRange,
+    ValidationResult,
+    Word,
+)
+from jp_learning_platform.infrastructure import (
+    AudioLoader,
+    SrtSubtitleWriter,
+    WordSubtitleBuilder,
+)
 from jp_learning_platform.workflow import (
     DuplicateSubtitleOutputError,
+    QwenRepair,
+    QwenRepairRequest,
+    ReadabilityOptimization,
+    ReadabilityOptimizationRequest,
+    SubtitleMerge,
+    SubtitleMergeRequest,
     SubtitlePipelineRunner,
+    SubtitleValidation,
+    SubtitleValidationRequest,
     WhisperTranscript,
     WhisperTranscriptionRequest,
+    WhisperXAlignment,
+    WhisperXAlignmentRequest,
 )
 
 
@@ -44,6 +64,69 @@ class FakeTranscriber:
         return WhisperTranscript(
             source_path=request.source_path,
             segments=(segment,),
+        )
+
+
+@dataclass(slots=True)
+class RecordingAligner:
+    requests: list[WhisperXAlignmentRequest]
+
+    def align(self, request: WhisperXAlignmentRequest) -> WhisperXAlignment:
+        self.requests.append(request)
+        return WhisperXAlignment(
+            source_path=request.source_path,
+            segments=request.segments,
+        )
+
+
+@dataclass(slots=True)
+class RecordingRepairer:
+    requests: list[QwenRepairRequest]
+
+    def repair(self, request: QwenRepairRequest) -> QwenRepair:
+        self.requests.append(request)
+        return QwenRepair(
+            source_path=request.source_path,
+            segments=request.segments,
+        )
+
+
+@dataclass(slots=True)
+class RecordingMerger:
+    requests: list[SubtitleMergeRequest]
+
+    def merge(self, request: SubtitleMergeRequest) -> SubtitleMerge:
+        self.requests.append(request)
+        return SubtitleMerge(
+            source_path=request.source_path,
+            subtitles=request.subtitles,
+        )
+
+
+@dataclass(slots=True)
+class RecordingOptimizer:
+    requests: list[ReadabilityOptimizationRequest]
+
+    def optimize(
+        self,
+        request: ReadabilityOptimizationRequest,
+    ) -> ReadabilityOptimization:
+        self.requests.append(request)
+        return ReadabilityOptimization(
+            source_path=request.source_path,
+            subtitles=request.subtitles,
+        )
+
+
+@dataclass(slots=True)
+class RecordingValidator:
+    requests: list[SubtitleValidationRequest]
+
+    def validate(self, request: SubtitleValidationRequest) -> SubtitleValidation:
+        self.requests.append(request)
+        return SubtitleValidation(
+            source_path=request.source_path,
+            result=ValidationResult(),
         )
 
 
@@ -75,6 +158,45 @@ def test_subtitle_pipeline_runner_generates_srt_for_single_file(tmp_path: Path) 
         "1\n00:00:00,000 --> 00:00:01,100\nlessonです。\n\n"
     )
     assert transcriber.requests[0].source_path == audio_path
+
+
+def test_subtitle_pipeline_runner_can_execute_quality_stages(
+    tmp_path: Path,
+) -> None:
+    audio_path = tmp_path / "lesson.mp3"
+    output_directory = tmp_path / "output"
+    _write_audio(audio_path)
+    transcriber = FakeTranscriber(requests=[])
+    aligner = RecordingAligner(requests=[])
+    repairer = RecordingRepairer(requests=[])
+    merger = RecordingMerger(requests=[])
+    optimizer = RecordingOptimizer(requests=[])
+    validator = RecordingValidator(requests=[])
+    runner = SubtitlePipelineRunner(
+        audio_loader=AudioLoader(),
+        transcriber=transcriber,
+        aligner=aligner,
+        repairer=repairer,
+        builder=WordSubtitleBuilder(),
+        merger=merger,
+        optimizer=optimizer,
+        validator=validator,
+        writer=SrtSubtitleWriter(output_directory=output_directory),
+    )
+
+    result = runner.run(
+        SubtitlePipelineRequest(
+            input_path=audio_path,
+            output_directory=output_directory,
+        )
+    )
+
+    assert result.output_paths == (output_directory / "lesson.srt",)
+    assert len(aligner.requests) == 1
+    assert len(repairer.requests) == 1
+    assert len(merger.requests) == 1
+    assert len(optimizer.requests) == 1
+    assert len(validator.requests) == 1
 
 
 def test_subtitle_pipeline_runner_generates_srt_for_audio_folder(

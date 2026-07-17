@@ -175,6 +175,24 @@ SRT subtitle writer adapter implementation lives in:
 src/jp_learning_platform/infrastructure/srt_subtitle_writer.py
 ```
 
+WhisperX alignment adapter implementation lives in:
+
+```
+src/jp_learning_platform/infrastructure/whisperx_aligner.py
+```
+
+Qwen repair adapter implementation lives in:
+
+```
+src/jp_learning_platform/infrastructure/qwen_repairer.py
+```
+
+Local subtitle quality adapter implementation lives in:
+
+```
+src/jp_learning_platform/infrastructure/subtitle_quality.py
+```
+
 Whisper stage implementation lives in:
 
 ```

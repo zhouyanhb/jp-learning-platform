@@ -17,12 +17,20 @@ from jp_learning_platform.application import (
 from jp_learning_platform.infrastructure import (
     AudioLoader,
     AudioLoaderError,
+    ConservativeSubtitleMerger,
     DEFAULT_WHISPER_COMPUTE_TYPE,
     DEFAULT_WHISPER_DEVICE,
     DEFAULT_WHISPER_MODEL_SIZE,
+    DEFAULT_WHISPERX_LANGUAGE,
+    DomainSubtitleValidator,
     FasterWhisperDependencyError,
     FasterWhisperTranscriber,
+    LlamaCppQwenRepairer,
+    LocalReadabilityOptimizer,
+    PassthroughQwenRepairer,
+    PassthroughWhisperXAligner,
     SrtSubtitleWriter,
+    WhisperXAlignerAdapter,
     WordSubtitleBuilder,
 )
 from jp_learning_platform.workflow import (
@@ -90,6 +98,21 @@ def build_parser() -> ArgumentParser:
         default=DEFAULT_WHISPER_COMPUTE_TYPE,
         help="faster-whisper compute type. Defaults to int8.",
     )
+    transcribe_parser.add_argument(
+        "--enable-whisperx",
+        action="store_true",
+        help="Use WhisperX forced alignment after Whisper transcription.",
+    )
+    transcribe_parser.add_argument(
+        "--whisperx-language",
+        default=DEFAULT_WHISPERX_LANGUAGE,
+        help="WhisperX alignment language code. Defaults to ja.",
+    )
+    transcribe_parser.add_argument(
+        "--qwen-model-path",
+        type=Path,
+        help="Local Qwen GGUF model path for transcript repair.",
+    )
 
     return parser
 
@@ -120,6 +143,11 @@ def _run_transcribe(args: Namespace, output: TextIO, error_output: TextIO) -> in
         ),
         builder=WordSubtitleBuilder(),
         writer=writer,
+        aligner=_build_aligner(args),
+        repairer=_build_repairer(args),
+        merger=ConservativeSubtitleMerger(),
+        optimizer=LocalReadabilityOptimizer(),
+        validator=DomainSubtitleValidator(),
     )
 
     try:
@@ -145,6 +173,23 @@ def _run_transcribe(args: Namespace, output: TextIO, error_output: TextIO) -> in
         output.write(f"{output_path}\n")
 
     return 0
+
+
+def _build_aligner(args: Namespace) -> PassthroughWhisperXAligner | WhisperXAlignerAdapter:
+    if args.enable_whisperx:
+        return WhisperXAlignerAdapter(
+            device=args.device,
+            language_code=args.whisperx_language,
+        )
+
+    return PassthroughWhisperXAligner()
+
+
+def _build_repairer(args: Namespace) -> PassthroughQwenRepairer | LlamaCppQwenRepairer:
+    if args.qwen_model_path is not None:
+        return LlamaCppQwenRepairer(model_path=args.qwen_model_path)
+
+    return PassthroughQwenRepairer()
 
 
 def _run_command(args: Namespace, output: TextIO, error_output: TextIO) -> int:

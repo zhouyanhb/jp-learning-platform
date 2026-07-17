@@ -60,3 +60,21 @@ def test_transcribe_command_accepts_asr_model_options() -> None:
     assert args.model_size == "small"
     assert args.device == "cuda"
     assert args.compute_type == "float16"
+
+
+def test_transcribe_command_accepts_quality_stage_options() -> None:
+    args = build_parser().parse_args(
+        (
+            "transcribe",
+            "audio.mp3",
+            "--enable-whisperx",
+            "--whisperx-language",
+            "ja",
+            "--qwen-model-path",
+            "models/qwen.gguf",
+        )
+    )
+
+    assert args.enable_whisperx
+    assert args.whisperx_language == "ja"
+    assert args.qwen_model_path == Path("models/qwen.gguf")
