@@ -8,6 +8,17 @@ from jp_learning_platform.workflow.runtime import (
     Workflow,
     create_pipeline,
 )
+from jp_learning_platform.workflow.qwen_repair_stage import (
+    InvalidQwenRepairError,
+    InvalidQwenRepairerError,
+    MissingAlignedSegmentsError,
+    QWEN_REPAIR_STAGE_NAME,
+    QwenRepair,
+    QwenRepairRequest,
+    QwenRepairStage,
+    QwenRepairStageError,
+    QwenRepairer,
+)
 from jp_learning_platform.workflow.whisper_stage import (
     InvalidWhisperTranscriberError,
     InvalidWhisperTranscriptError,
@@ -32,12 +43,21 @@ from jp_learning_platform.workflow.whisperx_alignment_stage import (
 
 __all__ = [
     "ExecutionEngine",
+    "InvalidQwenRepairError",
+    "InvalidQwenRepairerError",
     "InvalidWhisperTranscriberError",
     "InvalidWhisperTranscriptError",
     "InvalidWhisperXAlignerError",
     "InvalidWhisperXAlignmentError",
+    "MissingAlignedSegmentsError",
     "MissingWhisperSegmentsError",
     "Pipeline",
+    "QWEN_REPAIR_STAGE_NAME",
+    "QwenRepair",
+    "QwenRepairRequest",
+    "QwenRepairStage",
+    "QwenRepairStageError",
+    "QwenRepairer",
     "Stage",
     "StageResult",
     "WHISPER_STAGE_NAME",

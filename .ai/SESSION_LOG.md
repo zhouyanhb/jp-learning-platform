@@ -483,3 +483,55 @@ created by this commit
 ```
 feat(workflow): add whisperx alignment stage
 ```
+
+---
+
+# Session 011
+
+Date
+
+2026-07-17
+
+Roadmap
+
+Commit0011 Qwen Repair
+
+Summary
+
+Implemented the workflow Qwen repair stage for coordinating aligned transcript
+repair through an injected repairer contract.
+
+Changes
+
+Added
+
+- QwenRepairRequest
+- QwenRepair
+- QwenRepairer
+- QwenRepairStage
+- QwenRepairStageError
+- InvalidQwenRepairerError
+- MissingAlignedSegmentsError
+- InvalidQwenRepairError
+
+Documentation
+
+- docs/qwen-repair-stage.md
+
+Tests
+
+- test_qwen_repair_stage.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (86 passed)
+
+Commit
+
+created by this commit
+
+```
+feat(workflow): add qwen repair stage
+```

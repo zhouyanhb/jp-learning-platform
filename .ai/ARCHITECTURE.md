@@ -162,3 +162,9 @@ WhisperX alignment stage implementation lives in:
 ```
 src/jp_learning_platform/workflow/whisperx_alignment_stage.py
 ```
+
+Qwen repair stage implementation lives in:
+
+```
+src/jp_learning_platform/workflow/qwen_repair_stage.py
+```

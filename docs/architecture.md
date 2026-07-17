@@ -51,6 +51,7 @@ The workflow runtime primitives are documented in `docs/workflow-runtime.md`.
 The Whisper transcription stage is documented in `docs/whisper-stage.md`.
 The WhisperX alignment stage is documented in
 `docs/whisperx-alignment-stage.md`.
+The Qwen repair stage is documented in `docs/qwen-repair-stage.md`.
 
 ## Infrastructure
 

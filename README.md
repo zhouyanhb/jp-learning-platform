@@ -62,6 +62,10 @@ Whisper transcription stage contracts are documented in `docs/whisper-stage.md`.
 WhisperX alignment stage contracts are documented in
 `docs/whisperx-alignment-stage.md`.
 
+## Qwen Repair Stage
+
+Qwen repair stage contracts are documented in `docs/qwen-repair-stage.md`.
+
 ## Tool Registry
 
 External tool adapter resolution is documented in `docs/tool-registry.md`.

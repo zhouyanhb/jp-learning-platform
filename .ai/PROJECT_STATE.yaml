@@ -7,7 +7,7 @@ project:
 repository:
   branch: master
   working_tree: clean
-  remote_status: ahead_of_origin_by_10_commits
+  remote_status: ahead_of_origin_by_11_commits
   runnable: true
 
 architecture:
@@ -37,18 +37,19 @@ roadmap:
     - Commit0008
     - Commit0009
     - Commit0010
+    - Commit0011
 
-  current: Commit0011
+  current: Commit0012
 
-  next: Commit0012
+  next: Commit0013
 
 latest_commit:
   hash: created_by_this_commit
-  message: feat(workflow): add whisperx alignment stage
+  message: feat(workflow): add qwen repair stage
 
 tests:
-  total: 77
-  passed: 77
+  total: 86
+  passed: 86
   failed: 0
 
 checks:
@@ -99,6 +100,16 @@ workflow:
       - InvalidWhisperXAlignerError
       - MissingWhisperSegmentsError
       - InvalidWhisperXAlignmentError
+  qwen_repair_stage:
+    implemented:
+      - QwenRepairRequest
+      - QwenRepair
+      - QwenRepairer
+      - QwenRepairStage
+      - QwenRepairStageError
+      - InvalidQwenRepairerError
+      - MissingAlignedSegmentsError
+      - InvalidQwenRepairError
 
 infrastructure:
   tool_registry:
@@ -136,10 +147,10 @@ repository_health:
   documentation: synchronized
 
 current_task:
-  name: Commit0011 Qwen Repair
+  name: Commit0012 Subtitle Builder
 
   deliverables:
-    - Qwen Repair
+    - Subtitle Builder
 
 next_commit:
   expected_type: feat

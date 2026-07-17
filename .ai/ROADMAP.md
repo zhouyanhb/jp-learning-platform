@@ -96,7 +96,7 @@ Execution Engine
 
 - [x] Commit0010 WhisperX Alignment
 
-- [ ] Commit0011 Qwen Repair
+- [x] Commit0011 Qwen Repair
 
 - [ ] Commit0012 Subtitle Builder
 
