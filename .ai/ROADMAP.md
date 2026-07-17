@@ -92,7 +92,7 @@ Execution Engine
 
 - [x] Commit0008 Audio Loader
 
-- [ ] Commit0009 Whisper Stage
+- [x] Commit0009 Whisper Stage
 
 - [ ] Commit0010 WhisperX Alignment
 

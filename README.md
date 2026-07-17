@@ -53,6 +53,10 @@ Domain factories, validators, and repository boundaries are documented in
 
 Workflow orchestration primitives are documented in `docs/workflow-runtime.md`.
 
+## Whisper Stage
+
+Whisper transcription stage contracts are documented in `docs/whisper-stage.md`.
+
 ## Tool Registry
 
 External tool adapter resolution is documented in `docs/tool-registry.md`.

@@ -150,3 +150,9 @@ Audio loader implementation lives in:
 ```
 src/jp_learning_platform/infrastructure/audio_loader.py
 ```
+
+Whisper stage implementation lives in:
+
+```
+src/jp_learning_platform/workflow/whisper_stage.py
+```

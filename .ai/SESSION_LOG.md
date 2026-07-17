@@ -380,3 +380,54 @@ created by this commit
 ```
 feat(infrastructure): add audio loader
 ```
+
+---
+
+# Session 009
+
+Date
+
+2026-07-17
+
+Roadmap
+
+Commit0009 Whisper Stage
+
+Summary
+
+Implemented the workflow Whisper stage for coordinating transcription through
+an injected transcriber contract.
+
+Changes
+
+Added
+
+- WhisperTranscriptionRequest
+- WhisperTranscript
+- WhisperTranscriber
+- WhisperStage
+- WhisperStageError
+- InvalidWhisperTranscriberError
+- InvalidWhisperTranscriptError
+
+Documentation
+
+- docs/whisper-stage.md
+
+Tests
+
+- test_whisper_stage.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (68 passed)
+
+Commit
+
+created by this commit
+
+```
+feat(workflow): add whisper stage
+```
