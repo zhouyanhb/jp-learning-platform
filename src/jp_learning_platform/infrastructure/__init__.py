@@ -10,6 +10,9 @@ from jp_learning_platform.infrastructure.audio_loader import (
     UnsupportedAudioFormatError,
 )
 from jp_learning_platform.infrastructure.faster_whisper_transcriber import (
+    DEFAULT_WHISPER_COMPUTE_TYPE,
+    DEFAULT_WHISPER_DEVICE,
+    DEFAULT_WHISPER_MODEL_SIZE,
     FasterWhisperDependencyError,
     FasterWhisperTranscriber,
 )
@@ -34,6 +37,9 @@ __all__ = [
     "AudioFormat",
     "AudioLoader",
     "AudioLoaderError",
+    "DEFAULT_WHISPER_COMPUTE_TYPE",
+    "DEFAULT_WHISPER_DEVICE",
+    "DEFAULT_WHISPER_MODEL_SIZE",
     "DuplicateToolError",
     "EmptyAudioFileError",
     "FasterWhisperDependencyError",

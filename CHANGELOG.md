@@ -8,6 +8,7 @@ All notable changes to this project are documented in this file.
 
 - Added local audio-to-SRT CLI support for single audio files and folders with
   `output/` as the default output directory.
+- Added CLI options for faster-whisper model size, device, and compute type.
 
 ### Fixed
 

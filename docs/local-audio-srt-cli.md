@@ -17,6 +17,18 @@ directory can be supplied when needed:
 python -m jp_learning_platform transcribe audio.mp3 --output-dir subtitles
 ```
 
+ASR model settings can be supplied from the CLI:
+
+```bash
+python -m jp_learning_platform transcribe audio.mp3 --model-size small --device cpu --compute-type int8
+```
+
+Defaults are:
+
+- `--model-size large-v3`
+- `--device cpu`
+- `--compute-type int8`
+
 ## ASR Dependency
 
 The command uses the faster-whisper infrastructure adapter for speech

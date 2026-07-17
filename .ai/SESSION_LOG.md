@@ -945,3 +945,51 @@ created by this commit
 ```
 feat(cli): add local audio srt generation
 ```
+
+---
+
+# Session 020
+
+Date
+
+2026-07-17
+
+Roadmap
+
+Maintenance ASR CLI Model Options
+
+Summary
+
+Added command line options for configuring faster-whisper model size, device,
+and compute type during local audio SRT generation.
+
+Changes
+
+Added
+
+- `--model-size`
+- `--device`
+- `--compute-type`
+
+Documentation
+
+- docs/local-audio-srt-cli.md
+- README.md
+
+Tests
+
+- test_package.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (142 passed)
+
+Commit
+
+created by this commit
+
+```
+feat(cli): add asr model options
+```

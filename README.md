@@ -42,6 +42,7 @@ python -m jp_learning_platform status
 python -m jp_learning_platform --version
 python -m jp_learning_platform transcribe audio.mp3
 python -m jp_learning_platform transcribe ./audios
+python -m jp_learning_platform transcribe audio.mp3 --model-size small --device cpu --compute-type int8
 ```
 
 The entrypoint reports the Version 1.0 subtitle pipeline status. External SDK

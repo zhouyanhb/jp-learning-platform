@@ -125,6 +125,9 @@ class FasterWhisperTranscriber:
 
 
 __all__ = [
+    "DEFAULT_WHISPER_COMPUTE_TYPE",
+    "DEFAULT_WHISPER_DEVICE",
+    "DEFAULT_WHISPER_MODEL_SIZE",
     "FasterWhisperDependencyError",
     "FasterWhisperTranscriber",
 ]

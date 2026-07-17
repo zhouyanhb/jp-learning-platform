@@ -17,6 +17,9 @@ from jp_learning_platform.application import (
 from jp_learning_platform.infrastructure import (
     AudioLoader,
     AudioLoaderError,
+    DEFAULT_WHISPER_COMPUTE_TYPE,
+    DEFAULT_WHISPER_DEVICE,
+    DEFAULT_WHISPER_MODEL_SIZE,
     FasterWhisperDependencyError,
     FasterWhisperTranscriber,
     SrtSubtitleWriter,
@@ -72,6 +75,21 @@ def build_parser() -> ArgumentParser:
         type=Path,
         help="Directory for generated SRT files. Defaults to output.",
     )
+    transcribe_parser.add_argument(
+        "--model-size",
+        default=DEFAULT_WHISPER_MODEL_SIZE,
+        help="faster-whisper model size. Defaults to large-v3.",
+    )
+    transcribe_parser.add_argument(
+        "--device",
+        default=DEFAULT_WHISPER_DEVICE,
+        help="Device used by faster-whisper. Defaults to cpu.",
+    )
+    transcribe_parser.add_argument(
+        "--compute-type",
+        default=DEFAULT_WHISPER_COMPUTE_TYPE,
+        help="faster-whisper compute type. Defaults to int8.",
+    )
 
     return parser
 
@@ -95,7 +113,11 @@ def _run_transcribe(args: Namespace, output: TextIO, error_output: TextIO) -> in
     writer = SrtSubtitleWriter(output_directory=args.output_dir)
     runner = SubtitlePipelineRunner(
         audio_loader=AudioLoader(),
-        transcriber=FasterWhisperTranscriber(),
+        transcriber=FasterWhisperTranscriber(
+            model_size=args.model_size,
+            device=args.device,
+            compute_type=args.compute_type,
+        ),
         builder=WordSubtitleBuilder(),
         writer=writer,
     )
