@@ -56,6 +56,7 @@ WhisperX, Qwen, and FFmpeg. Adapters translate external SDK inputs and outputs
 into project contracts without leaking third-party APIs into the domain.
 Tool adapter resolution is handled by the registry documented in
 `docs/tool-registry.md`.
+Local audio loading is documented in `docs/audio-loader.md`.
 
 ## Plugins
 

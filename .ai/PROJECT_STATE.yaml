@@ -7,7 +7,7 @@ project:
 repository:
   branch: master
   working_tree: clean
-  remote_status: ahead_of_origin_by_7_commits
+  remote_status: ahead_of_origin_by_8_commits
   runnable: true
 
 architecture:
@@ -34,18 +34,19 @@ roadmap:
     - Commit0005
     - Commit0006
     - Commit0007
+    - Commit0008
 
-  current: Commit0008
+  current: Commit0009
 
-  next: Commit0009
+  next: Commit0010
 
 latest_commit:
   hash: created_by_this_commit
-  message: feat(plugins): add plugin system
+  message: feat(infrastructure): add audio loader
 
 tests:
-  total: 52
-  passed: 52
+  total: 60
+  passed: 60
   failed: 0
 
 checks:
@@ -86,6 +87,15 @@ infrastructure:
       - ToolRegistryError
       - DuplicateToolError
       - ToolNotFoundError
+  audio_loader:
+    implemented:
+      - AudioFormat
+      - LoadedAudio
+      - AudioLoader
+      - AudioLoaderError
+      - AudioFileNotFoundError
+      - UnsupportedAudioFormatError
+      - EmptyAudioFileError
 
 plugins:
   system:
@@ -105,14 +115,14 @@ repository_health:
   documentation: synchronized
 
 current_task:
-  name: Commit0008 Audio Loader
+  name: Commit0009 Whisper Stage
 
   deliverables:
-    - Audio Loader
+    - Whisper Stage
 
 next_commit:
   expected_type: feat
-  expected_scope: infrastructure
+  expected_scope: workflow
 
 rules:
   implement_exactly_one_roadmap_item: true

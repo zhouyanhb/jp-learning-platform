@@ -61,6 +61,10 @@ External tool adapter resolution is documented in `docs/tool-registry.md`.
 
 Optional capability registration is documented in `docs/plugin-system.md`.
 
+## Audio Loader
+
+Local audio loading is documented in `docs/audio-loader.md`.
+
 ## Roadmap
 
 The implementation roadmap is maintained in `.ai/ROADMAP.md`.

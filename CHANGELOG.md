@@ -6,6 +6,8 @@ All notable changes to this project are documented in this file.
 
 ### Added
 
+- Added infrastructure audio loader for supported local audio files.
+- Added audio loader tests and documentation.
 - Added plugin system contracts for plugin metadata, activation, registration,
   context, and registry errors.
 - Added plugin system tests and documentation.

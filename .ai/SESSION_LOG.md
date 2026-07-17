@@ -330,3 +330,53 @@ created by this commit
 ```
 feat(plugins): add plugin system
 ```
+
+---
+
+# Session 008
+
+Date
+
+2026-07-17
+
+Roadmap
+
+Commit0008 Audio Loader
+
+Summary
+
+Implemented the infrastructure audio loader for supported local audio files.
+
+Changes
+
+Added
+
+- AudioFormat
+- LoadedAudio
+- AudioLoader
+- AudioLoaderError
+- AudioFileNotFoundError
+- UnsupportedAudioFormatError
+- EmptyAudioFileError
+
+Documentation
+
+- docs/audio-loader.md
+
+Tests
+
+- test_audio_loader.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (60 passed)
+
+Commit
+
+created by this commit
+
+```
+feat(infrastructure): add audio loader
+```

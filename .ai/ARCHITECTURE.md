@@ -144,3 +144,9 @@ Plugin system implementation lives in:
 ```
 src/jp_learning_platform/plugins/system.py
 ```
+
+Audio loader implementation lives in:
+
+```
+src/jp_learning_platform/infrastructure/audio_loader.py
+```

@@ -90,7 +90,7 @@ Execution Engine
 
 ## Phase 5 Subtitle Pipeline
 
-- [ ] Commit0008 Audio Loader
+- [x] Commit0008 Audio Loader
 
 - [ ] Commit0009 Whisper Stage
 
