@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+from time import monotonic
 from typing import Protocol
 
 from jp_learning_platform.application import (
@@ -13,6 +14,14 @@ from jp_learning_platform.application import (
     SubtitlePipelineResult,
 )
 from jp_learning_platform.domain import Document, PipelineContext
+from jp_learning_platform.workflow.progress import (
+    NoOpProgressReporter,
+    PipelineProgressEvent,
+    PipelineProgressStatus,
+    ProgressReporter,
+    StageArtifactRecord,
+    StageArtifactRecorder,
+)
 from jp_learning_platform.workflow.qwen_repair_stage import QwenRepairStage, QwenRepairer
 from jp_learning_platform.workflow.readability_optimizer_stage import (
     ReadabilityOptimizer,
@@ -21,6 +30,7 @@ from jp_learning_platform.workflow.readability_optimizer_stage import (
 from jp_learning_platform.workflow.runtime import (
     ExecutionEngine,
     Stage,
+    StageExecutionEvent,
     Workflow,
     create_pipeline,
 )
@@ -67,6 +77,80 @@ class DuplicateSubtitleOutputError(SubtitlePipelineRunnerError):
 
 
 @dataclass(frozen=True, slots=True)
+class _PipelineRunProgress:
+    source_path: Path
+    output_path: Path
+    file_index: int
+    file_total: int
+    reporter: ProgressReporter
+    artifact_recorder: StageArtifactRecorder | None = None
+
+    def emit(
+        self,
+        stage_name: str,
+        status: PipelineProgressStatus,
+        context: PipelineContext,
+        elapsed_seconds: float | None = None,
+        data: object | None = None,
+        message: str = "",
+    ) -> None:
+        artifact_path = None
+        if self.artifact_recorder is not None:
+            artifact_path = self.artifact_recorder.record(
+                StageArtifactRecord(
+                    source_path=self.source_path,
+                    output_path=self.output_path,
+                    file_index=self.file_index,
+                    file_total=self.file_total,
+                    stage_name=stage_name,
+                    status=status,
+                    context=context,
+                    elapsed_seconds=elapsed_seconds,
+                    data=data,
+                    message=message,
+                )
+            )
+
+        self.reporter.report(
+            PipelineProgressEvent(
+                source_path=self.source_path,
+                output_path=self.output_path,
+                file_index=self.file_index,
+                file_total=self.file_total,
+                stage_name=stage_name,
+                status=status,
+                elapsed_seconds=elapsed_seconds,
+                artifact_path=artifact_path,
+                message=message,
+            )
+        )
+
+    def stage_started(self, event: StageExecutionEvent) -> None:
+        self.emit(
+            stage_name=event.stage_name,
+            status=PipelineProgressStatus.STARTED,
+            context=event.context,
+        )
+
+    def stage_succeeded(self, event: StageExecutionEvent) -> None:
+        self.emit(
+            stage_name=event.stage_name,
+            status=PipelineProgressStatus.SUCCEEDED,
+            context=event.context,
+            elapsed_seconds=event.elapsed_seconds,
+        )
+
+    def stage_failed(self, event: StageExecutionEvent) -> None:
+        self.emit(
+            stage_name=event.stage_name,
+            status=PipelineProgressStatus.FAILED,
+            context=event.context,
+            elapsed_seconds=event.elapsed_seconds,
+            message=event.error_message,
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class SubtitlePipelineRunner:
     """Run the local audio-to-SRT subtitle pipeline."""
 
@@ -81,6 +165,8 @@ class SubtitlePipelineRunner:
     validator: SubtitleValidator | None = None
     discovery: AudioInputDiscovery = AudioInputDiscovery()
     engine: ExecutionEngine = ExecutionEngine()
+    progress_reporter: ProgressReporter = NoOpProgressReporter()
+    artifact_recorder: StageArtifactRecorder | None = None
 
     def run(self, request: SubtitlePipelineRequest) -> SubtitlePipelineResult:
         if not isinstance(request, SubtitlePipelineRequest):
@@ -96,18 +182,33 @@ class SubtitlePipelineRunner:
         request.output_directory.mkdir(parents=True, exist_ok=True)
 
         items: list[SubtitlePipelineItemResult] = []
-        for source_path, output_path in zip(audio_paths, output_paths, strict=True):
-            self.audio_loader.load(source_path)
+        file_total = len(audio_paths)
+        for file_index, (source_path, output_path) in enumerate(
+            zip(audio_paths, output_paths, strict=True),
+            start=1,
+        ):
             context = PipelineContext(
                 run_id=f"transcribe-{source_path.stem}",
                 document=Document(source_path=source_path),
-                working_directory=request.output_directory / ".work" / source_path.stem,
+                working_directory=self._working_directory_for(
+                    source_path,
+                    request.output_directory,
+                ),
             )
+            progress = _PipelineRunProgress(
+                source_path=source_path,
+                output_path=output_path,
+                file_index=file_index,
+                file_total=file_total,
+                reporter=self.progress_reporter,
+                artifact_recorder=self.artifact_recorder,
+            )
+            self._load_audio(source_path, context, progress)
             workflow = Workflow(
                 name="audio-to-srt",
                 pipeline=create_pipeline("audio-to-srt", self._stages()),
             )
-            self.engine.execute(workflow, context)
+            self.engine.execute(workflow, context, observer=progress)
             items.append(
                 SubtitlePipelineItemResult(
                     source_path=source_path,
@@ -149,6 +250,49 @@ class SubtitlePipelineRunner:
             if output_path in seen:
                 raise DuplicateSubtitleOutputError(output_path)
             seen.add(output_path)
+
+    def _working_directory_for(
+        self,
+        source_path: Path,
+        output_directory: Path,
+    ) -> Path:
+        if self.artifact_recorder is not None:
+            return self.artifact_recorder.audio_directory(source_path)
+
+        return output_directory / ".work" / source_path.stem
+
+    def _load_audio(
+        self,
+        source_path: Path,
+        context: PipelineContext,
+        progress: _PipelineRunProgress,
+    ) -> None:
+        stage_name = "audio-loader"
+        progress.emit(
+            stage_name=stage_name,
+            status=PipelineProgressStatus.STARTED,
+            context=context,
+        )
+        started_at = monotonic()
+        try:
+            loaded_audio = self.audio_loader.load(source_path)
+        except Exception as error:
+            progress.emit(
+                stage_name=stage_name,
+                status=PipelineProgressStatus.FAILED,
+                context=context,
+                elapsed_seconds=monotonic() - started_at,
+                message=str(error),
+            )
+            raise
+
+        progress.emit(
+            stage_name=stage_name,
+            status=PipelineProgressStatus.SUCCEEDED,
+            context=context,
+            elapsed_seconds=monotonic() - started_at,
+            data=loaded_audio,
+        )
 
 
 __all__ = [

@@ -11,6 +11,9 @@ All notable changes to this project are documented in this file.
 - Added CLI options for faster-whisper model size, device, and compute type.
 - Added full local CLI quality workflow wiring for WhisperX alignment, Qwen
   repair, subtitle merging, readability optimization, and validation stages.
+- Added per-file CLI progress logging for local audio SRT generation.
+- Added per-stage JSON artifact persistence under `output/.work/` for local
+  audio SRT generation.
 
 ### Fixed
 

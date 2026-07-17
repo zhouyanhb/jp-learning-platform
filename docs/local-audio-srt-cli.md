@@ -17,6 +17,9 @@ directory can be supplied when needed:
 python -m jp_learning_platform transcribe audio.mp3 --output-dir subtitles
 ```
 
+The command reports per-file stage progress while it runs. Progress is written
+to stderr so stdout can continue to list the final generated SRT paths.
+
 ASR model settings can be supplied from the CLI:
 
 ```bash
@@ -99,3 +102,35 @@ AudioLoader
 
 The generated subtitles preserve word-derived timing through the domain
 `Sentence` and `Word` objects before writing the final SRT text.
+
+## Progress and Stage Artifacts
+
+Each processed audio file emits one-line progress events for every stage:
+
+```text
+[1/2] lesson.mp3 audio-loader started
+[1/2] lesson.mp3 audio-loader done 0.01s -> output/.work/20260717_153012_123456/lesson/00_audio_load.json
+[1/2] lesson.mp3 whisper started
+[1/2] lesson.mp3 whisper done 12.48s -> output/.work/20260717_153012_123456/lesson/01_whisper.json
+```
+
+The final SRT remains at `output/<audio-name>.srt`. Stage artifacts are saved
+under the output directory:
+
+```text
+output/.work/<run-name>/<audio-name>/manifest.json
+output/.work/<run-name>/<audio-name>/00_audio_load.json
+output/.work/<run-name>/<audio-name>/01_whisper.json
+output/.work/<run-name>/<audio-name>/02_align.json
+output/.work/<run-name>/<audio-name>/03_repair.json
+output/.work/<run-name>/<audio-name>/04_build.json
+output/.work/<run-name>/<audio-name>/05_merge.json
+output/.work/<run-name>/<audio-name>/06_readability.json
+output/.work/<run-name>/<audio-name>/07_validate.json
+output/.work/<run-name>/<audio-name>/08_write.json
+```
+
+Artifacts contain the source path, output path, file index, stage status,
+elapsed time, recorded timestamp, pipeline context, and stage data when the
+stage exposes additional data. The manifest records the current stage and the
+latest stage artifact path for that audio file.

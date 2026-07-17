@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
 from pathlib import Path
 
 import pytest
@@ -20,10 +21,12 @@ from jp_learning_platform.domain import (
 from jp_learning_platform.infrastructure import (
     AudioLoader,
     SrtSubtitleWriter,
+    StageArtifactStore,
     WordSubtitleBuilder,
 )
 from jp_learning_platform.workflow import (
     DuplicateSubtitleOutputError,
+    PipelineProgressEvent,
     QwenRepair,
     QwenRepairRequest,
     ReadabilityOptimization,
@@ -130,6 +133,14 @@ class RecordingValidator:
         )
 
 
+@dataclass(slots=True)
+class RecordingProgressReporter:
+    events: list[PipelineProgressEvent]
+
+    def report(self, event: PipelineProgressEvent) -> None:
+        self.events.append(event)
+
+
 def _write_audio(path: Path) -> None:
     path.write_bytes(b"audio")
 
@@ -197,6 +208,72 @@ def test_subtitle_pipeline_runner_can_execute_quality_stages(
     assert len(merger.requests) == 1
     assert len(optimizer.requests) == 1
     assert len(validator.requests) == 1
+
+
+def test_subtitle_pipeline_runner_records_progress_and_stage_artifacts(
+    tmp_path: Path,
+) -> None:
+    audio_path = tmp_path / "lesson.mp3"
+    output_directory = tmp_path / "output"
+    _write_audio(audio_path)
+    reporter = RecordingProgressReporter(events=[])
+    artifact_store = StageArtifactStore(
+        root_directory=output_directory / ".work",
+        run_name="run-001",
+    )
+    runner = SubtitlePipelineRunner(
+        audio_loader=AudioLoader(),
+        transcriber=FakeTranscriber(requests=[]),
+        aligner=RecordingAligner(requests=[]),
+        repairer=RecordingRepairer(requests=[]),
+        builder=WordSubtitleBuilder(),
+        merger=RecordingMerger(requests=[]),
+        optimizer=RecordingOptimizer(requests=[]),
+        validator=RecordingValidator(requests=[]),
+        writer=SrtSubtitleWriter(output_directory=output_directory),
+        progress_reporter=reporter,
+        artifact_recorder=artifact_store,
+    )
+
+    result = runner.run(
+        SubtitlePipelineRequest(input_path=audio_path, output_directory=output_directory)
+    )
+
+    assert result.output_paths == (output_directory / "lesson.srt",)
+    artifact_directory = output_directory / ".work" / "run-001" / "lesson"
+    expected_artifacts = (
+        "00_audio_load.json",
+        "01_whisper.json",
+        "02_align.json",
+        "03_repair.json",
+        "04_build.json",
+        "05_merge.json",
+        "06_readability.json",
+        "07_validate.json",
+        "08_write.json",
+    )
+    for artifact_name in expected_artifacts:
+        assert (artifact_directory / artifact_name).exists()
+
+    manifest = json.loads(
+        (artifact_directory / "manifest.json").read_text(encoding="utf-8")
+    )
+    assert manifest["current_stage"] == "subtitle-writer"
+    assert manifest["status"] == "succeeded"
+
+    assert [event.stage_name for event in reporter.events[::2]] == [
+        "audio-loader",
+        "whisper",
+        "whisperx-alignment",
+        "qwen-repair",
+        "subtitle-builder",
+        "subtitle-merger",
+        "readability-optimizer",
+        "subtitle-validator",
+        "subtitle-writer",
+    ]
+    assert all(event.file_index == 1 for event in reporter.events)
+    assert all(event.file_total == 1 for event in reporter.events)
 
 
 def test_subtitle_pipeline_runner_generates_srt_for_audio_folder(

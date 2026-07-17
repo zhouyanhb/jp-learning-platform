@@ -18,6 +18,7 @@ from jp_learning_platform.infrastructure import (
     AudioLoader,
     AudioLoaderError,
     ConservativeSubtitleMerger,
+    ConsoleProgressReporter,
     DEFAULT_WHISPER_COMPUTE_TYPE,
     DEFAULT_WHISPER_DEVICE,
     DEFAULT_WHISPER_MODEL_SIZE,
@@ -30,6 +31,7 @@ from jp_learning_platform.infrastructure import (
     PassthroughQwenRepairer,
     PassthroughWhisperXAligner,
     SrtSubtitleWriter,
+    StageArtifactStore,
     WhisperXAlignerAdapter,
     WordSubtitleBuilder,
 )
@@ -148,6 +150,10 @@ def _run_transcribe(args: Namespace, output: TextIO, error_output: TextIO) -> in
         merger=ConservativeSubtitleMerger(),
         optimizer=LocalReadabilityOptimizer(),
         validator=DomainSubtitleValidator(),
+        progress_reporter=ConsoleProgressReporter(output=error_output),
+        artifact_recorder=StageArtifactStore(
+            root_directory=args.output_dir / ".work",
+        ),
     )
 
     try:

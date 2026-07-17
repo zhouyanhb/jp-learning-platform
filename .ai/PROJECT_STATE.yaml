@@ -8,7 +8,7 @@ project:
 repository:
   branch: master
   working_tree: clean
-  remote_status: ahead_of_origin_by_3_commits
+  remote_status: ahead_of_origin_by_4_commits
   runnable: true
 
 architecture:
@@ -52,11 +52,11 @@ roadmap:
 
 latest_commit:
   hash: created_by_this_commit
-  message: feat(cli): wire subtitle quality stages
+  message: feat(cli): add progress artifacts
 
 tests:
-  total: 149
-  passed: 149
+  total: 156
+  passed: 156
   failed: 0
 
 checks:
@@ -84,10 +84,18 @@ workflow:
   runtime:
     implemented:
       - Stage
+      - StageExecutionEvent
+      - StageExecutionObserver
       - StageResult
       - Pipeline
       - Workflow
       - ExecutionEngine
+      - PipelineProgressEvent
+      - PipelineProgressStatus
+      - ProgressReporter
+      - StageArtifactRecord
+      - StageArtifactRecorder
+      - NoOpProgressReporter
   subtitle_pipeline_runner:
     implemented:
       - SubtitlePipelineRunner
@@ -209,6 +217,13 @@ infrastructure:
       - ConservativeSubtitleMerger
       - LocalReadabilityOptimizer
       - DomainSubtitleValidator
+  progress_artifacts:
+    implemented:
+      - ConsoleProgressReporter
+      - StageArtifactStore
+      - StageArtifactStoreError
+      - InvalidStageArtifactRecordError
+      - StageArtifactSerializationError
 
 application:
   subtitle_pipeline:

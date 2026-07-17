@@ -56,6 +56,11 @@ The `transcribe` command accepts either one audio file or a folder containing
 audio files and writes `.srt` files to `output/` by default. Use `--output-dir`
 only when a custom output directory is needed.
 
+During transcription, the command reports the current file and pipeline stage
+to stderr. Per-stage JSON artifacts are saved under
+`output/.work/<run-name>/<audio-name>/`, while final subtitles remain at
+`output/<audio-name>.srt`.
+
 ## Checks
 
 ```bash

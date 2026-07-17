@@ -47,6 +47,26 @@ class MismatchedResultStage:
         return StageResult(stage_name="other", context=context)
 
 
+@dataclass(slots=True)
+class RecordingObserver:
+    events: list[tuple[str, str, str, str]]
+
+    def stage_started(self, event) -> None:
+        self.events.append(
+            ("started", event.workflow_name, event.stage_name, event.context.run_id)
+        )
+
+    def stage_succeeded(self, event) -> None:
+        self.events.append(
+            ("succeeded", event.workflow_name, event.stage_name, event.context.run_id)
+        )
+
+    def stage_failed(self, event) -> None:
+        self.events.append(
+            ("failed", event.workflow_name, event.stage_name, event.error_message)
+        )
+
+
 def _context(run_id: str = "run") -> PipelineContext:
     return PipelineContext(
         run_id=run_id,
@@ -69,6 +89,26 @@ def test_execution_engine_runs_pipeline_stages_in_order() -> None:
     assert calls == ["run", "run-a"]
     assert tuple(result.stage_name for result in results) == ("first", "second")
     assert results[-1].context.run_id == "run-a-b"
+
+
+def test_execution_engine_notifies_observer_for_stage_progress() -> None:
+    calls: list[str] = []
+    observer = RecordingObserver(events=[])
+    first = RecordingStage(name="first", run_id_suffix="a", calls=calls)
+    second = RecordingStage(name="second", run_id_suffix="b", calls=calls)
+    workflow = Workflow(
+        name="subtitle",
+        pipeline=Pipeline(name="subtitle-pipeline", stages=(first, second)),
+    )
+
+    ExecutionEngine().execute(workflow, _context(), observer=observer)
+
+    assert observer.events == [
+        ("started", "subtitle", "first", "run"),
+        ("succeeded", "subtitle", "first", "run-a"),
+        ("started", "subtitle", "second", "run-a"),
+        ("succeeded", "subtitle", "second", "run-a-b"),
+    ]
 
 
 def test_create_pipeline_accepts_stage_iterables() -> None:
@@ -135,3 +175,39 @@ def test_execution_engine_propagates_stage_errors() -> None:
 
     with pytest.raises(RuntimeError, match="stage failed"):
         ExecutionEngine().execute(workflow, _context())
+
+
+def test_execution_engine_notifies_observer_for_stage_failure() -> None:
+    class FailingStage:
+        name = "failing"
+
+        def run(self, context: PipelineContext) -> StageResult:
+            raise RuntimeError("stage failed")
+
+    observer = RecordingObserver(events=[])
+    workflow = Workflow(
+        name="subtitle",
+        pipeline=Pipeline(name="subtitle-pipeline", stages=(FailingStage(),)),
+    )
+
+    with pytest.raises(RuntimeError, match="stage failed"):
+        ExecutionEngine().execute(workflow, _context(), observer=observer)
+
+    assert observer.events == [
+        ("started", "subtitle", "failing", "run"),
+        ("failed", "subtitle", "failing", "stage failed"),
+    ]
+
+
+def test_execution_engine_rejects_invalid_observer() -> None:
+    calls: list[str] = []
+    workflow = Workflow(
+        name="subtitle",
+        pipeline=Pipeline(
+            name="subtitle-pipeline",
+            stages=(RecordingStage(name="stage", run_id_suffix="done", calls=calls),),
+        ),
+    )
+
+    with pytest.raises(TypeError, match="observer.stage_started"):
+        ExecutionEngine().execute(workflow, _context(), observer=object())

@@ -29,3 +29,9 @@ is handled by the engine so orchestration behavior stays in one place.
 `ExecutionEngine` runs every stage in order. It propagates stage exceptions
 without swallowing them and fails fast if a stage returns anything other than a
 `StageResult`.
+
+The engine also accepts an optional stage execution observer. Observers receive
+started, succeeded, and failed events with the workflow name, pipeline name,
+stage name, context, elapsed time, and failure message. This keeps progress
+logging and artifact persistence outside individual stage implementations while
+preserving ordered workflow execution.

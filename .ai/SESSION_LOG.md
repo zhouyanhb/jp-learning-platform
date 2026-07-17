@@ -1048,3 +1048,59 @@ created by this commit
 ```
 feat(cli): wire subtitle quality stages
 ```
+
+---
+
+# Session 022
+
+Date
+
+2026-07-17
+
+Roadmap
+
+Maintenance CLI Progress Artifacts
+
+Summary
+
+Added per-file progress logging and per-stage JSON artifact persistence for
+local audio SRT generation.
+
+Changes
+
+Added
+
+- Workflow stage execution observer events
+- Workflow progress and stage artifact recording contracts
+- Console progress reporter for local CLI transcription
+- JSON stage artifact store with ordered stage filenames
+- Audio-loader and workflow stage progress recording in the subtitle runner
+- CLI wiring for progress logs and `output/.work/` artifacts
+
+Documentation
+
+- docs/local-audio-srt-cli.md
+- docs/workflow-runtime.md
+- docs/architecture.md
+- README.md
+- CHANGELOG.md
+
+Tests
+
+- test_workflow_runtime.py
+- test_pipeline_progress_artifacts.py
+- test_subtitle_pipeline_runner.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (156 passed)
+
+Commit
+
+created by this commit
+
+```
+feat(cli): add progress artifacts
+```

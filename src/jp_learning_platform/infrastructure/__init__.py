@@ -9,6 +9,16 @@ from jp_learning_platform.infrastructure.audio_loader import (
     LoadedAudio,
     UnsupportedAudioFormatError,
 )
+from jp_learning_platform.infrastructure.artifact_store import (
+    InvalidStageArtifactRecordError,
+    STAGE_ARTIFACT_FILENAMES,
+    StageArtifactSerializationError,
+    StageArtifactStore,
+    StageArtifactStoreError,
+)
+from jp_learning_platform.infrastructure.console_progress import (
+    ConsoleProgressReporter,
+)
 from jp_learning_platform.infrastructure.faster_whisper_transcriber import (
     DEFAULT_WHISPER_COMPUTE_TYPE,
     DEFAULT_WHISPER_DEVICE,
@@ -58,6 +68,7 @@ __all__ = [
     "AudioLoader",
     "AudioLoaderError",
     "ConservativeSubtitleMerger",
+    "ConsoleProgressReporter",
     "DEFAULT_QWEN_CONTEXT",
     "DEFAULT_QWEN_GPU_LAYERS",
     "DEFAULT_QWEN_THREADS",
@@ -70,6 +81,7 @@ __all__ = [
     "EmptyAudioFileError",
     "FasterWhisperDependencyError",
     "FasterWhisperTranscriber",
+    "InvalidStageArtifactRecordError",
     "LlamaCppQwenRepairer",
     "LocalReadabilityOptimizer",
     "LoadedAudio",
@@ -79,6 +91,10 @@ __all__ = [
     "QwenModelNotFoundError",
     "RegisteredTool",
     "SrtSubtitleWriter",
+    "STAGE_ARTIFACT_FILENAMES",
+    "StageArtifactSerializationError",
+    "StageArtifactStore",
+    "StageArtifactStoreError",
     "ToolNotFoundError",
     "ToolRegistry",
     "ToolRegistryError",
