@@ -112,4 +112,4 @@ Execution Engine
 
 ## Phase 6 Release
 
-- [ ] Commit0017 Release Version 1.0
+- [x] Commit0017 Release Version 1.0

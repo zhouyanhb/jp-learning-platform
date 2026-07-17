@@ -2,6 +2,12 @@
 
 AI-powered Japanese learning platform focused on the Version 1.0 subtitle pipeline.
 
+## Release
+
+Current package version: `1.0.0`.
+
+Release notes are maintained in `docs/release-1.0.md`.
+
 ## Scope
 
 Version 1.0 is limited to the subtitle pipeline:

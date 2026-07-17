@@ -1,13 +1,14 @@
-version: "1.0"
+version: "1.0.0"
 
 project:
   name: jp-learning-platform
   scope: subtitle-pipeline
+  release_version: "1.0.0"
 
 repository:
   branch: master
   working_tree: clean
-  remote_status: ahead_of_origin_by_16_commits
+  remote_status: ahead_of_origin_by_17_commits
   runnable: true
 
 architecture:
@@ -43,14 +44,15 @@ roadmap:
     - Commit0014
     - Commit0015
     - Commit0016
+    - Commit0017
 
-  current: Commit0017
+  current: null
 
   next: null
 
 latest_commit:
   hash: created_by_this_commit
-  message: feat(workflow): add subtitle writer stage
+  message: chore(release): prepare version 1.0.0
 
 tests:
   total: 130
@@ -203,14 +205,13 @@ repository_health:
   documentation: synchronized
 
 current_task:
-  name: Commit0017 Release Version 1.0
+  name: null
 
-  deliverables:
-    - Release Version 1.0
+  deliverables: []
 
 next_commit:
-  expected_type: chore
-  expected_scope: release
+  expected_type: null
+  expected_scope: null
 
 rules:
   implement_exactly_one_roadmap_item: true

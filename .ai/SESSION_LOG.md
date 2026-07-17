@@ -797,3 +797,51 @@ created by this commit
 ```
 feat(workflow): add subtitle writer stage
 ```
+
+---
+
+# Session 017
+
+Date
+
+2026-07-17
+
+Roadmap
+
+Commit0017 Release Version 1.0
+
+Summary
+
+Prepared the repository for the Version 1.0.0 subtitle pipeline release.
+
+Changes
+
+Updated
+
+- Package metadata version
+- Runtime package version fallback
+- Changelog release section
+- README release documentation
+- Project state and roadmap completion state
+
+Documentation
+
+- docs/release-1.0.md
+
+Tests
+
+- test_package.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (130 passed)
+
+Commit
+
+created by this commit
+
+```
+chore(release): prepare version 1.0.0
+```

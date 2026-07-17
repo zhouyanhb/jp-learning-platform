@@ -3,7 +3,7 @@
 from importlib.metadata import PackageNotFoundError, version
 
 _DISTRIBUTION_NAME = "jp-learning-platform"
-_FALLBACK_VERSION = "0.1.0"
+_FALLBACK_VERSION = "1.0.0"
 
 
 def _resolve_version() -> str:

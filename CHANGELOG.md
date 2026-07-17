@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-07-17
+
+### Changed
+
+- Released Version 1.0.0 and synchronized package metadata.
+
 ### Added
 
 - Added workflow subtitle writer stage contracts and orchestration tests.
