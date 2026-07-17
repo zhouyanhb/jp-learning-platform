@@ -745,3 +745,55 @@ created by this commit
 ```
 feat(workflow): add subtitle validator stage
 ```
+
+---
+
+# Session 016
+
+Date
+
+2026-07-17
+
+Roadmap
+
+Commit0016 Subtitle Writer
+
+Summary
+
+Implemented the workflow subtitle writer stage for coordinating validated
+subtitle output through an injected writer contract.
+
+Changes
+
+Added
+
+- SubtitleWriteRequest
+- SubtitleWrite
+- SubtitleWriter
+- SubtitleWriterStage
+- SubtitleWriterStageError
+- InvalidSubtitleWriterError
+- MissingSubtitlesToWriteError
+- InvalidSubtitleWriteError
+
+Documentation
+
+- docs/subtitle-writer-stage.md
+
+Tests
+
+- test_subtitle_writer_stage.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (130 passed)
+
+Commit
+
+created by this commit
+
+```
+feat(workflow): add subtitle writer stage
+```

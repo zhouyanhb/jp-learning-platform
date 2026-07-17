@@ -192,3 +192,9 @@ Subtitle validator stage implementation lives in:
 ```
 src/jp_learning_platform/workflow/subtitle_validator_stage.py
 ```
+
+Subtitle writer stage implementation lives in:
+
+```
+src/jp_learning_platform/workflow/subtitle_writer_stage.py
+```

@@ -6,6 +6,7 @@ All notable changes to this project are documented in this file.
 
 ### Added
 
+- Added workflow subtitle writer stage contracts and orchestration tests.
 - Added workflow subtitle validator stage contracts and orchestration tests.
 - Added workflow readability optimizer stage contracts and orchestration tests.
 - Added workflow subtitle merger stage contracts and orchestration tests.

@@ -7,7 +7,7 @@ project:
 repository:
   branch: master
   working_tree: clean
-  remote_status: ahead_of_origin_by_15_commits
+  remote_status: ahead_of_origin_by_16_commits
   runnable: true
 
 architecture:
@@ -42,18 +42,19 @@ roadmap:
     - Commit0013
     - Commit0014
     - Commit0015
+    - Commit0016
 
-  current: Commit0016
+  current: Commit0017
 
-  next: Commit0017
+  next: null
 
 latest_commit:
   hash: created_by_this_commit
-  message: feat(workflow): add subtitle validator stage
+  message: feat(workflow): add subtitle writer stage
 
 tests:
-  total: 122
-  passed: 122
+  total: 130
+  passed: 130
   failed: 0
 
 checks:
@@ -155,6 +156,16 @@ workflow:
       - MissingSubtitlesToValidateError
       - InvalidSubtitleValidationError
       - SubtitleValidationFailedError
+  subtitle_writer_stage:
+    implemented:
+      - SubtitleWriteRequest
+      - SubtitleWrite
+      - SubtitleWriter
+      - SubtitleWriterStage
+      - SubtitleWriterStageError
+      - InvalidSubtitleWriterError
+      - MissingSubtitlesToWriteError
+      - InvalidSubtitleWriteError
 
 infrastructure:
   tool_registry:
@@ -192,14 +203,14 @@ repository_health:
   documentation: synchronized
 
 current_task:
-  name: Commit0016 Subtitle Writer
+  name: Commit0017 Release Version 1.0
 
   deliverables:
-    - Subtitle Writer
+    - Release Version 1.0
 
 next_commit:
-  expected_type: feat
-  expected_scope: workflow
+  expected_type: chore
+  expected_scope: release
 
 rules:
   implement_exactly_one_roadmap_item: true
