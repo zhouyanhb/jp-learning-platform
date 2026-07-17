@@ -102,7 +102,7 @@ Execution Engine
 
 - [x] Commit0013 Subtitle Merger
 
-- [ ] Commit0014 Readability Optimizer
+- [x] Commit0014 Readability Optimizer
 
 - [ ] Commit0015 Subtitle Validator
 

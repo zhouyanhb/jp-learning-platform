@@ -54,6 +54,8 @@ The WhisperX alignment stage is documented in
 The Qwen repair stage is documented in `docs/qwen-repair-stage.md`.
 The subtitle builder stage is documented in `docs/subtitle-builder-stage.md`.
 The subtitle merger stage is documented in `docs/subtitle-merger-stage.md`.
+The readability optimizer stage is documented in
+`docs/readability-optimizer-stage.md`.
 
 ## Infrastructure
 

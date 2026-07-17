@@ -180,3 +180,9 @@ Subtitle merger stage implementation lives in:
 ```
 src/jp_learning_platform/workflow/subtitle_merger_stage.py
 ```
+
+Readability optimizer stage implementation lives in:
+
+```
+src/jp_learning_platform/workflow/readability_optimizer_stage.py
+```

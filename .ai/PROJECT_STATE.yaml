@@ -7,7 +7,7 @@ project:
 repository:
   branch: master
   working_tree: clean
-  remote_status: ahead_of_origin_by_13_commits
+  remote_status: ahead_of_origin_by_14_commits
   runnable: true
 
 architecture:
@@ -40,18 +40,19 @@ roadmap:
     - Commit0011
     - Commit0012
     - Commit0013
+    - Commit0014
 
-  current: Commit0014
+  current: Commit0015
 
-  next: Commit0015
+  next: Commit0016
 
 latest_commit:
   hash: created_by_this_commit
-  message: feat(workflow): add subtitle merger stage
+  message: feat(workflow): add readability optimizer stage
 
 tests:
-  total: 104
-  passed: 104
+  total: 113
+  passed: 113
   failed: 0
 
 checks:
@@ -132,6 +133,16 @@ workflow:
       - InvalidSubtitleMergerError
       - MissingSubtitlesToMergeError
       - InvalidSubtitleMergeError
+  readability_optimizer_stage:
+    implemented:
+      - ReadabilityOptimizationRequest
+      - ReadabilityOptimization
+      - ReadabilityOptimizer
+      - ReadabilityOptimizerStage
+      - ReadabilityOptimizerStageError
+      - InvalidReadabilityOptimizerError
+      - MissingSubtitlesToOptimizeError
+      - InvalidReadabilityOptimizationError
 
 infrastructure:
   tool_registry:
@@ -169,10 +180,10 @@ repository_health:
   documentation: synchronized
 
 current_task:
-  name: Commit0014 Readability Optimizer
+  name: Commit0015 Subtitle Validator
 
   deliverables:
-    - Readability Optimizer
+    - Subtitle Validator
 
 next_commit:
   expected_type: feat

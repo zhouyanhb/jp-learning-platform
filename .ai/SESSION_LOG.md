@@ -640,3 +640,55 @@ created by this commit
 ```
 feat(workflow): add subtitle merger stage
 ```
+
+---
+
+# Session 014
+
+Date
+
+2026-07-17
+
+Roadmap
+
+Commit0014 Readability Optimizer
+
+Summary
+
+Implemented the workflow readability optimizer stage for coordinating subtitle
+readability optimization through an injected optimizer contract.
+
+Changes
+
+Added
+
+- ReadabilityOptimizationRequest
+- ReadabilityOptimization
+- ReadabilityOptimizer
+- ReadabilityOptimizerStage
+- ReadabilityOptimizerStageError
+- InvalidReadabilityOptimizerError
+- MissingSubtitlesToOptimizeError
+- InvalidReadabilityOptimizationError
+
+Documentation
+
+- docs/readability-optimizer-stage.md
+
+Tests
+
+- test_readability_optimizer_stage.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (113 passed)
+
+Commit
+
+created by this commit
+
+```
+feat(workflow): add readability optimizer stage
+```

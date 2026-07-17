@@ -6,6 +6,7 @@ All notable changes to this project are documented in this file.
 
 ### Added
 
+- Added workflow readability optimizer stage contracts and orchestration tests.
 - Added workflow subtitle merger stage contracts and orchestration tests.
 - Added workflow subtitle builder stage contracts and orchestration tests.
 - Added workflow Qwen repair stage contracts and orchestration tests.

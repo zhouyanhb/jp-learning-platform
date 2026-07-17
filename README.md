@@ -76,6 +76,11 @@ Subtitle builder stage contracts are documented in
 Subtitle merger stage contracts are documented in
 `docs/subtitle-merger-stage.md`.
 
+## Readability Optimizer Stage
+
+Readability optimizer stage contracts are documented in
+`docs/readability-optimizer-stage.md`.
+
 ## Tool Registry
 
 External tool adapter resolution is documented in `docs/tool-registry.md`.
