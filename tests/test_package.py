@@ -5,7 +5,7 @@ from pathlib import Path
 import tomllib
 
 import jp_learning_platform
-from jp_learning_platform.__main__ import main
+from jp_learning_platform.__main__ import build_parser, main
 
 
 def test_package_exposes_release_version() -> None:
@@ -32,3 +32,9 @@ def test_module_entrypoint_reports_version() -> None:
 
     assert main(("--version",), stdout=output) == 0
     assert output.getvalue() == "jp-learning-platform 1.0.0\n"
+
+
+def test_transcribe_command_defaults_output_directory() -> None:
+    args = build_parser().parse_args(("transcribe", "audio.mp3"))
+
+    assert args.output_dir == Path("output")

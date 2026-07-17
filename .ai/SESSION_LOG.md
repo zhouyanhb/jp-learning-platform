@@ -889,3 +889,59 @@ created by this commit
 ```
 fix(cli): make package entrypoint runnable
 ```
+
+---
+
+# Session 019
+
+Date
+
+2026-07-17
+
+Roadmap
+
+Maintenance Local Audio SRT CLI
+
+Summary
+
+Implemented the first-stage local command line flow for generating SRT files
+from a single audio file or a folder of audio files.
+
+Changes
+
+Added
+
+- Local audio input discovery
+- Subtitle pipeline request and result contracts
+- Local audio-to-SRT workflow runner
+- faster-whisper transcription adapter
+- Word-aware subtitle builder adapter
+- UTF-8 SRT subtitle writer adapter
+- `transcribe` CLI command with `output/` as the default output directory
+
+Documentation
+
+- docs/local-audio-srt-cli.md
+- README.md
+- docs/architecture.md
+
+Tests
+
+- test_srt_subtitle_writer.py
+- test_word_subtitle_builder.py
+- test_subtitle_pipeline_runner.py
+- test_package.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (141 passed)
+
+Commit
+
+created by this commit
+
+```
+feat(cli): add local audio srt generation
+```

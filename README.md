@@ -28,16 +28,28 @@ source .venv/bin/activate
 python -m pip install -e ".[dev]"
 ```
 
+Install ASR support when generating subtitles from audio:
+
+```bash
+python -m pip install -e ".[asr]"
+```
+
 ## Run
 
 ```bash
 python -m jp_learning_platform
 python -m jp_learning_platform status
 python -m jp_learning_platform --version
+python -m jp_learning_platform transcribe audio.mp3
+python -m jp_learning_platform transcribe ./audios
 ```
 
 The entrypoint reports the Version 1.0 subtitle pipeline status. External SDK
 adapters are supplied through the tool registry and plugin system.
+
+The `transcribe` command accepts either one audio file or a folder containing
+audio files and writes `.srt` files to `output/` by default. Use `--output-dir`
+only when a custom output directory is needed.
 
 ## Checks
 
@@ -63,6 +75,11 @@ Domain factories, validators, and repository boundaries are documented in
 ## Workflow Runtime
 
 Workflow orchestration primitives are documented in `docs/workflow-runtime.md`.
+
+## Local Audio SRT CLI
+
+Local audio and folder transcription to SRT is documented in
+`docs/local-audio-srt-cli.md`.
 
 ## Whisper Stage
 

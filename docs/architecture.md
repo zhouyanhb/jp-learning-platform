@@ -48,6 +48,7 @@ Workflow code coordinates execution order; validation and transformation rules
 belong in the domain layer.
 
 The workflow runtime primitives are documented in `docs/workflow-runtime.md`.
+The local audio SRT CLI runner is documented in `docs/local-audio-srt-cli.md`.
 The Whisper transcription stage is documented in `docs/whisper-stage.md`.
 The WhisperX alignment stage is documented in
 `docs/whisperx-alignment-stage.md`.
@@ -67,6 +68,7 @@ into project contracts without leaking third-party APIs into the domain.
 Tool adapter resolution is handled by the registry documented in
 `docs/tool-registry.md`.
 Local audio loading is documented in `docs/audio-loader.md`.
+Local SRT writing is implemented by the SRT subtitle writer adapter.
 
 ## Plugins
 

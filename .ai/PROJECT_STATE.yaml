@@ -8,7 +8,7 @@ project:
 repository:
   branch: master
   working_tree: clean
-  remote_status: ahead_of_origin_by_18_commits
+  remote_status: ahead_of_origin_by_1_commit
   runnable: true
 
 architecture:
@@ -52,11 +52,11 @@ roadmap:
 
 latest_commit:
   hash: created_by_this_commit
-  message: fix(cli): make package entrypoint runnable
+  message: feat(cli): add local audio srt generation
 
 tests:
-  total: 131
-  passed: 131
+  total: 141
+  passed: 141
   failed: 0
 
 checks:
@@ -88,6 +88,11 @@ workflow:
       - Pipeline
       - Workflow
       - ExecutionEngine
+  subtitle_pipeline_runner:
+    implemented:
+      - SubtitlePipelineRunner
+      - SubtitlePipelineRunnerError
+      - DuplicateSubtitleOutputError
   whisper_stage:
     implemented:
       - WhisperTranscriptionRequest
@@ -186,6 +191,25 @@ infrastructure:
       - AudioFileNotFoundError
       - UnsupportedAudioFormatError
       - EmptyAudioFileError
+  transcription:
+    implemented:
+      - FasterWhisperTranscriber
+      - FasterWhisperDependencyError
+  subtitle_adapters:
+    implemented:
+      - WordSubtitleBuilder
+      - SrtSubtitleWriter
+
+application:
+  subtitle_pipeline:
+    implemented:
+      - SubtitlePipelineRequest
+      - SubtitlePipelineResult
+      - SubtitlePipelineItemResult
+      - AudioInputDiscovery
+      - SubtitlePipelineInputError
+      - InputPathNotFoundError
+      - NoAudioInputsFoundError
 
 plugins:
   system:

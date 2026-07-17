@@ -8,6 +8,11 @@ from jp_learning_platform.workflow.runtime import (
     Workflow,
     create_pipeline,
 )
+from jp_learning_platform.workflow.subtitle_pipeline_runner import (
+    DuplicateSubtitleOutputError,
+    SubtitlePipelineRunner,
+    SubtitlePipelineRunnerError,
+)
 from jp_learning_platform.workflow.readability_optimizer_stage import (
     InvalidReadabilityOptimizationError,
     InvalidReadabilityOptimizerError,
@@ -99,6 +104,7 @@ from jp_learning_platform.workflow.whisperx_alignment_stage import (
 
 __all__ = [
     "ExecutionEngine",
+    "DuplicateSubtitleOutputError",
     "InvalidQwenRepairError",
     "InvalidQwenRepairerError",
     "InvalidReadabilityOptimizationError",
@@ -151,6 +157,8 @@ __all__ = [
     "SubtitleMerger",
     "SubtitleMergerStage",
     "SubtitleMergerStageError",
+    "SubtitlePipelineRunner",
+    "SubtitlePipelineRunnerError",
     "SubtitleValidation",
     "SubtitleValidationFailedError",
     "SubtitleValidationRequest",

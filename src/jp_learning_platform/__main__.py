@@ -4,10 +4,29 @@ from __future__ import annotations
 
 from argparse import ArgumentParser, Namespace
 from collections.abc import Sequence
+from pathlib import Path
 import sys
 from typing import TextIO
 
 from jp_learning_platform import __version__
+from jp_learning_platform.application import (
+    DEFAULT_OUTPUT_DIRECTORY,
+    SubtitlePipelineInputError,
+    SubtitlePipelineRequest,
+)
+from jp_learning_platform.infrastructure import (
+    AudioLoader,
+    AudioLoaderError,
+    FasterWhisperDependencyError,
+    FasterWhisperTranscriber,
+    SrtSubtitleWriter,
+    WordSubtitleBuilder,
+)
+from jp_learning_platform.workflow import (
+    DuplicateSubtitleOutputError,
+    SubtitlePipelineRunner,
+    SubtitlePipelineRunnerError,
+)
 
 _PIPELINE_STAGES = (
     "Audio",
@@ -38,6 +57,21 @@ def build_parser() -> ArgumentParser:
         "status",
         help="Show Version 1.0 subtitle pipeline status.",
     )
+    transcribe_parser = subparsers.add_parser(
+        "transcribe",
+        help="Generate SRT subtitles for an audio file or folder.",
+    )
+    transcribe_parser.add_argument(
+        "input_path",
+        type=Path,
+        help="Audio file or folder to transcribe.",
+    )
+    transcribe_parser.add_argument(
+        "--output-dir",
+        default=DEFAULT_OUTPUT_DIRECTORY,
+        type=Path,
+        help="Directory for generated SRT files. Defaults to output.",
+    )
 
     return parser
 
@@ -57,10 +91,47 @@ def _write_status(output: TextIO) -> None:
     )
 
 
-def _run_command(args: Namespace, output: TextIO) -> int:
+def _run_transcribe(args: Namespace, output: TextIO, error_output: TextIO) -> int:
+    writer = SrtSubtitleWriter(output_directory=args.output_dir)
+    runner = SubtitlePipelineRunner(
+        audio_loader=AudioLoader(),
+        transcriber=FasterWhisperTranscriber(),
+        builder=WordSubtitleBuilder(),
+        writer=writer,
+    )
+
+    try:
+        result = runner.run(
+            SubtitlePipelineRequest(
+                input_path=args.input_path,
+                output_directory=args.output_dir,
+            )
+        )
+    except (
+        AudioLoaderError,
+        DuplicateSubtitleOutputError,
+        FasterWhisperDependencyError,
+        RuntimeError,
+        SubtitlePipelineInputError,
+        SubtitlePipelineRunnerError,
+        ValueError,
+    ) as error:
+        error_output.write(f"{error}\n")
+        return 1
+
+    for output_path in result.output_paths:
+        output.write(f"{output_path}\n")
+
+    return 0
+
+
+def _run_command(args: Namespace, output: TextIO, error_output: TextIO) -> int:
     if args.version:
         _write_version(output)
         return 0
+
+    if args.command == "transcribe":
+        return _run_transcribe(args, output, error_output)
 
     if args.command in {None, "status"}:
         _write_status(output)
@@ -69,11 +140,16 @@ def _run_command(args: Namespace, output: TextIO) -> int:
     return 0
 
 
-def main(argv: Sequence[str] | None = None, stdout: TextIO | None = None) -> int:
+def main(
+    argv: Sequence[str] | None = None,
+    stdout: TextIO | None = None,
+    stderr: TextIO | None = None,
+) -> int:
     output = stdout if stdout is not None else sys.stdout
+    error_output = stderr if stderr is not None else sys.stderr
     parser = build_parser()
     args = parser.parse_args(argv)
-    return _run_command(args, output)
+    return _run_command(args, output, error_output)
 
 
 if __name__ == "__main__":

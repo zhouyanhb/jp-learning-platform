@@ -133,6 +133,12 @@ Workflow runtime implementation lives in:
 src/jp_learning_platform/workflow/runtime.py
 ```
 
+Local audio SRT pipeline runner implementation lives in:
+
+```
+src/jp_learning_platform/workflow/subtitle_pipeline_runner.py
+```
+
 Tool registry implementation lives in:
 
 ```
@@ -149,6 +155,24 @@ Audio loader implementation lives in:
 
 ```
 src/jp_learning_platform/infrastructure/audio_loader.py
+```
+
+Faster Whisper transcription adapter implementation lives in:
+
+```
+src/jp_learning_platform/infrastructure/faster_whisper_transcriber.py
+```
+
+Word-aware subtitle builder adapter implementation lives in:
+
+```
+src/jp_learning_platform/infrastructure/word_subtitle_builder.py
+```
+
+SRT subtitle writer adapter implementation lives in:
+
+```
+src/jp_learning_platform/infrastructure/srt_subtitle_writer.py
 ```
 
 Whisper stage implementation lives in:

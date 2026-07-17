@@ -4,6 +4,11 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Added local audio-to-SRT CLI support for single audio files and folders with
+  `output/` as the default output directory.
+
 ### Fixed
 
 - Made the package entrypoint report release status and version output when run
