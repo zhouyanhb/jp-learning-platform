@@ -57,6 +57,10 @@ Workflow orchestration primitives are documented in `docs/workflow-runtime.md`.
 
 External tool adapter resolution is documented in `docs/tool-registry.md`.
 
+## Plugin System
+
+Optional capability registration is documented in `docs/plugin-system.md`.
+
 ## Roadmap
 
 The implementation roadmap is maintained in `.ai/ROADMAP.md`.

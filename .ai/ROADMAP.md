@@ -84,7 +84,7 @@ Execution Engine
 
 ---
 
-- [ ] Commit0007 Plugin System
+- [x] Commit0007 Plugin System
 
 ---
 

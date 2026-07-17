@@ -1,3 +1,23 @@
 """Plugin registration layer for optional capabilities."""
 
-__all__: list[str] = []
+from jp_learning_platform.plugins.system import (
+    DuplicatePluginError,
+    Plugin,
+    PluginContext,
+    PluginMetadata,
+    PluginNotFoundError,
+    PluginRegistration,
+    PluginRegistry,
+    PluginRegistryError,
+)
+
+__all__ = [
+    "DuplicatePluginError",
+    "Plugin",
+    "PluginContext",
+    "PluginMetadata",
+    "PluginNotFoundError",
+    "PluginRegistration",
+    "PluginRegistry",
+    "PluginRegistryError",
+]

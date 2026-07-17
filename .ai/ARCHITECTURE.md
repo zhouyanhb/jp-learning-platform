@@ -138,3 +138,9 @@ Tool registry implementation lives in:
 ```
 src/jp_learning_platform/infrastructure/tool_registry.py
 ```
+
+Plugin system implementation lives in:
+
+```
+src/jp_learning_platform/plugins/system.py
+```

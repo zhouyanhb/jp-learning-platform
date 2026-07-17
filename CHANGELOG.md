@@ -6,6 +6,9 @@ All notable changes to this project are documented in this file.
 
 ### Added
 
+- Added plugin system contracts for plugin metadata, activation, registration,
+  context, and registry errors.
+- Added plugin system tests and documentation.
 - Added infrastructure tool registry for resolving external tool adapters.
 - Added tool registry tests and documentation.
 - Added workflow runtime primitives for stages, pipelines, workflows, stage

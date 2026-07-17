@@ -62,6 +62,7 @@ Tool adapter resolution is handled by the registry documented in
 Plugins are optional capabilities. They register implementations through public
 interfaces and must not change core workflow behavior by side effect. The
 workflow layer depends on contracts, not concrete plugin implementations.
+Plugin registration is documented in `docs/plugin-system.md`.
 
 ## Repository Layout
 

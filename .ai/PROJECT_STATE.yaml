@@ -7,7 +7,7 @@ project:
 repository:
   branch: master
   working_tree: clean
-  remote_status: ahead_of_origin_by_6_commits
+  remote_status: ahead_of_origin_by_7_commits
   runnable: true
 
 architecture:
@@ -33,18 +33,19 @@ roadmap:
     - Commit0004
     - Commit0005
     - Commit0006
+    - Commit0007
 
-  current: Commit0007
+  current: Commit0008
 
-  next: Commit0008
+  next: Commit0009
 
 latest_commit:
   hash: created_by_this_commit
-  message: feat(infrastructure): add tool registry
+  message: feat(plugins): add plugin system
 
 tests:
-  total: 43
-  passed: 43
+  total: 52
+  passed: 52
   failed: 0
 
 checks:
@@ -86,20 +87,32 @@ infrastructure:
       - DuplicateToolError
       - ToolNotFoundError
 
+plugins:
+  system:
+    implemented:
+      - PluginMetadata
+      - PluginRegistration
+      - PluginContext
+      - Plugin
+      - PluginRegistry
+      - PluginRegistryError
+      - DuplicatePluginError
+      - PluginNotFoundError
+
 repository_health:
   build: healthy
   tests: healthy
   documentation: synchronized
 
 current_task:
-  name: Commit0007 Plugin System
+  name: Commit0008 Audio Loader
 
   deliverables:
-    - Plugin System
+    - Audio Loader
 
 next_commit:
   expected_type: feat
-  expected_scope: plugins
+  expected_scope: infrastructure
 
 rules:
   implement_exactly_one_roadmap_item: true
