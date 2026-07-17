@@ -7,7 +7,7 @@ project:
 repository:
   branch: master
   working_tree: clean
-  remote_status: ahead_of_origin_by_11_commits
+  remote_status: ahead_of_origin_by_12_commits
   runnable: true
 
 architecture:
@@ -38,18 +38,19 @@ roadmap:
     - Commit0009
     - Commit0010
     - Commit0011
+    - Commit0012
 
-  current: Commit0012
+  current: Commit0013
 
-  next: Commit0013
+  next: Commit0014
 
 latest_commit:
   hash: created_by_this_commit
-  message: feat(workflow): add qwen repair stage
+  message: feat(workflow): add subtitle builder stage
 
 tests:
-  total: 86
-  passed: 86
+  total: 95
+  passed: 95
   failed: 0
 
 checks:
@@ -110,6 +111,16 @@ workflow:
       - InvalidQwenRepairerError
       - MissingAlignedSegmentsError
       - InvalidQwenRepairError
+  subtitle_builder_stage:
+    implemented:
+      - SubtitleBuildRequest
+      - SubtitleBuild
+      - SubtitleBuilder
+      - SubtitleBuilderStage
+      - SubtitleBuilderStageError
+      - InvalidSubtitleBuilderError
+      - MissingSubtitleBuildSegmentsError
+      - InvalidSubtitleBuildError
 
 infrastructure:
   tool_registry:
@@ -147,10 +158,10 @@ repository_health:
   documentation: synchronized
 
 current_task:
-  name: Commit0012 Subtitle Builder
+  name: Commit0013 Subtitle Merger
 
   deliverables:
-    - Subtitle Builder
+    - Subtitle Merger
 
 next_commit:
   expected_type: feat

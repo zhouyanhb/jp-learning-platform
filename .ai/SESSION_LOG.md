@@ -535,3 +535,56 @@ created by this commit
 ```
 feat(workflow): add qwen repair stage
 ```
+
+---
+
+# Session 012
+
+Date
+
+2026-07-17
+
+Roadmap
+
+Commit0012 Subtitle Builder
+
+Summary
+
+Implemented the workflow subtitle builder stage for coordinating subtitle
+construction from repaired transcript segments through an injected builder
+contract.
+
+Changes
+
+Added
+
+- SubtitleBuildRequest
+- SubtitleBuild
+- SubtitleBuilder
+- SubtitleBuilderStage
+- SubtitleBuilderStageError
+- InvalidSubtitleBuilderError
+- MissingSubtitleBuildSegmentsError
+- InvalidSubtitleBuildError
+
+Documentation
+
+- docs/subtitle-builder-stage.md
+
+Tests
+
+- test_subtitle_builder_stage.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (95 passed)
+
+Commit
+
+created by this commit
+
+```
+feat(workflow): add subtitle builder stage
+```

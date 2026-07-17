@@ -168,3 +168,9 @@ Qwen repair stage implementation lives in:
 ```
 src/jp_learning_platform/workflow/qwen_repair_stage.py
 ```
+
+Subtitle builder stage implementation lives in:
+
+```
+src/jp_learning_platform/workflow/subtitle_builder_stage.py
+```

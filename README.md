@@ -66,6 +66,11 @@ WhisperX alignment stage contracts are documented in
 
 Qwen repair stage contracts are documented in `docs/qwen-repair-stage.md`.
 
+## Subtitle Builder Stage
+
+Subtitle builder stage contracts are documented in
+`docs/subtitle-builder-stage.md`.
+
 ## Tool Registry
 
 External tool adapter resolution is documented in `docs/tool-registry.md`.

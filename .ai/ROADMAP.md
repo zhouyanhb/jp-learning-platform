@@ -98,7 +98,7 @@ Execution Engine
 
 - [x] Commit0011 Qwen Repair
 
-- [ ] Commit0012 Subtitle Builder
+- [x] Commit0012 Subtitle Builder
 
 - [ ] Commit0013 Subtitle Merger
 
