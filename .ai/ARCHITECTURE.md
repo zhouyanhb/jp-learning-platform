@@ -132,3 +132,9 @@ Workflow runtime implementation lives in:
 ```
 src/jp_learning_platform/workflow/runtime.py
 ```
+
+Tool registry implementation lives in:
+
+```
+src/jp_learning_platform/infrastructure/tool_registry.py
+```

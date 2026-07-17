@@ -54,6 +54,8 @@ The workflow runtime primitives are documented in `docs/workflow-runtime.md`.
 Infrastructure wraps third-party libraries and processes such as Whisper,
 WhisperX, Qwen, and FFmpeg. Adapters translate external SDK inputs and outputs
 into project contracts without leaking third-party APIs into the domain.
+Tool adapter resolution is handled by the registry documented in
+`docs/tool-registry.md`.
 
 ## Plugins
 

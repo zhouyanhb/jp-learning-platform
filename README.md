@@ -53,6 +53,10 @@ Domain factories, validators, and repository boundaries are documented in
 
 Workflow orchestration primitives are documented in `docs/workflow-runtime.md`.
 
+## Tool Registry
+
+External tool adapter resolution is documented in `docs/tool-registry.md`.
+
 ## Roadmap
 
 The implementation roadmap is maintained in `.ai/ROADMAP.md`.

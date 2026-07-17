@@ -6,6 +6,8 @@ All notable changes to this project are documented in this file.
 
 ### Added
 
+- Added infrastructure tool registry for resolving external tool adapters.
+- Added tool registry tests and documentation.
 - Added workflow runtime primitives for stages, pipelines, workflows, stage
   results, and ordered execution.
 - Added workflow runtime tests and documentation.

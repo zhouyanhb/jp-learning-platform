@@ -7,7 +7,7 @@ project:
 repository:
   branch: master
   working_tree: clean
-  remote_status: ahead_of_origin_by_5_commits
+  remote_status: ahead_of_origin_by_6_commits
   runnable: true
 
 architecture:
@@ -32,18 +32,19 @@ roadmap:
     - Commit0003
     - Commit0004
     - Commit0005
+    - Commit0006
 
-  current: Commit0006
+  current: Commit0007
 
-  next: Commit0007
+  next: Commit0008
 
 latest_commit:
   hash: created_by_this_commit
-  message: feat(workflow): add workflow runtime
+  message: feat(infrastructure): add tool registry
 
 tests:
-  total: 36
-  passed: 36
+  total: 43
+  passed: 43
   failed: 0
 
 checks:
@@ -76,20 +77,29 @@ workflow:
       - Workflow
       - ExecutionEngine
 
+infrastructure:
+  tool_registry:
+    implemented:
+      - RegisteredTool
+      - ToolRegistry
+      - ToolRegistryError
+      - DuplicateToolError
+      - ToolNotFoundError
+
 repository_health:
   build: healthy
   tests: healthy
   documentation: synchronized
 
 current_task:
-  name: Commit0006 Tool Registry
+  name: Commit0007 Plugin System
 
   deliverables:
-    - Tool Registry
+    - Plugin System
 
 next_commit:
   expected_type: feat
-  expected_scope: infrastructure
+  expected_scope: plugins
 
 rules:
   implement_exactly_one_roadmap_item: true

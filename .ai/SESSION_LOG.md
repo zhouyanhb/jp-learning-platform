@@ -229,3 +229,52 @@ created by this commit
 ```
 feat(workflow): add workflow runtime
 ```
+
+---
+
+# Session 006
+
+Date
+
+2026-07-17
+
+Roadmap
+
+Commit0006 Tool Registry
+
+Summary
+
+Implemented the infrastructure tool registry for resolving external tool
+adapters by name.
+
+Changes
+
+Added
+
+- RegisteredTool
+- ToolRegistry
+- ToolRegistryError
+- DuplicateToolError
+- ToolNotFoundError
+
+Documentation
+
+- docs/tool-registry.md
+
+Tests
+
+- test_tool_registry.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (43 passed)
+
+Commit
+
+created by this commit
+
+```
+feat(infrastructure): add tool registry
+```
