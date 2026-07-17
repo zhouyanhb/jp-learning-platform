@@ -56,6 +56,7 @@ The subtitle builder stage is documented in `docs/subtitle-builder-stage.md`.
 The subtitle merger stage is documented in `docs/subtitle-merger-stage.md`.
 The readability optimizer stage is documented in
 `docs/readability-optimizer-stage.md`.
+The subtitle validator stage is documented in `docs/subtitle-validator-stage.md`.
 
 ## Infrastructure
 

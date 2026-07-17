@@ -104,7 +104,7 @@ Execution Engine
 
 - [x] Commit0014 Readability Optimizer
 
-- [ ] Commit0015 Subtitle Validator
+- [x] Commit0015 Subtitle Validator
 
 - [ ] Commit0016 Subtitle Writer
 

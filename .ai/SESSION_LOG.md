@@ -692,3 +692,56 @@ created by this commit
 ```
 feat(workflow): add readability optimizer stage
 ```
+
+---
+
+# Session 015
+
+Date
+
+2026-07-17
+
+Roadmap
+
+Commit0015 Subtitle Validator
+
+Summary
+
+Implemented the workflow subtitle validator stage for coordinating optimized
+subtitle validation through an injected validator contract.
+
+Changes
+
+Added
+
+- SubtitleValidationRequest
+- SubtitleValidation
+- SubtitleValidator
+- SubtitleValidatorStage
+- SubtitleValidatorStageError
+- InvalidSubtitleValidatorError
+- MissingSubtitlesToValidateError
+- InvalidSubtitleValidationError
+- SubtitleValidationFailedError
+
+Documentation
+
+- docs/subtitle-validator-stage.md
+
+Tests
+
+- test_subtitle_validator_stage.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (122 passed)
+
+Commit
+
+created by this commit
+
+```
+feat(workflow): add subtitle validator stage
+```
