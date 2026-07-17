@@ -588,3 +588,55 @@ created by this commit
 ```
 feat(workflow): add subtitle builder stage
 ```
+
+---
+
+# Session 013
+
+Date
+
+2026-07-17
+
+Roadmap
+
+Commit0013 Subtitle Merger
+
+Summary
+
+Implemented the workflow subtitle merger stage for coordinating built subtitle
+merging through an injected merger contract.
+
+Changes
+
+Added
+
+- SubtitleMergeRequest
+- SubtitleMerge
+- SubtitleMerger
+- SubtitleMergerStage
+- SubtitleMergerStageError
+- InvalidSubtitleMergerError
+- MissingSubtitlesToMergeError
+- InvalidSubtitleMergeError
+
+Documentation
+
+- docs/subtitle-merger-stage.md
+
+Tests
+
+- test_subtitle_merger_stage.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (104 passed)
+
+Commit
+
+created by this commit
+
+```
+feat(workflow): add subtitle merger stage
+```

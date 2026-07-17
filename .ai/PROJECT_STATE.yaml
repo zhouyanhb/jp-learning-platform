@@ -7,7 +7,7 @@ project:
 repository:
   branch: master
   working_tree: clean
-  remote_status: ahead_of_origin_by_12_commits
+  remote_status: ahead_of_origin_by_13_commits
   runnable: true
 
 architecture:
@@ -39,18 +39,19 @@ roadmap:
     - Commit0010
     - Commit0011
     - Commit0012
+    - Commit0013
 
-  current: Commit0013
+  current: Commit0014
 
-  next: Commit0014
+  next: Commit0015
 
 latest_commit:
   hash: created_by_this_commit
-  message: feat(workflow): add subtitle builder stage
+  message: feat(workflow): add subtitle merger stage
 
 tests:
-  total: 95
-  passed: 95
+  total: 104
+  passed: 104
   failed: 0
 
 checks:
@@ -121,6 +122,16 @@ workflow:
       - InvalidSubtitleBuilderError
       - MissingSubtitleBuildSegmentsError
       - InvalidSubtitleBuildError
+  subtitle_merger_stage:
+    implemented:
+      - SubtitleMergeRequest
+      - SubtitleMerge
+      - SubtitleMerger
+      - SubtitleMergerStage
+      - SubtitleMergerStageError
+      - InvalidSubtitleMergerError
+      - MissingSubtitlesToMergeError
+      - InvalidSubtitleMergeError
 
 infrastructure:
   tool_registry:
@@ -158,10 +169,10 @@ repository_health:
   documentation: synchronized
 
 current_task:
-  name: Commit0013 Subtitle Merger
+  name: Commit0014 Readability Optimizer
 
   deliverables:
-    - Subtitle Merger
+    - Readability Optimizer
 
 next_commit:
   expected_type: feat

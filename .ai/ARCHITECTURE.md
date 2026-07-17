@@ -174,3 +174,9 @@ Subtitle builder stage implementation lives in:
 ```
 src/jp_learning_platform/workflow/subtitle_builder_stage.py
 ```
+
+Subtitle merger stage implementation lives in:
+
+```
+src/jp_learning_platform/workflow/subtitle_merger_stage.py
+```

@@ -71,6 +71,11 @@ Qwen repair stage contracts are documented in `docs/qwen-repair-stage.md`.
 Subtitle builder stage contracts are documented in
 `docs/subtitle-builder-stage.md`.
 
+## Subtitle Merger Stage
+
+Subtitle merger stage contracts are documented in
+`docs/subtitle-merger-stage.md`.
+
 ## Tool Registry
 
 External tool adapter resolution is documented in `docs/tool-registry.md`.
