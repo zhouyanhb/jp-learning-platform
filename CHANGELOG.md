@@ -4,6 +4,11 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- Made the package entrypoint report release status and version output when run
+  directly.
+
 ## [1.0.0] - 2026-07-17
 
 ### Changed

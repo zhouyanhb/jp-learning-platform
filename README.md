@@ -32,7 +32,12 @@ python -m pip install -e ".[dev]"
 
 ```bash
 python -m jp_learning_platform
+python -m jp_learning_platform status
+python -m jp_learning_platform --version
 ```
+
+The entrypoint reports the Version 1.0 subtitle pipeline status. External SDK
+adapters are supplied through the tool registry and plugin system.
 
 ## Checks
 

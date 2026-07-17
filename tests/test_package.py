@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from io import StringIO
 from pathlib import Path
 import tomllib
 
@@ -16,4 +17,18 @@ def test_package_exposes_release_version() -> None:
 
 
 def test_module_entrypoint_returns_success() -> None:
-    assert main() == 0
+    output = StringIO()
+
+    assert main((), stdout=output) == 0
+
+    result = output.getvalue()
+    assert "jp-learning-platform 1.0.0" in result
+    assert "Version 1.0 subtitle pipeline" in result
+    assert "Subtitle Writer" in result
+
+
+def test_module_entrypoint_reports_version() -> None:
+    output = StringIO()
+
+    assert main(("--version",), stdout=output) == 0
+    assert output.getvalue() == "jp-learning-platform 1.0.0\n"

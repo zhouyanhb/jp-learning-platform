@@ -845,3 +845,47 @@ created by this commit
 ```
 chore(release): prepare version 1.0.0
 ```
+
+---
+
+# Session 018
+
+Date
+
+2026-07-17
+
+Roadmap
+
+Maintenance CLI Runnable Entrypoint
+
+Summary
+
+Made the package entrypoint visibly runnable by reporting release status and
+version output from the command line.
+
+Changes
+
+Updated
+
+- Package command line entrypoint
+- README run instructions
+- Changelog unreleased fixes
+- Project state
+
+Tests
+
+- test_package.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (131 passed)
+
+Commit
+
+created by this commit
+
+```
+fix(cli): make package entrypoint runnable
+```

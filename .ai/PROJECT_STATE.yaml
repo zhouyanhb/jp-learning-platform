@@ -8,7 +8,7 @@ project:
 repository:
   branch: master
   working_tree: clean
-  remote_status: ahead_of_origin_by_17_commits
+  remote_status: ahead_of_origin_by_18_commits
   runnable: true
 
 architecture:
@@ -52,11 +52,11 @@ roadmap:
 
 latest_commit:
   hash: created_by_this_commit
-  message: chore(release): prepare version 1.0.0
+  message: fix(cli): make package entrypoint runnable
 
 tests:
-  total: 130
-  passed: 130
+  total: 131
+  passed: 131
   failed: 0
 
 checks:
