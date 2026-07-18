@@ -29,6 +29,8 @@ All notable changes to this project are documented in this file.
 
 - Made the package entrypoint report release status and version output when run
   directly.
+- Passed pyannote diarization tokens with `use_auth_token` first while keeping
+  a `token` fallback for newer pyannote APIs.
 
 ## [1.0.0] - 2026-07-17
 

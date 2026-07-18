@@ -1393,3 +1393,46 @@ created by this commit
 ```
 feat(diarization): add pyannote speaker labels
 ```
+
+---
+
+# Session 028
+
+Date
+
+2026-07-18
+
+Roadmap
+
+Maintenance Pyannote Auth Token Parameter
+
+Summary
+
+Updated pyannote pipeline loading to pass Hugging Face tokens with
+`use_auth_token` first while retaining a `token` fallback for pyannote versions
+that require the newer parameter name.
+
+Changes
+
+Updated
+
+- Pyannote pipeline loading authentication parameter order
+- Changelog and project state maintenance records
+
+Tests
+
+- test_pyannote_diarizer.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (182 passed)
+
+Commit
+
+created by this commit
+
+```
+fix(diarization): pass pyannote token as use_auth_token
+```

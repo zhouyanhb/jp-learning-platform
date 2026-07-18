@@ -169,9 +169,9 @@ def _load_pyannote_pipeline(
     token: str,
 ) -> Any:
     try:
-        return pipeline_class.from_pretrained(model_name, token=token)
-    except TypeError:
         return pipeline_class.from_pretrained(model_name, use_auth_token=token)
+    except TypeError:
+        return pipeline_class.from_pretrained(model_name, token=token)
 
 
 def _speaker_turns_from_diarization(diarization: Any) -> tuple[SpeakerTurn, ...]:

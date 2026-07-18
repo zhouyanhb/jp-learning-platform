@@ -12,6 +12,9 @@ from jp_learning_platform.infrastructure import (
     PyannoteSpeakerDiarizer,
     SpeakerTurn,
 )
+from jp_learning_platform.infrastructure.pyannote_diarizer import (
+    _load_pyannote_pipeline,
+)
 from jp_learning_platform.workflow import (
     WhisperXAlignment,
     WhisperXAlignmentRequest,
@@ -44,6 +47,27 @@ class FakePipeline:
     def __call__(self, audio_path: str) -> object:
         self.audio_paths.append(audio_path)
         return self.diarization
+
+
+class RecordingPipelineClass:
+    calls: list[tuple[str, dict[str, str]]] = []
+
+    @classmethod
+    def from_pretrained(cls, model_name: str, **kwargs: str) -> object:
+        cls.calls.append((model_name, kwargs))
+        return object()
+
+
+class TokenOnlyPipelineClass:
+    calls: list[tuple[str, dict[str, str]]] = []
+
+    @classmethod
+    def from_pretrained(cls, model_name: str, **kwargs: str) -> object:
+        cls.calls.append((model_name, kwargs))
+        if "use_auth_token" in kwargs:
+            raise TypeError("unexpected use_auth_token")
+
+        return object()
 
 
 @dataclass(frozen=True, slots=True)
@@ -96,6 +120,35 @@ def _diarizer(diarization: FakeDiarization) -> PyannoteSpeakerDiarizer:
     diarizer = PyannoteSpeakerDiarizer(auth_token="token")
     diarizer._pipeline = FakePipeline(diarization=diarization, audio_paths=[])
     return diarizer
+
+
+def test_load_pyannote_pipeline_passes_token_as_use_auth_token() -> None:
+    RecordingPipelineClass.calls = []
+
+    _load_pyannote_pipeline(
+        RecordingPipelineClass,
+        model_name="pyannote/speaker-diarization-3.1",
+        token="hf-token",
+    )
+
+    assert RecordingPipelineClass.calls == [
+        ("pyannote/speaker-diarization-3.1", {"use_auth_token": "hf-token"})
+    ]
+
+
+def test_load_pyannote_pipeline_falls_back_to_token_parameter() -> None:
+    TokenOnlyPipelineClass.calls = []
+
+    _load_pyannote_pipeline(
+        TokenOnlyPipelineClass,
+        model_name="pyannote/speaker-diarization-3.1",
+        token="hf-token",
+    )
+
+    assert TokenOnlyPipelineClass.calls == [
+        ("pyannote/speaker-diarization-3.1", {"use_auth_token": "hf-token"}),
+        ("pyannote/speaker-diarization-3.1", {"token": "hf-token"}),
+    ]
 
 
 def test_pyannote_speaker_diarizer_accepts_pipeline_output_wrapper(
