@@ -73,6 +73,27 @@ Install the optional alignment dependency first:
 python -m pip install -e ".[align]"
 ```
 
+Enable pyannote.audio speaker diarization when speaker identifiers should be
+assigned automatically:
+
+```bash
+python -m jp_learning_platform transcribe audio.mp3 --enable-diarization
+```
+
+Install the optional diarization dependency and provide a Hugging Face token
+accepted for the pyannote speaker diarization model:
+
+```bash
+python -m pip install -e ".[diarization]"
+HF_TOKEN=hf_... python -m jp_learning_platform transcribe audio.mp3 --enable-diarization
+```
+
+The token can also be passed with `--hf-token`. Diarization runs inside the
+existing WhisperX alignment workflow boundary: the configured aligner produces
+timed segments first, then pyannote speaker turns are matched to words by time
+overlap. When a sentence contains multiple speakers, it is split into
+speaker-specific segment runs before subtitle building.
+
 Enable local Qwen repair by passing a GGUF model path:
 
 ```bash
@@ -122,8 +143,9 @@ intensive-listening views can query unfamiliar words without parsing SRT text.
 
 When upstream alignment data includes speaker identifiers, the pipeline keeps
 different speakers in separate subtitle cues and prevents cross-speaker merging.
-Speaker identifiers remain structured metadata. Optional SRT export does not
-display speaker labels.
+With `--enable-diarization`, speaker identifiers can be produced from the audio
+itself by pyannote.audio. Speaker identifiers remain structured metadata.
+Optional SRT export does not display speaker labels.
 
 ## Progress and Stage Artifacts
 

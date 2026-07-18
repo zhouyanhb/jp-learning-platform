@@ -77,6 +77,9 @@ adapter, with SRT available as an optional export writer.
 Local infrastructure configuration defaults are centralized in
 `jp_learning_platform.infrastructure.pipeline_config` and consumed by the
 adapters that call Whisper, WhisperX, Qwen, and subtitle quality code.
+Optional pyannote.audio speaker diarization is implemented as an infrastructure
+adapter that wraps the WhisperX aligner contract and assigns speaker metadata
+without adding SDK calls to workflow stages.
 Local CLI quality adapters provide optional WhisperX alignment, optional Qwen
 repair, subtitle merging, readability optimization, and final domain
 validation while preserving the workflow stage contracts. Local CLI progress

@@ -31,6 +31,14 @@ class WhisperXAlignmentConfig:
 
 
 @dataclass(frozen=True, slots=True)
+class PyannoteDiarizationConfig:
+    """Default pyannote.audio speaker diarization settings."""
+
+    model_name: str = "pyannote/speaker-diarization-3.1"
+    token_environment_variable: str = "HF_TOKEN"
+
+
+@dataclass(frozen=True, slots=True)
 class QwenRepairConfig:
     """Default llama.cpp Qwen repair generation settings."""
 
@@ -70,6 +78,7 @@ class ReadabilityConfig:
 
 DEFAULT_WHISPER_TRANSCRIPTION_CONFIG = WhisperTranscriptionConfig()
 DEFAULT_WHISPERX_ALIGNMENT_CONFIG = WhisperXAlignmentConfig()
+DEFAULT_PYANNOTE_DIARIZATION_CONFIG = PyannoteDiarizationConfig()
 DEFAULT_QWEN_REPAIR_CONFIG = QwenRepairConfig()
 DEFAULT_QWEN_REPAIR_SAFETY_CONFIG = QwenRepairSafetyConfig()
 DEFAULT_SUBTITLE_MERGE_CONFIG = SubtitleMergeConfig()
@@ -77,12 +86,14 @@ DEFAULT_READABILITY_CONFIG = ReadabilityConfig()
 
 
 __all__ = [
+    "DEFAULT_PYANNOTE_DIARIZATION_CONFIG",
     "DEFAULT_QWEN_REPAIR_CONFIG",
     "DEFAULT_QWEN_REPAIR_SAFETY_CONFIG",
     "DEFAULT_READABILITY_CONFIG",
     "DEFAULT_SUBTITLE_MERGE_CONFIG",
     "DEFAULT_WHISPER_TRANSCRIPTION_CONFIG",
     "DEFAULT_WHISPERX_ALIGNMENT_CONFIG",
+    "PyannoteDiarizationConfig",
     "QwenRepairConfig",
     "QwenRepairSafetyConfig",
     "ReadabilityConfig",

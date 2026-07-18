@@ -8,7 +8,7 @@ project:
 repository:
   branch: master
   working_tree: clean
-  remote_status: ahead_of_origin_by_8_commits
+  remote_status: ahead_of_origin_by_9_commits
   runnable: true
 
 architecture:
@@ -31,6 +31,8 @@ architecture:
       SRT available only as an optional export.
     - Local infrastructure adapter defaults are centralized in typed pipeline
       configuration objects.
+    - pyannote.audio speaker diarization is an optional infrastructure wrapper
+      around the WhisperX alignment contract.
 
 roadmap:
   completed:
@@ -58,11 +60,11 @@ roadmap:
 
 latest_commit:
   hash: created_by_this_commit
-  message: feat(config): centralize pipeline defaults
+  message: feat(diarization): add pyannote speaker labels
 
 tests:
-  total: 173
-  passed: 173
+  total: 180
+  passed: 180
   failed: 0
 
 checks:
@@ -194,6 +196,7 @@ infrastructure:
     implemented:
       - WhisperTranscriptionConfig
       - WhisperXAlignmentConfig
+      - PyannoteDiarizationConfig
       - QwenRepairConfig
       - QwenRepairSafetyConfig
       - SubtitleMergeConfig
@@ -221,6 +224,11 @@ infrastructure:
       - WhisperXAlignerAdapter
       - WhisperXDependencyError
       - PassthroughWhisperXAligner
+      - PyannoteSpeakerDiarizer
+      - DiarizingWhisperXAligner
+      - SpeakerTurn
+      - PyannoteDependencyError
+      - PyannoteAuthTokenError
       - LlamaCppQwenRepairer
       - QwenDependencyError
       - QwenModelNotFoundError

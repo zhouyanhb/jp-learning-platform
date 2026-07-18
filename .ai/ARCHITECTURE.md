@@ -181,6 +181,12 @@ WhisperX alignment adapter implementation lives in:
 src/jp_learning_platform/infrastructure/whisperx_aligner.py
 ```
 
+pyannote.audio speaker diarization adapter implementation lives in:
+
+```
+src/jp_learning_platform/infrastructure/pyannote_diarizer.py
+```
+
 Qwen repair adapter implementation lives in:
 
 ```

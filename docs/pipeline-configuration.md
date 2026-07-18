@@ -13,6 +13,8 @@ Qwen repair, subtitle quality, and readability code.
   defaults, including Japanese language selection, beam search, word timing,
   VAD, and hallucination silence filtering.
 - `WhisperXAlignmentConfig` stores forced-alignment language defaults.
+- `PyannoteDiarizationConfig` stores the speaker diarization model name and the
+  Hugging Face token environment variable used by pyannote.audio.
 - `QwenRepairConfig` stores llama.cpp generation defaults for local Qwen
   repair.
 - `QwenRepairSafetyConfig` stores conservative acceptance thresholds for model

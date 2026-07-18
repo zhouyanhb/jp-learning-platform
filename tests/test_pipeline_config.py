@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from jp_learning_platform.infrastructure import (
+    DEFAULT_PYANNOTE_DIARIZATION_CONFIG,
     DEFAULT_QWEN_REPAIR_CONFIG,
     DEFAULT_QWEN_REPAIR_SAFETY_CONFIG,
     DEFAULT_READABILITY_CONFIG,
@@ -29,6 +30,11 @@ def test_pipeline_config_centralizes_asr_defaults() -> None:
 
 def test_pipeline_config_centralizes_quality_defaults() -> None:
     assert DEFAULT_WHISPERX_ALIGNMENT_CONFIG.language_code == "ja"
+    assert (
+        DEFAULT_PYANNOTE_DIARIZATION_CONFIG.model_name
+        == "pyannote/speaker-diarization-3.1"
+    )
+    assert DEFAULT_PYANNOTE_DIARIZATION_CONFIG.token_environment_variable == "HF_TOKEN"
     assert DEFAULT_QWEN_REPAIR_CONFIG.context_size == 4096
     assert DEFAULT_QWEN_REPAIR_CONFIG.threads == 8
     assert DEFAULT_QWEN_REPAIR_CONFIG.max_tokens == 128

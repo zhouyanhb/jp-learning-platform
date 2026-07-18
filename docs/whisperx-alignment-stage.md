@@ -21,7 +21,10 @@ The aligner returns a `WhisperXAlignment`.
 
 `WhisperXAlignment` contains the source path and aligned domain `Segment`
 objects. Aligned segments may include nested `Sentence` and `Word` values with
-word-level timing and confidence.
+word-level timing and confidence. Infrastructure adapters may also assign
+speaker identifiers. The local pyannote.audio adapter wraps a configured
+aligner, matches diarized speaker turns to word time ranges, and splits
+mixed-speaker sentence runs before returning aligned segments.
 
 The stage validates that:
 

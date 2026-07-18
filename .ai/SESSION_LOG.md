@@ -1334,3 +1334,62 @@ created by this commit
 ```
 feat(config): centralize pipeline defaults
 ```
+
+---
+
+# Session 027
+
+Date
+
+2026-07-18
+
+Roadmap
+
+Maintenance Pyannote Speaker Diarization
+
+Summary
+
+Added optional pyannote.audio speaker diarization so local transcription can
+assign speaker identifiers from audio and split mixed-speaker word runs before
+subtitle building.
+
+Changes
+
+Added
+
+- pyannote.audio optional dependency group
+- Pyannote speaker diarizer infrastructure adapter
+- Diarizing WhisperX aligner wrapper
+- Speaker turn model for diarization intervals
+- CLI options for `--enable-diarization` and `--hf-token`
+- Pyannote diarization defaults in centralized pipeline configuration
+
+Documentation
+
+- docs/local-audio-srt-cli.md
+- docs/whisperx-alignment-stage.md
+- docs/pipeline-configuration.md
+- docs/architecture.md
+- README.md
+- CHANGELOG.md
+- .ai/ARCHITECTURE.md
+
+Tests
+
+- test_pyannote_diarizer.py
+- test_pipeline_config.py
+- test_package.py
+
+Validation
+
+- compileall ✔
+- package help ✔
+- pytest (180 passed)
+
+Commit
+
+created by this commit
+
+```
+feat(diarization): add pyannote speaker labels
+```

@@ -14,6 +14,9 @@ def test_package_exposes_release_version() -> None:
 
     assert pyproject["project"]["version"] == "1.0.0"
     assert jp_learning_platform.__version__ == pyproject["project"]["version"]
+    assert pyproject["project"]["optional-dependencies"]["diarization"] == [
+        "pyannote.audio>=3.1"
+    ]
 
 
 def test_module_entrypoint_returns_success() -> None:
@@ -85,3 +88,18 @@ def test_transcribe_command_accepts_quality_stage_options() -> None:
     assert args.enable_whisperx
     assert args.whisperx_language == "ja"
     assert args.qwen_model_path == Path("models/qwen.gguf")
+
+
+def test_transcribe_command_accepts_diarization_options() -> None:
+    args = build_parser().parse_args(
+        (
+            "transcribe",
+            "audio.mp3",
+            "--enable-diarization",
+            "--hf-token",
+            "hf-token",
+        )
+    )
+
+    assert args.enable_diarization
+    assert args.hf_token == "hf-token"

@@ -25,6 +25,7 @@ from jp_learning_platform.infrastructure import (
     DEFAULT_WHISPER_DEVICE,
     DEFAULT_WHISPER_MODEL_SIZE,
     DEFAULT_WHISPERX_LANGUAGE,
+    DiarizingWhisperXAligner,
     DomainSubtitleValidator,
     FasterWhisperDependencyError,
     FasterWhisperTranscriber,
@@ -33,6 +34,7 @@ from jp_learning_platform.infrastructure import (
     LocalReadabilityOptimizer,
     PassthroughQwenRepairer,
     PassthroughWhisperXAligner,
+    PyannoteSpeakerDiarizer,
     SrtSubtitleWriter,
     StageArtifactStore,
     WhisperXAlignerAdapter,
@@ -115,6 +117,15 @@ def build_parser() -> ArgumentParser:
         "--enable-whisperx",
         action="store_true",
         help="Use WhisperX forced alignment after Whisper transcription.",
+    )
+    transcribe_parser.add_argument(
+        "--enable-diarization",
+        action="store_true",
+        help="Use pyannote.audio to assign speaker identifiers.",
+    )
+    transcribe_parser.add_argument(
+        "--hf-token",
+        help="Hugging Face token for pyannote.audio. Defaults to HF_TOKEN.",
     )
     transcribe_parser.add_argument(
         "--whisperx-language",
@@ -204,14 +215,24 @@ def _build_writer(args: Namespace) -> ListeningJsonWriter | CompositeSubtitleWri
     )
 
 
-def _build_aligner(args: Namespace) -> PassthroughWhisperXAligner | WhisperXAlignerAdapter:
+def _build_aligner(
+    args: Namespace,
+) -> PassthroughWhisperXAligner | WhisperXAlignerAdapter | DiarizingWhisperXAligner:
     if args.enable_whisperx:
-        return WhisperXAlignerAdapter(
+        base_aligner = WhisperXAlignerAdapter(
             device=args.device,
             language_code=args.whisperx_language,
         )
+    else:
+        base_aligner = PassthroughWhisperXAligner()
 
-    return PassthroughWhisperXAligner()
+    if args.enable_diarization:
+        return DiarizingWhisperXAligner(
+            base_aligner=base_aligner,
+            diarizer=PyannoteSpeakerDiarizer(auth_token=args.hf_token),
+        )
+
+    return base_aligner
 
 
 def _build_repairer(args: Namespace) -> PassthroughQwenRepairer | LlamaCppQwenRepairer:

@@ -22,6 +22,8 @@ All notable changes to this project are documented in this file.
   with SRT available through the optional `--export-srt` flag.
 - Added centralized local pipeline configuration defaults for Whisper,
   WhisperX, Qwen repair, subtitle merging, and readability adapters.
+- Added optional pyannote.audio speaker diarization for assigning speaker
+  identifiers and splitting mixed-speaker subtitle runs.
 
 ### Fixed
 

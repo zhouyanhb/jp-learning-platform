@@ -33,6 +33,7 @@ Install ASR support when generating subtitles from audio:
 ```bash
 python -m pip install -e ".[asr]"
 python -m pip install -e ".[align]"
+python -m pip install -e ".[diarization]"
 python -m pip install -e ".[qwen]"
 ```
 
@@ -47,6 +48,7 @@ python -m jp_learning_platform transcribe ./audios
 python -m jp_learning_platform transcribe audio.mp3 --export-srt
 python -m jp_learning_platform transcribe audio.mp3 --model-size small --device cpu --compute-type int8
 python -m jp_learning_platform transcribe audio.mp3 --enable-whisperx
+python -m jp_learning_platform transcribe audio.mp3 --enable-diarization
 python -m jp_learning_platform transcribe audio.mp3 --qwen-model-path models/qwen.gguf
 ```
 
@@ -57,6 +59,8 @@ The `transcribe` command accepts either one audio file or a folder containing
 audio files and writes structured `.json` files to `output/` by default. Use
 `--export-srt` when an SRT file should be written beside the JSON output. Use
 `--output-dir` only when a custom output directory is needed.
+Use `--enable-diarization` with a Hugging Face token from `HF_TOKEN` or
+`--hf-token` when speaker identifiers should be assigned with pyannote.audio.
 
 During transcription, the command reports the current file and pipeline stage
 to stderr. Per-stage JSON artifacts are saved under
