@@ -26,6 +26,12 @@ from jp_learning_platform.infrastructure.faster_whisper_transcriber import (
     FasterWhisperDependencyError,
     FasterWhisperTranscriber,
 )
+from jp_learning_platform.infrastructure.listening_json_writer import (
+    DEFAULT_LISTENING_JSON_EXTENSION,
+    LISTENING_JSON_SCHEMA_VERSION,
+    CompositeSubtitleWriter,
+    ListeningJsonWriter,
+)
 from jp_learning_platform.infrastructure.qwen_repairer import (
     DEFAULT_QWEN_CONTEXT,
     DEFAULT_QWEN_GPU_LAYERS,
@@ -74,6 +80,9 @@ __all__ = [
     "AudioLoaderError",
     "ConservativeSubtitleMerger",
     "ConsoleProgressReporter",
+    "CompositeSubtitleWriter",
+    "DEFAULT_LISTENING_JSON_EXTENSION",
+    "LISTENING_JSON_SCHEMA_VERSION",
     "DEFAULT_QWEN_CONTEXT",
     "DEFAULT_QWEN_GPU_LAYERS",
     "DEFAULT_QWEN_REPAIR_MAX_CONTENT_CHANGE_RATIO",
@@ -90,6 +99,7 @@ __all__ = [
     "FasterWhisperTranscriber",
     "InvalidStageArtifactRecordError",
     "LlamaCppQwenRepairer",
+    "ListeningJsonWriter",
     "LocalReadabilityOptimizer",
     "LoadedAudio",
     "PassthroughQwenRepairer",

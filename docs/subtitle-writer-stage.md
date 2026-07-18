@@ -20,8 +20,15 @@ The writer returns a `SubtitleWrite`.
 ## Write Output
 
 `SubtitleWrite` contains the source path and output path produced by the writer.
-Speaker identifiers remain internal metadata. The local SRT writer emits only
-subtitle text and timing, without speaker labels.
+The local CLI uses `ListeningJsonWriter` as the primary writer so the default
+artifact contains structured segment, sentence, word, and subtitle timing for
+intensive-listening workflows. `CompositeSubtitleWriter` can attach optional
+exports such as `SrtSubtitleWriter` while still returning the primary JSON
+output path.
+
+Speaker identifiers remain internal metadata. Structured JSON keeps the speaker
+identifier fields for downstream decisions, while the local SRT writer emits
+only subtitle text and timing, without speaker labels.
 The stage validates that:
 
 - the document already has subtitles to write

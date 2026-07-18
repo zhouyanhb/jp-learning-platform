@@ -8,7 +8,7 @@ project:
 repository:
   branch: master
   working_tree: clean
-  remote_status: ahead_of_origin_by_6_commits
+  remote_status: ahead_of_origin_by_7_commits
   runnable: true
 
 architecture:
@@ -27,6 +27,8 @@ architecture:
     - Plugins provide optional capabilities through public contracts.
     - Speaker identifiers are internal subtitle metadata and are not written as
       SRT speaker labels.
+    - Local transcribe defaults to structured intensive-listening JSON, with
+      SRT available only as an optional export.
 
 roadmap:
   completed:
@@ -54,11 +56,11 @@ roadmap:
 
 latest_commit:
   hash: created_by_this_commit
-  message: feat(subtitles): preserve speaker boundaries
+  message: feat(cli): default to listening json
 
 tests:
-  total: 166
-  passed: 166
+  total: 170
+  passed: 170
   failed: 0
 
 checks:
@@ -100,6 +102,7 @@ workflow:
       - NoOpProgressReporter
   subtitle_pipeline_runner:
     implemented:
+      - DEFAULT_SUBTITLE_OUTPUT_EXTENSION
       - SubtitlePipelineRunner
       - SubtitlePipelineRunnerError
       - DuplicateSubtitleOutputError
@@ -218,6 +221,8 @@ infrastructure:
   subtitle_adapters:
     implemented:
       - WordSubtitleBuilder
+      - ListeningJsonWriter
+      - CompositeSubtitleWriter
       - SrtSubtitleWriter
       - ConservativeSubtitleMerger
       - LocalReadabilityOptimizer

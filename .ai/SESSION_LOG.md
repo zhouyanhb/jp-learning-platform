@@ -1217,3 +1217,58 @@ created by this commit
 ```
 feat(subtitles): preserve speaker boundaries
 ```
+
+---
+
+# Session 025
+
+Date
+
+2026-07-18
+
+Roadmap
+
+Maintenance Listening JSON Default Output
+
+Summary
+
+Changed the local transcribe CLI so structured intensive-listening JSON is the
+default output while SRT is generated only when explicitly requested.
+
+Changes
+
+Added
+
+- Listening JSON writer adapter for segment, sentence, word, and subtitle
+  timing output
+- Composite subtitle writer adapter for optional export artifacts
+- `--export-srt` CLI flag for writing SRT beside the primary JSON output
+- Configurable primary output extension on the local subtitle pipeline runner
+
+Documentation
+
+- docs/local-audio-srt-cli.md
+- docs/subtitle-writer-stage.md
+- docs/architecture.md
+- README.md
+- CHANGELOG.md
+
+Tests
+
+- test_listening_json_writer.py
+- test_subtitle_pipeline_runner.py
+- test_package.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (170 passed)
+
+Commit
+
+created by this commit
+
+```
+feat(cli): default to listening json
+```

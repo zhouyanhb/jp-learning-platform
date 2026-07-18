@@ -56,6 +56,8 @@ from jp_learning_platform.workflow.whisperx_alignment_stage import (
     WhisperXAlignmentStage,
 )
 
+DEFAULT_SUBTITLE_OUTPUT_EXTENSION = ".srt"
+
 
 class AudioLoader(Protocol):
     """Audio loader contract required by the pipeline runner."""
@@ -74,6 +76,23 @@ class DuplicateSubtitleOutputError(SubtitlePipelineRunnerError):
     def __init__(self, output_path: Path) -> None:
         self.output_path = output_path
         super().__init__(f"Duplicate subtitle output path: {output_path}")
+
+
+def _normalize_output_extension(value: str) -> str:
+    if not isinstance(value, str):
+        raise TypeError("output_extension must be a string.")
+
+    normalized = value.strip()
+    if not normalized:
+        raise ValueError("output_extension must not be empty.")
+
+    if not normalized.startswith("."):
+        raise ValueError("output_extension must start with a dot.")
+
+    if "/" in normalized or "\\" in normalized:
+        raise ValueError("output_extension must not contain path separators.")
+
+    return normalized
 
 
 @dataclass(frozen=True, slots=True)
@@ -152,7 +171,7 @@ class _PipelineRunProgress:
 
 @dataclass(frozen=True, slots=True)
 class SubtitlePipelineRunner:
-    """Run the local audio-to-SRT subtitle pipeline."""
+    """Run the local audio subtitle output pipeline."""
 
     audio_loader: AudioLoader
     transcriber: WhisperTranscriber
@@ -167,6 +186,14 @@ class SubtitlePipelineRunner:
     engine: ExecutionEngine = ExecutionEngine()
     progress_reporter: ProgressReporter = NoOpProgressReporter()
     artifact_recorder: StageArtifactRecorder | None = None
+    output_extension: str = DEFAULT_SUBTITLE_OUTPUT_EXTENSION
+
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            "output_extension",
+            _normalize_output_extension(self.output_extension),
+        )
 
     def run(self, request: SubtitlePipelineRequest) -> SubtitlePipelineResult:
         if not isinstance(request, SubtitlePipelineRequest):
@@ -205,8 +232,8 @@ class SubtitlePipelineRunner:
             )
             self._load_audio(source_path, context, progress)
             workflow = Workflow(
-                name="audio-to-srt",
-                pipeline=create_pipeline("audio-to-srt", self._stages()),
+                name="audio-to-subtitle-output",
+                pipeline=create_pipeline("audio-to-subtitle-output", self._stages()),
             )
             self.engine.execute(workflow, context, observer=progress)
             items.append(
@@ -219,7 +246,9 @@ class SubtitlePipelineRunner:
         return SubtitlePipelineResult(items=tuple(items))
 
     def output_path_for(self, source_path: Path, output_directory: Path) -> Path:
-        return Path(output_directory) / f"{Path(source_path).stem}.srt"
+        return Path(output_directory) / (
+            f"{Path(source_path).stem}{self.output_extension}"
+        )
 
     def _stages(self) -> tuple[Stage, ...]:
         stages: list[Stage] = [WhisperStage(self.transcriber)]
@@ -297,6 +326,7 @@ class SubtitlePipelineRunner:
 
 __all__ = [
     "AudioLoader",
+    "DEFAULT_SUBTITLE_OUTPUT_EXTENSION",
     "DuplicateSubtitleOutputError",
     "SubtitlePipelineRunner",
     "SubtitlePipelineRunnerError",

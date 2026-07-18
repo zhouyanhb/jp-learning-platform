@@ -44,6 +44,7 @@ python -m jp_learning_platform status
 python -m jp_learning_platform --version
 python -m jp_learning_platform transcribe audio.mp3
 python -m jp_learning_platform transcribe ./audios
+python -m jp_learning_platform transcribe audio.mp3 --export-srt
 python -m jp_learning_platform transcribe audio.mp3 --model-size small --device cpu --compute-type int8
 python -m jp_learning_platform transcribe audio.mp3 --enable-whisperx
 python -m jp_learning_platform transcribe audio.mp3 --qwen-model-path models/qwen.gguf
@@ -53,13 +54,14 @@ The entrypoint reports the Version 1.0 subtitle pipeline status. External SDK
 adapters are supplied through the tool registry and plugin system.
 
 The `transcribe` command accepts either one audio file or a folder containing
-audio files and writes `.srt` files to `output/` by default. Use `--output-dir`
-only when a custom output directory is needed.
+audio files and writes structured `.json` files to `output/` by default. Use
+`--export-srt` when an SRT file should be written beside the JSON output. Use
+`--output-dir` only when a custom output directory is needed.
 
 During transcription, the command reports the current file and pipeline stage
 to stderr. Per-stage JSON artifacts are saved under
-`output/.work/<run-name>/<audio-name>/`, while final subtitles remain at
-`output/<audio-name>.srt`.
+`output/.work/<run-name>/<audio-name>/`, while final listening JSON remains at
+`output/<audio-name>.json`.
 
 ## Checks
 
@@ -86,9 +88,9 @@ Domain factories, validators, and repository boundaries are documented in
 
 Workflow orchestration primitives are documented in `docs/workflow-runtime.md`.
 
-## Local Audio SRT CLI
+## Local Audio Transcribe CLI
 
-Local audio and folder transcription to SRT is documented in
+Local audio and folder transcription to structured JSON is documented in
 `docs/local-audio-srt-cli.md`.
 
 ## Whisper Stage

@@ -50,7 +50,8 @@ belong in the domain layer.
 The workflow runtime primitives are documented in `docs/workflow-runtime.md`.
 Runtime observers expose stage progress without coupling stages to console
 output or file persistence.
-The local audio SRT CLI runner is documented in `docs/local-audio-srt-cli.md`.
+The local audio transcribe CLI runner is documented in
+`docs/local-audio-srt-cli.md`.
 The Whisper transcription stage is documented in `docs/whisper-stage.md`.
 The WhisperX alignment stage is documented in
 `docs/whisperx-alignment-stage.md`.
@@ -70,14 +71,15 @@ into project contracts without leaking third-party APIs into the domain.
 Tool adapter resolution is handled by the registry documented in
 `docs/tool-registry.md`.
 Local audio loading is documented in `docs/audio-loader.md`.
-Local SRT writing is implemented by the SRT subtitle writer adapter.
+Local structured JSON writing is implemented by the listening JSON writer
+adapter, with SRT available as an optional export writer.
 Local CLI quality adapters provide optional WhisperX alignment, optional Qwen
 repair, subtitle merging, readability optimization, and final domain
 validation while preserving the workflow stage contracts. Local CLI progress
 reporting and JSON stage artifact storage are infrastructure adapters wired by
 the entrypoint and runner.
 Speaker metadata remains internal domain metadata for preserving dialogue
-boundaries; SRT writing does not add speaker labels.
+boundaries; optional SRT writing does not add speaker labels.
 
 ## Plugins
 

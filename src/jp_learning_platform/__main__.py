@@ -17,8 +17,10 @@ from jp_learning_platform.application import (
 from jp_learning_platform.infrastructure import (
     AudioLoader,
     AudioLoaderError,
+    CompositeSubtitleWriter,
     ConservativeSubtitleMerger,
     ConsoleProgressReporter,
+    DEFAULT_LISTENING_JSON_EXTENSION,
     DEFAULT_WHISPER_COMPUTE_TYPE,
     DEFAULT_WHISPER_DEVICE,
     DEFAULT_WHISPER_MODEL_SIZE,
@@ -27,6 +29,7 @@ from jp_learning_platform.infrastructure import (
     FasterWhisperDependencyError,
     FasterWhisperTranscriber,
     LlamaCppQwenRepairer,
+    ListeningJsonWriter,
     LocalReadabilityOptimizer,
     PassthroughQwenRepairer,
     PassthroughWhisperXAligner,
@@ -72,7 +75,7 @@ def build_parser() -> ArgumentParser:
     )
     transcribe_parser = subparsers.add_parser(
         "transcribe",
-        help="Generate SRT subtitles for an audio file or folder.",
+        help="Generate structured listening JSON for an audio file or folder.",
     )
     transcribe_parser.add_argument(
         "input_path",
@@ -83,7 +86,15 @@ def build_parser() -> ArgumentParser:
         "--output-dir",
         default=DEFAULT_OUTPUT_DIRECTORY,
         type=Path,
-        help="Directory for generated SRT files. Defaults to output.",
+        help=(
+            "Directory for generated JSON files and optional SRT exports. "
+            "Defaults to output."
+        ),
+    )
+    transcribe_parser.add_argument(
+        "--export-srt",
+        action="store_true",
+        help="Also export SRT subtitles beside the structured JSON output.",
     )
     transcribe_parser.add_argument(
         "--model-size",
@@ -135,7 +146,7 @@ def _write_status(output: TextIO) -> None:
 
 
 def _run_transcribe(args: Namespace, output: TextIO, error_output: TextIO) -> int:
-    writer = SrtSubtitleWriter(output_directory=args.output_dir)
+    writer = _build_writer(args)
     runner = SubtitlePipelineRunner(
         audio_loader=AudioLoader(),
         transcriber=FasterWhisperTranscriber(
@@ -145,6 +156,7 @@ def _run_transcribe(args: Namespace, output: TextIO, error_output: TextIO) -> in
         ),
         builder=WordSubtitleBuilder(),
         writer=writer,
+        output_extension=DEFAULT_LISTENING_JSON_EXTENSION,
         aligner=_build_aligner(args),
         repairer=_build_repairer(args),
         merger=ConservativeSubtitleMerger(),
@@ -179,6 +191,17 @@ def _run_transcribe(args: Namespace, output: TextIO, error_output: TextIO) -> in
         output.write(f"{output_path}\n")
 
     return 0
+
+
+def _build_writer(args: Namespace) -> ListeningJsonWriter | CompositeSubtitleWriter:
+    primary_writer = ListeningJsonWriter(output_directory=args.output_dir)
+    if not args.export_srt:
+        return primary_writer
+
+    return CompositeSubtitleWriter(
+        primary_writer=primary_writer,
+        export_writers=(SrtSubtitleWriter(output_directory=args.output_dir),),
+    )
 
 
 def _build_aligner(args: Namespace) -> PassthroughWhisperXAligner | WhisperXAlignerAdapter:

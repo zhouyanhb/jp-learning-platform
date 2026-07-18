@@ -38,9 +38,16 @@ def test_transcribe_command_defaults_output_directory() -> None:
     args = build_parser().parse_args(("transcribe", "audio.mp3"))
 
     assert args.output_dir == Path("output")
+    assert not args.export_srt
     assert args.model_size == "large-v3"
     assert args.device == "cpu"
     assert args.compute_type == "int8"
+
+
+def test_transcribe_command_accepts_optional_srt_export() -> None:
+    args = build_parser().parse_args(("transcribe", "audio.mp3", "--export-srt"))
+
+    assert args.export_srt
 
 
 def test_transcribe_command_accepts_asr_model_options() -> None:

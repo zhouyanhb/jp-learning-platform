@@ -6,18 +6,20 @@ All notable changes to this project are documented in this file.
 
 ### Added
 
-- Added local audio-to-SRT CLI support for single audio files and folders with
-  `output/` as the default output directory.
+- Added local audio transcription CLI support for single audio files and
+  folders with `output/` as the default output directory.
 - Added CLI options for faster-whisper model size, device, and compute type.
 - Added full local CLI quality workflow wiring for WhisperX alignment, Qwen
   repair, subtitle merging, readability optimization, and validation stages.
-- Added per-file CLI progress logging for local audio SRT generation.
+- Added per-file CLI progress logging for local audio transcription.
 - Added per-stage JSON artifact persistence under `output/.work/` for local
-  audio SRT generation.
+  audio transcription.
 - Added a conservative Qwen repair safety policy that rejects likely content
   additions or deletions before subtitle construction.
 - Added internal speaker metadata preservation so subtitle merging keeps
   different speakers in separate SRT cues without displaying speaker labels.
+- Added structured intensive-listening JSON as the default local CLI output,
+  with SRT available through the optional `--export-srt` flag.
 
 ### Fixed
 

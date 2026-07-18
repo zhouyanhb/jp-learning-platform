@@ -20,6 +20,8 @@ from jp_learning_platform.domain import (
 )
 from jp_learning_platform.infrastructure import (
     AudioLoader,
+    CompositeSubtitleWriter,
+    ListeningJsonWriter,
     SrtSubtitleWriter,
     StageArtifactStore,
     WordSubtitleBuilder,
@@ -169,6 +171,35 @@ def test_subtitle_pipeline_runner_generates_srt_for_single_file(tmp_path: Path) 
         "1\n00:00:00,000 --> 00:00:01,100\nlessonです。\n\n"
     )
     assert transcriber.requests[0].source_path == audio_path
+
+
+def test_subtitle_pipeline_runner_can_use_json_primary_output_and_srt_export(
+    tmp_path: Path,
+) -> None:
+    audio_path = tmp_path / "lesson.mp3"
+    output_directory = tmp_path / "output"
+    _write_audio(audio_path)
+    transcriber = FakeTranscriber(requests=[])
+    writer = CompositeSubtitleWriter(
+        primary_writer=ListeningJsonWriter(output_directory=output_directory),
+        export_writers=(SrtSubtitleWriter(output_directory=output_directory),),
+    )
+    runner = SubtitlePipelineRunner(
+        audio_loader=AudioLoader(),
+        transcriber=transcriber,
+        builder=WordSubtitleBuilder(),
+        writer=writer,
+        output_extension=".json",
+    )
+
+    result = runner.run(
+        SubtitlePipelineRequest(input_path=audio_path, output_directory=output_directory)
+    )
+
+    assert result.output_paths == (output_directory / "lesson.json",)
+    payload = json.loads(result.output_paths[0].read_text(encoding="utf-8"))
+    assert payload["segments"][0]["sentences"][0]["words"][0]["text"] == "日本語"
+    assert (output_directory / "lesson.srt").exists()
 
 
 def test_subtitle_pipeline_runner_can_execute_quality_stages(

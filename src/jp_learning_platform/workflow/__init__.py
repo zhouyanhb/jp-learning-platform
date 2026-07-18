@@ -19,6 +19,7 @@ from jp_learning_platform.workflow.progress import (
     StageArtifactRecorder,
 )
 from jp_learning_platform.workflow.subtitle_pipeline_runner import (
+    DEFAULT_SUBTITLE_OUTPUT_EXTENSION,
     DuplicateSubtitleOutputError,
     SubtitlePipelineRunner,
     SubtitlePipelineRunnerError,
@@ -115,6 +116,7 @@ from jp_learning_platform.workflow.whisperx_alignment_stage import (
 __all__ = [
     "ExecutionEngine",
     "DuplicateSubtitleOutputError",
+    "DEFAULT_SUBTITLE_OUTPUT_EXTENSION",
     "InvalidQwenRepairError",
     "InvalidQwenRepairerError",
     "InvalidReadabilityOptimizationError",

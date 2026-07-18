@@ -1,7 +1,8 @@
-# Local Audio SRT CLI
+# Local Audio Transcribe CLI
 
-The local audio SRT CLI generates subtitle files from a single audio file or a
-folder of audio files.
+The local audio transcribe CLI generates structured intensive-listening JSON
+from a single audio file or a folder of audio files. SRT output is an optional
+export.
 
 ## Usage
 
@@ -10,15 +11,21 @@ python -m jp_learning_platform transcribe audio.mp3
 python -m jp_learning_platform transcribe ./audios
 ```
 
-Generated `.srt` files are written to `output/` by default. A custom output
+Generated `.json` files are written to `output/` by default. A custom output
 directory can be supplied when needed:
 
 ```bash
 python -m jp_learning_platform transcribe audio.mp3 --output-dir subtitles
 ```
 
+Export SRT beside the structured JSON when a subtitle file is needed:
+
+```bash
+python -m jp_learning_platform transcribe audio.mp3 --export-srt
+```
+
 The command reports per-file stage progress while it runs. Progress is written
-to stderr so stdout can continue to list the final generated SRT paths.
+to stderr so stdout can continue to list the final generated JSON paths.
 
 ASR model settings can be supplied from the CLI:
 
@@ -101,15 +108,18 @@ AudioLoader
 -> LocalReadabilityOptimizer
 -> DomainSubtitleValidator
 -> SubtitleWriterStage
--> SrtSubtitleWriter
+-> ListeningJsonWriter
 ```
 
 The generated subtitles preserve word-derived timing through the domain
-`Sentence` and `Word` objects before writing the final SRT text.
+`Sentence` and `Word` objects before writing the final structured JSON. The
+JSON output contains segment, sentence, word, and subtitle timing so downstream
+intensive-listening views can query unfamiliar words without parsing SRT text.
 
 When upstream alignment data includes speaker identifiers, the pipeline keeps
 different speakers in separate subtitle cues and prevents cross-speaker merging.
-The final SRT text does not display speaker labels.
+Speaker identifiers remain structured metadata. Optional SRT export does not
+display speaker labels.
 
 ## Progress and Stage Artifacts
 
@@ -122,8 +132,9 @@ Each processed audio file emits one-line progress events for every stage:
 [1/2] lesson.mp3 whisper done 12.48s -> output/.work/20260717_153012_123456/lesson/01_whisper.json
 ```
 
-The final SRT remains at `output/<audio-name>.srt`. Stage artifacts are saved
-under the output directory:
+The final structured JSON remains at `output/<audio-name>.json`. When
+`--export-srt` is supplied, the optional SRT export is written beside it as
+`output/<audio-name>.srt`. Stage artifacts are saved under the output directory:
 
 ```text
 output/.work/<run-name>/<audio-name>/manifest.json
