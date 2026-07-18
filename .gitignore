@@ -17,4 +17,6 @@ build/
 dist/
 *.egg-info/
 
+output/
+
 .DS_Store

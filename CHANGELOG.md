@@ -20,6 +20,8 @@ All notable changes to this project are documented in this file.
   different speakers in separate SRT cues without displaying speaker labels.
 - Added structured intensive-listening JSON as the default local CLI output,
   with SRT available through the optional `--export-srt` flag.
+- Added centralized local pipeline configuration defaults for Whisper,
+  WhisperX, Qwen repair, subtitle merging, and readability adapters.
 
 ### Fixed
 

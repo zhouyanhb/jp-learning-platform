@@ -11,6 +11,10 @@ from jp_learning_platform.domain import (
     Subtitle,
     TimeRange,
 )
+from jp_learning_platform.infrastructure.pipeline_config import (
+    DEFAULT_READABILITY_CONFIG,
+    DEFAULT_SUBTITLE_MERGE_CONFIG,
+)
 from jp_learning_platform.workflow.readability_optimizer_stage import (
     ReadabilityOptimization,
     ReadabilityOptimizationRequest,
@@ -24,9 +28,9 @@ from jp_learning_platform.workflow.subtitle_validator_stage import (
     SubtitleValidationRequest,
 )
 
-DEFAULT_MERGE_GAP_SECONDS = 0.35
-DEFAULT_MERGE_MAX_CHARS = 42
-JAPANESE_TERMINAL_MARKS = ("。", "？", "！")
+DEFAULT_MERGE_GAP_SECONDS = DEFAULT_SUBTITLE_MERGE_CONFIG.max_gap_seconds
+DEFAULT_MERGE_MAX_CHARS = DEFAULT_SUBTITLE_MERGE_CONFIG.max_chars
+JAPANESE_TERMINAL_MARKS = DEFAULT_SUBTITLE_MERGE_CONFIG.terminal_marks
 
 
 @dataclass(frozen=True, slots=True)
@@ -95,10 +99,12 @@ class LocalReadabilityOptimizer:
         if not isinstance(request, ReadabilityOptimizationRequest):
             raise TypeError("request must be a ReadabilityOptimizationRequest.")
 
+        comma = DEFAULT_READABILITY_CONFIG.japanese_comma
+        period = DEFAULT_READABILITY_CONFIG.japanese_period
         subtitles = tuple(
             Subtitle(
                 index=subtitle.index,
-                text=self._normalize_text(subtitle.text),
+                text=self._normalize_text(subtitle.text, comma, period),
                 time_range=subtitle.time_range,
                 speaker_id=subtitle.speaker_id,
             )
@@ -109,15 +115,15 @@ class LocalReadabilityOptimizer:
             subtitles=subtitles,
         )
 
-    def _normalize_text(self, text: str) -> str:
+    def _normalize_text(self, text: str, comma: str, period: str) -> str:
         normalized = text.strip()
-        normalized = normalized.replace(",", "、")
-        normalized = normalized.replace("，", "、")
-        normalized = normalized.replace(".", "。")
-        normalized = normalized.replace("．", "。")
+        normalized = normalized.replace(",", comma)
+        normalized = normalized.replace("，", comma)
+        normalized = normalized.replace(".", period)
+        normalized = normalized.replace("．", period)
         normalized = re.sub(r"\s+", " ", normalized)
-        normalized = re.sub(r"。{2,}", "。", normalized)
-        normalized = re.sub(r"、{2,}", "、", normalized)
+        normalized = re.sub(rf"{re.escape(period)}{{2,}}", period, normalized)
+        normalized = re.sub(rf"{re.escape(comma)}{{2,}}", comma, normalized)
         normalized = re.sub(r"？{2,}", "？", normalized)
         normalized = re.sub(r"！{2,}", "！", normalized)
         return normalized

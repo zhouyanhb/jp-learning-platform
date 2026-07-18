@@ -50,6 +50,7 @@ belong in the domain layer.
 The workflow runtime primitives are documented in `docs/workflow-runtime.md`.
 Runtime observers expose stage progress without coupling stages to console
 output or file persistence.
+Local pipeline defaults are documented in `docs/pipeline-configuration.md`.
 The local audio transcribe CLI runner is documented in
 `docs/local-audio-srt-cli.md`.
 The Whisper transcription stage is documented in `docs/whisper-stage.md`.
@@ -73,6 +74,9 @@ Tool adapter resolution is handled by the registry documented in
 Local audio loading is documented in `docs/audio-loader.md`.
 Local structured JSON writing is implemented by the listening JSON writer
 adapter, with SRT available as an optional export writer.
+Local infrastructure configuration defaults are centralized in
+`jp_learning_platform.infrastructure.pipeline_config` and consumed by the
+adapters that call Whisper, WhisperX, Qwen, and subtitle quality code.
 Local CLI quality adapters provide optional WhisperX alignment, optional Qwen
 repair, subtitle merging, readability optimization, and final domain
 validation while preserving the workflow stage contracts. Local CLI progress

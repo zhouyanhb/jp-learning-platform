@@ -1272,3 +1272,65 @@ created by this commit
 ```
 feat(cli): default to listening json
 ```
+
+---
+
+# Session 026
+
+Date
+
+2026-07-18
+
+Roadmap
+
+Maintenance Pipeline Configuration Defaults
+
+Summary
+
+Consolidated local pipeline runtime defaults after reviewing the earlier
+`jp_project_backend` configuration and wired the current adapters to use the
+new typed configuration objects.
+
+Changes
+
+Added
+
+- Typed pipeline configuration defaults for Whisper, WhisperX, Qwen repair,
+  Qwen repair safety, subtitle merging, and readability
+- faster-whisper default options for best-of decoding, temperature, word
+  timestamps, VAD, previous-text conditioning, and hallucination silence
+  filtering
+- Documentation for maintaining local pipeline defaults
+- `output/` ignore rule for generated CLI artifacts
+
+Updated
+
+- Whisper, WhisperX, Qwen, subtitle quality, and readability adapters now
+  derive their backwards-compatible constants from centralized config objects
+
+Documentation
+
+- docs/pipeline-configuration.md
+- docs/local-audio-srt-cli.md
+- docs/architecture.md
+- README.md
+- CHANGELOG.md
+- .ai/ARCHITECTURE.md
+
+Tests
+
+- test_pipeline_config.py
+- test_faster_whisper_transcriber.py
+
+Validation
+
+- compileall ✔
+- pytest (173 passed)
+
+Commit
+
+created by this commit
+
+```
+feat(config): centralize pipeline defaults
+```

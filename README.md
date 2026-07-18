@@ -88,6 +88,11 @@ Domain factories, validators, and repository boundaries are documented in
 
 Workflow orchestration primitives are documented in `docs/workflow-runtime.md`.
 
+## Pipeline Configuration
+
+Local pipeline configuration defaults are documented in
+`docs/pipeline-configuration.md`.
+
 ## Local Audio Transcribe CLI
 
 Local audio and folder transcription to structured JSON is documented in

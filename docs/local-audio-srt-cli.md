@@ -39,6 +39,10 @@ Defaults are:
 - `--device cpu`
 - `--compute-type int8`
 
+Lower-level transcription defaults such as beam size, word timestamps, VAD,
+and hallucination silence filtering are centralized in
+`docs/pipeline-configuration.md`.
+
 ## Quality Stages
 
 The CLI now runs the full subtitle quality workflow:

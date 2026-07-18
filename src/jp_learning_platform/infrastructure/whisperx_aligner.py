@@ -6,12 +6,15 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from jp_learning_platform.domain import Segment, Sentence, TimeRange, Word
+from jp_learning_platform.infrastructure.pipeline_config import (
+    DEFAULT_WHISPERX_ALIGNMENT_CONFIG,
+)
 from jp_learning_platform.workflow.whisperx_alignment_stage import (
     WhisperXAlignment,
     WhisperXAlignmentRequest,
 )
 
-DEFAULT_WHISPERX_LANGUAGE = "ja"
+DEFAULT_WHISPERX_LANGUAGE = DEFAULT_WHISPERX_ALIGNMENT_CONFIG.language_code
 
 
 class WhisperXDependencyError(RuntimeError):

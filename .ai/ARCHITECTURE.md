@@ -193,6 +193,12 @@ Local subtitle quality adapter implementation lives in:
 src/jp_learning_platform/infrastructure/subtitle_quality.py
 ```
 
+Local subtitle pipeline configuration defaults live in:
+
+```
+src/jp_learning_platform/infrastructure/pipeline_config.py
+```
+
 Whisper stage implementation lives in:
 
 ```
