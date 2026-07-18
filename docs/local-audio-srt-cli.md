@@ -68,6 +68,10 @@ Enable local Qwen repair by passing a GGUF model path:
 python -m jp_learning_platform transcribe audio.mp3 --qwen-model-path models/qwen.gguf
 ```
 
+Local Qwen repair uses a conservative safety policy. If a model output appears
+to add or remove spoken content, the repairer keeps the original aligned text
+so subtitle timing and word timing remain authoritative.
+
 Install the optional Qwen dependency first:
 
 ```bash

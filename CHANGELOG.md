@@ -14,6 +14,8 @@ All notable changes to this project are documented in this file.
 - Added per-file CLI progress logging for local audio SRT generation.
 - Added per-stage JSON artifact persistence under `output/.work/` for local
   audio SRT generation.
+- Added a conservative Qwen repair safety policy that rejects likely content
+  additions or deletions before subtitle construction.
 
 ### Fixed
 

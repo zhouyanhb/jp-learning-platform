@@ -1104,3 +1104,54 @@ created by this commit
 ```
 feat(cli): add progress artifacts
 ```
+
+---
+
+# Session 023
+
+Date
+
+2026-07-18
+
+Roadmap
+
+Maintenance Qwen Repair Safety
+
+Summary
+
+Added a conservative safety layer for Qwen transcript repair so model output
+cannot silently add or remove spoken content before subtitle construction.
+
+Changes
+
+Added
+
+- Qwen repair safety decision model
+- Qwen repair safety policy
+- Candidate repair fallback to original aligned text when safety limits fail
+- Prompt constraints against adding, deleting, rewriting, summarizing, or
+  explaining content
+
+Documentation
+
+- docs/qwen-repair-stage.md
+- docs/local-audio-srt-cli.md
+- CHANGELOG.md
+
+Tests
+
+- test_qwen_repair_safety.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (161 passed)
+
+Commit
+
+created by this commit
+
+```
+feat(qwen): add repair safety policy
+```

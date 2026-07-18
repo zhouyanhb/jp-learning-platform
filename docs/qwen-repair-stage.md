@@ -23,6 +23,18 @@ The repairer returns a `QwenRepair`.
 Repair adapters may normalize transcript text while preserving timing carried
 by segments, sentences, and words.
 
+## Repair Safety
+
+Infrastructure Qwen adapters apply a conservative repair safety policy before
+accepting model output. The policy allows low-risk changes such as punctuation,
+whitespace cleanup, and small typo corrections, but rejects candidate text that
+appears to add or delete spoken content.
+
+When a candidate repair is rejected, the adapter falls back to the original
+segment text. Segment, sentence, and word timing remain anchored to the aligned
+audio timeline, so Qwen repair cannot silently introduce words that have no
+corresponding timing data.
+
 The stage validates that:
 
 - the document already has aligned segments to repair
