@@ -16,12 +16,14 @@ def test_word_subtitle_builder_uses_sentence_text_and_timing() -> None:
         text="日本語です。",
         time_range=TimeRange(0.0, 1.1),
         words=words,
+        speaker_id="speaker-1",
     )
     segment = Segment(
         position=0,
         text="日本語です。",
         time_range=TimeRange(0.0, 1.1),
         sentences=(sentence,),
+        speaker_id="speaker-1",
     )
 
     result = WordSubtitleBuilder().build(
@@ -37,6 +39,7 @@ def test_word_subtitle_builder_uses_sentence_text_and_timing() -> None:
     assert result.subtitles[0].index == 1
     assert result.subtitles[0].text == "日本語です。"
     assert result.subtitles[0].time_range == TimeRange(0.0, 1.1)
+    assert result.subtitles[0].speaker_id == "speaker-1"
 
 
 def test_word_subtitle_builder_falls_back_to_segment_text() -> None:
@@ -44,6 +47,7 @@ def test_word_subtitle_builder_falls_back_to_segment_text() -> None:
         position=0,
         text="日本語です。",
         time_range=TimeRange(0.0, 1.1),
+        speaker_id="speaker-2",
     )
 
     result = WordSubtitleBuilder().build(
@@ -57,3 +61,4 @@ def test_word_subtitle_builder_falls_back_to_segment_text() -> None:
 
     assert result.subtitles[0].text == "日本語です。"
     assert result.subtitles[0].time_range == TimeRange(0.0, 1.1)
+    assert result.subtitles[0].speaker_id == "speaker-2"

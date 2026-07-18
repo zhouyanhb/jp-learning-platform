@@ -30,11 +30,13 @@ class DomainModelFactory:
         start_seconds: float,
         end_seconds: float,
         confidence: float | None = None,
+        speaker_id: str | None = None,
     ) -> Word:
         return Word(
             text=text,
             time_range=self.create_time_range(start_seconds, end_seconds),
             confidence=confidence,
+            speaker_id=speaker_id,
         )
 
     def create_sentence(
@@ -43,11 +45,13 @@ class DomainModelFactory:
         start_seconds: float,
         end_seconds: float,
         words: Iterable[Word] = (),
+        speaker_id: str | None = None,
     ) -> Sentence:
         return Sentence(
             text=text,
             time_range=self.create_time_range(start_seconds, end_seconds),
             words=tuple(words),
+            speaker_id=speaker_id,
         )
 
     def create_segment(
@@ -57,12 +61,14 @@ class DomainModelFactory:
         start_seconds: float,
         end_seconds: float,
         sentences: Iterable[Sentence] = (),
+        speaker_id: str | None = None,
     ) -> Segment:
         return Segment(
             position=position,
             text=text,
             time_range=self.create_time_range(start_seconds, end_seconds),
             sentences=tuple(sentences),
+            speaker_id=speaker_id,
         )
 
     def create_subtitle(
@@ -71,11 +77,13 @@ class DomainModelFactory:
         text: str,
         start_seconds: float,
         end_seconds: float,
+        speaker_id: str | None = None,
     ) -> Subtitle:
         return Subtitle(
             index=index,
             text=text,
             time_range=self.create_time_range(start_seconds, end_seconds),
+            speaker_id=speaker_id,
         )
 
     def create_document(

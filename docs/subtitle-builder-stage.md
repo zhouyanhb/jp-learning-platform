@@ -19,6 +19,8 @@ The builder returns a `SubtitleBuild`.
 ## Build Output
 
 `SubtitleBuild` contains the source path and built domain `Subtitle` objects.
+The word-aware local builder preserves sentence or segment speaker identifiers
+on subtitles when upstream alignment data provides them.
 The stage validates that:
 
 - the document already has repaired segments to build from

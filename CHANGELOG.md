@@ -16,6 +16,8 @@ All notable changes to this project are documented in this file.
   audio SRT generation.
 - Added a conservative Qwen repair safety policy that rejects likely content
   additions or deletions before subtitle construction.
+- Added internal speaker metadata preservation so subtitle merging keeps
+  different speakers in separate SRT cues without displaying speaker labels.
 
 ### Fixed
 

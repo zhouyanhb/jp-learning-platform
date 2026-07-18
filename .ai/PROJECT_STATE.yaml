@@ -8,7 +8,7 @@ project:
 repository:
   branch: master
   working_tree: clean
-  remote_status: ahead_of_origin_by_5_commits
+  remote_status: ahead_of_origin_by_6_commits
   runnable: true
 
 architecture:
@@ -25,6 +25,8 @@ architecture:
     - Infrastructure wraps external SDKs.
     - Tool registry resolves external tools.
     - Plugins provide optional capabilities through public contracts.
+    - Speaker identifiers are internal subtitle metadata and are not written as
+      SRT speaker labels.
 
 roadmap:
   completed:
@@ -52,11 +54,11 @@ roadmap:
 
 latest_commit:
   hash: created_by_this_commit
-  message: feat(qwen): add repair safety policy
+  message: feat(subtitles): preserve speaker boundaries
 
 tests:
-  total: 161
-  passed: 161
+  total: 166
+  passed: 166
   failed: 0
 
 checks:

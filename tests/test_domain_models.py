@@ -34,10 +34,12 @@ def test_word_normalizes_text_and_confidence() -> None:
         text="  nihongo  ",
         time_range=TimeRange(0.0, 0.5),
         confidence=0.9,
+        speaker_id=" speaker-1 ",
     )
 
     assert word.text == "nihongo"
     assert word.confidence == 0.9
+    assert word.speaker_id == "speaker-1"
 
 
 def test_word_rejects_confidence_outside_probability_range() -> None:
@@ -53,20 +55,46 @@ def test_sentence_requires_words_inside_time_range() -> None:
 
 
 def test_segment_converts_sentence_collection_to_tuple() -> None:
-    sentence = Sentence(text="nihongo desu", time_range=TimeRange(0.0, 2.0))
+    sentence = Sentence(
+        text="nihongo desu",
+        time_range=TimeRange(0.0, 2.0),
+        speaker_id="speaker-1",
+    )
     segment = Segment(
         position=0,
         text="nihongo desu",
         time_range=TimeRange(0.0, 2.0),
         sentences=[sentence],
+        speaker_id=" speaker-1 ",
     )
 
     assert segment.sentences == (sentence,)
+    assert segment.speaker_id == "speaker-1"
+
+
+def test_sentence_rejects_empty_speaker_id() -> None:
+    with pytest.raises(ValueError, match="speaker_id"):
+        Sentence(
+            text="nihongo",
+            time_range=TimeRange(0.0, 1.0),
+            speaker_id=" ",
+        )
 
 
 def test_subtitle_uses_one_based_index() -> None:
     with pytest.raises(ValueError, match="index"):
         Subtitle(index=0, text="nihongo desu", time_range=TimeRange(0.0, 2.0))
+
+
+def test_subtitle_normalizes_optional_speaker_id() -> None:
+    subtitle = Subtitle(
+        index=1,
+        text="nihongo desu",
+        time_range=TimeRange(0.0, 2.0),
+        speaker_id=" speaker-2 ",
+    )
+
+    assert subtitle.speaker_id == "speaker-2"
 
 
 def test_document_converts_paths_and_collections() -> None:

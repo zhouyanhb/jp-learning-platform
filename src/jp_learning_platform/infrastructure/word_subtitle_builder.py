@@ -26,6 +26,7 @@ class WordSubtitleBuilder:
                     text=segment.text,
                     time_range=segment.time_range,
                     words=(),
+                    speaker_id=segment.speaker_id,
                 ),
             )
             for sentence in sentences:
@@ -34,6 +35,7 @@ class WordSubtitleBuilder:
                         index=len(subtitles) + 1,
                         text=sentence.text,
                         time_range=sentence.time_range,
+                        speaker_id=sentence.speaker_id or segment.speaker_id,
                     )
                 )
 

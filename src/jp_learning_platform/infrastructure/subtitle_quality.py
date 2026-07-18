@@ -69,6 +69,7 @@ class ConservativeSubtitleMerger:
             0 <= gap <= self.max_gap_seconds
             and len(combined_text) <= self.max_chars
             and not current.text.endswith(JAPANESE_TERMINAL_MARKS)
+            and not _speaker_boundary(current, nxt)
         )
 
     def _merge_pair(self, current: Subtitle, nxt: Subtitle) -> Subtitle:
@@ -79,6 +80,7 @@ class ConservativeSubtitleMerger:
                 current.time_range.start_seconds,
                 nxt.time_range.end_seconds,
             ),
+            speaker_id=current.speaker_id,
         )
 
 
@@ -98,6 +100,7 @@ class LocalReadabilityOptimizer:
                 index=subtitle.index,
                 text=self._normalize_text(subtitle.text),
                 time_range=subtitle.time_range,
+                speaker_id=subtitle.speaker_id,
             )
             for subtitle in request.subtitles
         )
@@ -149,9 +152,17 @@ def _reindex(subtitles: list[Subtitle]) -> tuple[Subtitle, ...]:
             index=index,
             text=subtitle.text,
             time_range=subtitle.time_range,
+            speaker_id=subtitle.speaker_id,
         )
         for index, subtitle in enumerate(subtitles, start=1)
     )
+
+
+def _speaker_boundary(current: Subtitle, nxt: Subtitle) -> bool:
+    if current.speaker_id is None and nxt.speaker_id is None:
+        return False
+
+    return current.speaker_id != nxt.speaker_id
 
 
 __all__ = [

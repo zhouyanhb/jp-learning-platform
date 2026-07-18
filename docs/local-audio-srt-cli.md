@@ -107,6 +107,10 @@ AudioLoader
 The generated subtitles preserve word-derived timing through the domain
 `Sentence` and `Word` objects before writing the final SRT text.
 
+When upstream alignment data includes speaker identifiers, the pipeline keeps
+different speakers in separate subtitle cues and prevents cross-speaker merging.
+The final SRT text does not display speaker labels.
+
 ## Progress and Stage Artifacts
 
 Each processed audio file emits one-line progress events for every stage:

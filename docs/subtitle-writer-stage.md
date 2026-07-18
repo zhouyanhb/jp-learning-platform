@@ -20,6 +20,8 @@ The writer returns a `SubtitleWrite`.
 ## Write Output
 
 `SubtitleWrite` contains the source path and output path produced by the writer.
+Speaker identifiers remain internal metadata. The local SRT writer emits only
+subtitle text and timing, without speaker labels.
 The stage validates that:
 
 - the document already has subtitles to write

@@ -20,6 +20,7 @@ def test_format_srt_subtitle_writes_index_timing_and_text() -> None:
         index=1,
         text="日本語です。",
         time_range=TimeRange(1.2, 3.45),
+        speaker_id="speaker-1",
     )
 
     assert (

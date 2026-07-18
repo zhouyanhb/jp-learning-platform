@@ -1155,3 +1155,65 @@ created by this commit
 ```
 feat(qwen): add repair safety policy
 ```
+
+---
+
+# Session 024
+
+Date
+
+2026-07-18
+
+Roadmap
+
+Maintenance Speaker Boundary Subtitles
+
+Summary
+
+Preserved internal speaker metadata through subtitle construction and quality
+stages so short dialogue turns from different speakers remain separate while
+SRT output stays label-free.
+
+Changes
+
+Added
+
+- Optional speaker identifiers on word, sentence, segment, and subtitle domain
+  models
+- Speaker metadata propagation through Whisper, WhisperX, Qwen repair, subtitle
+  building, merging, and readability optimization adapters
+- Cross-speaker merge prevention in the conservative subtitle merger
+- SRT writer coverage confirming speaker labels are not emitted
+
+Documentation
+
+- docs/domain-models.md
+- docs/subtitle-builder-stage.md
+- docs/subtitle-merger-stage.md
+- docs/subtitle-writer-stage.md
+- docs/local-audio-srt-cli.md
+- docs/architecture.md
+- CHANGELOG.md
+
+Tests
+
+- test_domain_models.py
+- test_word_subtitle_builder.py
+- test_subtitle_quality_adapters.py
+- test_srt_subtitle_writer.py
+- test_whisperx_alignment_stage.py
+- test_qwen_repair_safety.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (166 passed)
+
+Commit
+
+created by this commit
+
+```
+feat(subtitles): preserve speaker boundaries
+```

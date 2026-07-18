@@ -20,6 +20,8 @@ The merger returns a `SubtitleMerge`.
 ## Merge Output
 
 `SubtitleMerge` contains the source path and merged domain `Subtitle` objects.
+Local conservative merging never merges adjacent subtitles when their speaker
+identifiers differ, even when both cues are short and close together.
 The stage validates that:
 
 - the document already has subtitles to merge

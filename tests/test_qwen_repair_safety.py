@@ -28,20 +28,37 @@ class FakeLlamaCppQwenRepairer(LlamaCppQwenRepairer):
 
 def _segment(text: str) -> Segment:
     words = (
-        Word(text="今日", time_range=TimeRange(0.0, 0.4), confidence=0.9),
-        Word(text="日本語", time_range=TimeRange(0.5, 1.1), confidence=0.9),
-        Word(text="勉強", time_range=TimeRange(1.2, 1.8), confidence=0.9),
+        Word(
+            text="今日",
+            time_range=TimeRange(0.0, 0.4),
+            confidence=0.9,
+            speaker_id="speaker-1",
+        ),
+        Word(
+            text="日本語",
+            time_range=TimeRange(0.5, 1.1),
+            confidence=0.9,
+            speaker_id="speaker-1",
+        ),
+        Word(
+            text="勉強",
+            time_range=TimeRange(1.2, 1.8),
+            confidence=0.9,
+            speaker_id="speaker-1",
+        ),
     )
     sentence = Sentence(
         text=text,
         time_range=TimeRange(0.0, 2.0),
         words=words,
+        speaker_id="speaker-1",
     )
     return Segment(
         position=0,
         text=text,
         time_range=TimeRange(0.0, 2.0),
         sentences=(sentence,),
+        speaker_id="speaker-1",
     )
 
 
@@ -108,3 +125,5 @@ def test_llama_qwen_repairer_accepts_low_risk_typo_repair() -> None:
     result = repairer.repair(_request(segment))
 
     assert result.segments[0].text == "今日は日本語を勉強します"
+    assert result.segments[0].speaker_id == "speaker-1"
+    assert result.segments[0].sentences[0].speaker_id == "speaker-1"

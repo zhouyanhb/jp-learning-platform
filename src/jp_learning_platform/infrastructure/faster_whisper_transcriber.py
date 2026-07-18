@@ -104,12 +104,14 @@ class FasterWhisperTranscriber:
             text=text,
             time_range=time_range,
             words=words,
+            speaker_id=_speaker_id(external_segment),
         )
         return Segment(
             position=position,
             text=text,
             time_range=time_range,
             sentences=(sentence,),
+            speaker_id=_speaker_id(external_segment),
         )
 
     def _convert_word(self, external_word: Any) -> Word:
@@ -121,7 +123,16 @@ class FasterWhisperTranscriber:
                 end_seconds=float(getattr(external_word, "end")),
             ),
             confidence=float(probability) if probability is not None else None,
+            speaker_id=_speaker_id(external_word),
         )
+
+
+def _speaker_id(source: Any) -> str | None:
+    value = getattr(source, "speaker", getattr(source, "speaker_id", None))
+    if value is None:
+        return None
+
+    return str(value).strip() or None
 
 
 __all__ = [

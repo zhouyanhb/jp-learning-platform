@@ -28,6 +28,13 @@ def _normalize_text(value: str, field_name: str) -> str:
     return normalized
 
 
+def _normalize_optional_text(value: str | None, field_name: str) -> str | None:
+    if value is None:
+        return None
+
+    return _normalize_text(value, field_name)
+
+
 def _normalize_seconds(value: float, field_name: str) -> float:
     if isinstance(value, bool):
         raise TypeError(f"{field_name} must be a number of seconds.")
@@ -120,6 +127,7 @@ class Word:
     text: str
     time_range: TimeRange
     confidence: float | None = None
+    speaker_id: str | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.time_range, TimeRange):
@@ -131,6 +139,11 @@ class Word:
             "confidence",
             _normalize_optional_confidence(self.confidence),
         )
+        object.__setattr__(
+            self,
+            "speaker_id",
+            _normalize_optional_text(self.speaker_id, "speaker_id"),
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -138,6 +151,7 @@ class Sentence:
     text: str
     time_range: TimeRange
     words: tuple[Word, ...] = ()
+    speaker_id: str | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.time_range, TimeRange):
@@ -150,6 +164,11 @@ class Sentence:
 
         object.__setattr__(self, "text", _normalize_text(self.text, "text"))
         object.__setattr__(self, "words", words)
+        object.__setattr__(
+            self,
+            "speaker_id",
+            _normalize_optional_text(self.speaker_id, "speaker_id"),
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -158,6 +177,7 @@ class Segment:
     text: str
     time_range: TimeRange
     sentences: tuple[Sentence, ...] = ()
+    speaker_id: str | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.time_range, TimeRange):
@@ -175,6 +195,11 @@ class Segment:
         )
         object.__setattr__(self, "text", _normalize_text(self.text, "text"))
         object.__setattr__(self, "sentences", sentences)
+        object.__setattr__(
+            self,
+            "speaker_id",
+            _normalize_optional_text(self.speaker_id, "speaker_id"),
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -182,6 +207,7 @@ class Subtitle:
     index: int
     text: str
     time_range: TimeRange
+    speaker_id: str | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.time_range, TimeRange):
@@ -193,6 +219,11 @@ class Subtitle:
             _normalize_position(self.index, "index", MIN_SUBTITLE_INDEX),
         )
         object.__setattr__(self, "text", _normalize_text(self.text, "text"))
+        object.__setattr__(
+            self,
+            "speaker_id",
+            _normalize_optional_text(self.speaker_id, "speaker_id"),
+        )
 
 
 @dataclass(frozen=True, slots=True)

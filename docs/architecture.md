@@ -76,6 +76,8 @@ repair, subtitle merging, readability optimization, and final domain
 validation while preserving the workflow stage contracts. Local CLI progress
 reporting and JSON stage artifact storage are infrastructure adapters wired by
 the entrypoint and runner.
+Speaker metadata remains internal domain metadata for preserving dialogue
+boundaries; SRT writing does not add speaker labels.
 
 ## Plugins
 

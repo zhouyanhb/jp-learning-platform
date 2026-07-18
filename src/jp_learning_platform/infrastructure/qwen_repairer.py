@@ -292,6 +292,7 @@ class LlamaCppQwenRepairer:
         previous_text = texts[index - 1] if index > 0 else ""
         next_text = texts[index + 1] if index + 1 < len(texts) else ""
         repaired_text = self._repair_text(previous_text, segment.text, next_text)
+        speaker_id = _segment_speaker_id(segment)
         words = tuple(
             word
             for sentence in segment.sentences
@@ -301,12 +302,14 @@ class LlamaCppQwenRepairer:
             text=repaired_text,
             time_range=segment.time_range,
             words=words,
+            speaker_id=speaker_id,
         )
         return Segment(
             position=segment.position,
             text=repaired_text,
             time_range=segment.time_range,
             sentences=(sentence,),
+            speaker_id=speaker_id,
         )
 
     def _repair_text(self, previous_text: str, current_text: str, next_text: str) -> str:
@@ -391,6 +394,17 @@ NEXT:
             cleaned = cleaned.replace(marker, "")
 
         return " ".join(cleaned.split())
+
+
+def _segment_speaker_id(segment: Segment) -> str | None:
+    if segment.speaker_id is not None:
+        return segment.speaker_id
+
+    for sentence in segment.sentences:
+        if sentence.speaker_id is not None:
+            return sentence.speaker_id
+
+    return None
 
 
 __all__ = [

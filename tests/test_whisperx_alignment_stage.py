@@ -14,6 +14,7 @@ from jp_learning_platform.domain import (
     TimeRange,
     Word,
 )
+from jp_learning_platform.infrastructure.whisperx_aligner import WhisperXAlignerAdapter
 from jp_learning_platform.workflow import (
     InvalidWhisperXAlignerError,
     InvalidWhisperXAlignmentError,
@@ -221,3 +222,53 @@ def test_whisperx_alignment_is_immutable() -> None:
 
     with pytest.raises(FrozenInstanceError):
         alignment.segments = ()
+
+
+def test_whisperx_adapter_maps_external_speaker_labels() -> None:
+    adapter = WhisperXAlignerAdapter(device="cpu")
+
+    segments = adapter._to_domain_segments(
+        (
+            {
+                "text": "そう",
+                "start": 0.0,
+                "end": 0.4,
+                "speaker": "speaker-1",
+                "words": (
+                    {
+                        "word": "そう",
+                        "start": 0.0,
+                        "end": 0.4,
+                        "speaker": "speaker-1",
+                    },
+                ),
+            },
+            {
+                "text": "はい",
+                "start": 0.5,
+                "end": 0.9,
+                "speaker": "speaker-2",
+                "words": (
+                    {
+                        "word": "はい",
+                        "start": 0.5,
+                        "end": 0.9,
+                        "speaker": "speaker-2",
+                    },
+                ),
+            },
+        )
+    )
+
+    assert tuple(segment.speaker_id for segment in segments) == (
+        "speaker-1",
+        "speaker-2",
+    )
+    assert tuple(segment.sentences[0].speaker_id for segment in segments) == (
+        "speaker-1",
+        "speaker-2",
+    )
+    assert tuple(segment.sentences[0].words[0].speaker_id for segment in segments) == (
+        "speaker-1",
+        "speaker-2",
+    )
