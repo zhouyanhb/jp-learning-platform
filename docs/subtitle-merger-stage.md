@@ -22,6 +22,9 @@ The merger returns a `SubtitleMerge`.
 `SubtitleMerge` contains the source path and merged domain `Subtitle` objects.
 Local conservative merging never merges adjacent subtitles when their speaker
 identifiers differ, even when both cues are short and close together.
+It also uses Japanese morphological analysis to treat complete predicate
+endings as hard boundaries even when Qwen did not add a final period, so a
+complete sentence is not joined to the next prompt or heading.
 The stage validates that:
 
 - the document already has subtitles to merge

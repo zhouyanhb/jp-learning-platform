@@ -75,8 +75,24 @@ def test_stage_artifact_store_uses_ordered_stage_filenames(tmp_path: Path) -> No
 
     assert store.stage_path(source_path, "whisper").name == "01_whisper.json"
     assert store.stage_path(source_path, "whisperx-alignment").name == "02_align.json"
-    assert store.stage_path(source_path, "qwen-repair").name == "03_repair.json"
-    assert store.stage_path(source_path, "subtitle-writer").name == "08_write.json"
+    assert (
+        store.stage_path(source_path, "sentence-boundary-detection").name
+        == "03_sentence_boundary_candidates.json"
+    )
+    assert store.stage_path(source_path, "qwen-repair").name == "04_repair.json"
+    assert (
+        store.stage_path(source_path, "japanese-word-normalization").name
+        == "05_word_normalization.json"
+    )
+    assert (
+        store.stage_path(source_path, "homophone-resolution").name
+        == "05_homophone_resolution.json"
+    )
+    assert (
+        store.stage_path(source_path, "sentence-boundary-resolver").name
+        == "06_sentence_boundary_resolution.json"
+    )
+    assert store.stage_path(source_path, "subtitle-writer").name == "11_write.json"
 
 
 def test_console_progress_reporter_formats_stage_progress() -> None:

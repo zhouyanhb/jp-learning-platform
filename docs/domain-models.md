@@ -37,10 +37,18 @@ indexes are one-based to match subtitle file conventions. A subtitle may keep an
 optional speaker identifier for merge decisions; SRT output does not include
 speaker labels.
 
+## SentenceBoundaryCandidate
+
+`SentenceBoundaryCandidate` represents a possible sentence break detected from
+aligned word timing and acoustic pause evidence. It records the segment
+position, the word boundary, the pause interval, a boundary timestamp, an
+acoustic score, and the detector source.
+
 ## Document
 
 `Document` represents the pipeline document being processed. It owns the source
-path plus the current segment and subtitle collections.
+path plus the current segment, subtitle, and sentence-boundary candidate
+collections.
 
 ## PipelineContext
 

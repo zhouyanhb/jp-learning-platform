@@ -39,6 +39,7 @@ class StageExecutionEvent:
     stage_name: str
     context: PipelineContext
     elapsed_seconds: float | None = None
+    data: object | None = None
     error_message: str = ""
 
     def __post_init__(self) -> None:
@@ -91,6 +92,7 @@ class StageExecutionObserver(Protocol):
 class StageResult:
     stage_name: str
     context: PipelineContext
+    data: object | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.context, PipelineContext):
@@ -198,6 +200,7 @@ class ExecutionEngine:
                         stage_name=stage_name,
                         context=current_context,
                         elapsed_seconds=monotonic() - started_at,
+                        data=result.data,
                     )
                 )
 

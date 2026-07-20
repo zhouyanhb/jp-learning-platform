@@ -18,5 +18,7 @@ dist/
 *.egg-info/
 
 output/
+models/
+input/
 
 .DS_Store

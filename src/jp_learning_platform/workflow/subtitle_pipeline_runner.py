@@ -23,6 +23,14 @@ from jp_learning_platform.workflow.progress import (
     StageArtifactRecorder,
 )
 from jp_learning_platform.workflow.qwen_repair_stage import QwenRepairStage, QwenRepairer
+from jp_learning_platform.workflow.homophone_stage import (
+    HomophoneResolutionStage,
+    HomophoneResolver,
+)
+from jp_learning_platform.workflow.japanese_word_stage import (
+    JapaneseWordNormalizationStage,
+    JapaneseWordNormalizer,
+)
 from jp_learning_platform.workflow.readability_optimizer_stage import (
     ReadabilityOptimizer,
     ReadabilityOptimizerStage,
@@ -33,6 +41,12 @@ from jp_learning_platform.workflow.runtime import (
     StageExecutionEvent,
     Workflow,
     create_pipeline,
+)
+from jp_learning_platform.workflow.sentence_boundary_stage import (
+    SentenceBoundaryDetectionStage,
+    SentenceBoundaryDetector,
+    SentenceBoundaryResolver,
+    SentenceBoundaryResolverStage,
 )
 from jp_learning_platform.workflow.subtitle_builder_stage import (
     SubtitleBuilder,
@@ -157,6 +171,7 @@ class _PipelineRunProgress:
             status=PipelineProgressStatus.SUCCEEDED,
             context=event.context,
             elapsed_seconds=event.elapsed_seconds,
+            data=event.data,
         )
 
     def stage_failed(self, event: StageExecutionEvent) -> None:
@@ -178,7 +193,11 @@ class SubtitlePipelineRunner:
     builder: SubtitleBuilder
     writer: SubtitleWriter
     aligner: WhisperXAligner | None = None
+    word_normalizer: JapaneseWordNormalizer | None = None
+    sentence_boundary_detector: SentenceBoundaryDetector | None = None
     repairer: QwenRepairer | None = None
+    homophone_resolver: HomophoneResolver | None = None
+    sentence_boundary_resolver: SentenceBoundaryResolver | None = None
     merger: SubtitleMerger | None = None
     optimizer: ReadabilityOptimizer | None = None
     validator: SubtitleValidator | None = None
@@ -256,8 +275,24 @@ class SubtitlePipelineRunner:
         if self.aligner is not None:
             stages.append(WhisperXAlignmentStage(self.aligner))
 
+        if self.sentence_boundary_detector is not None:
+            stages.append(
+                SentenceBoundaryDetectionStage(self.sentence_boundary_detector)
+            )
+
         if self.repairer is not None:
             stages.append(QwenRepairStage(self.repairer))
+
+        if self.word_normalizer is not None:
+            stages.append(JapaneseWordNormalizationStage(self.word_normalizer))
+
+        if self.homophone_resolver is not None:
+            stages.append(HomophoneResolutionStage(self.homophone_resolver))
+
+        if self.sentence_boundary_resolver is not None:
+            stages.append(
+                SentenceBoundaryResolverStage(self.sentence_boundary_resolver)
+            )
 
         stages.append(SubtitleBuilderStage(self.builder))
 

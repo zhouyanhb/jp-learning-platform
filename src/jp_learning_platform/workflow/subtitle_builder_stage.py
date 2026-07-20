@@ -153,6 +153,9 @@ class SubtitleBuilderStage:
             source_path=context.document.source_path,
             segments=context.document.segments,
             subtitles=build.subtitles,
+            sentence_boundary_candidates=(
+                context.document.sentence_boundary_candidates
+            ),
         )
         next_context = PipelineContext(
             run_id=context.run_id,

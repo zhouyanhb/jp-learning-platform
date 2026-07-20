@@ -10,6 +10,7 @@ from jp_learning_platform.domain import (
     PipelineContext,
     Segment,
     Sentence,
+    SentenceBoundaryCandidate,
     Subtitle,
     TimeRange,
     Word,
@@ -108,16 +109,26 @@ def test_document_converts_paths_and_collections() -> None:
         text="nihongo desu",
         time_range=TimeRange(0.0, 2.0),
     )
+    candidate = SentenceBoundaryCandidate(
+        segment_position=0,
+        after_word_index=1,
+        boundary_time_seconds=1.1,
+        pause_time_range=TimeRange(1.0, 1.2),
+        acoustic_score=0.9,
+        source="torch-energy-vad",
+    )
     source_path = Path("audio/input.wav")
     document = Document(
         source_path=source_path,
         segments=[segment],
         subtitles=[subtitle],
+        sentence_boundary_candidates=[candidate],
     )
 
     assert document.source_path == source_path
     assert document.segments == (segment,)
     assert document.subtitles == (subtitle,)
+    assert document.sentence_boundary_candidates == (candidate,)
 
 
 def test_pipeline_context_identifies_document_and_workspace() -> None:

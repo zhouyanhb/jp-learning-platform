@@ -27,17 +27,45 @@ python -m jp_learning_platform transcribe audio.mp3 --export-srt
 The command reports per-file stage progress while it runs. Progress is written
 to stderr so stdout can continue to list the final generated JSON paths.
 
-ASR model settings can be supplied from the CLI:
+ASR model settings can be supplied from the CLI. Kotoba Whisper v2.1 is the
+default ASR backend:
 
 ```bash
-python -m jp_learning_platform transcribe audio.mp3 --model-size small --device cpu --compute-type int8
+python -m jp_learning_platform transcribe audio.mp3
+python -m jp_learning_platform transcribe audio.mp3 --asr-model kotoba-whisper-v2.0
+python -m jp_learning_platform transcribe audio.mp3 --asr-backend reazon-speech
+python -m jp_learning_platform transcribe audio.mp3 --asr-backend faster-whisper --model-size small --device cpu --compute-type int8
 ```
 
 Defaults are:
 
-- `--model-size large-v3`
+- `--asr-backend kotoba-whisper`
+- `--asr-model kotoba-tech/kotoba-whisper-v2.1`
+- `--asr-model reazon-research/reazonspeech-nemo-v2` for
+  `--asr-backend reazon-speech`
 - `--device cpu`
-- `--compute-type int8`
+- `--asr-chunk-length-seconds 15.0`
+- `--asr-chunk-overlap-seconds 2.0` for `--asr-backend reazon-speech`
+- `--asr-batch-size 16`
+- `--model-size large-v3` for `--asr-backend faster-whisper`
+- `--compute-type int8` for `--asr-backend faster-whisper`
+
+The default Kotoba adapter uses the standard Transformers ASR pipeline and does
+not load Kotoba's remote post-processing pipeline, so the main runtime
+requirements do not include `stable-ts`, `punctuators`, or `openai-whisper`.
+When the v2.1 weights are used through this standard path, the adapter reuses
+the v2.0 processor files because the v2.1 repository is primarily the model
+weight and remote-pipeline wrapper.
+
+The optional ReazonSpeech backend uses the official `reazonspeech.nemo.asr`
+adapter when the default model id is selected. Long audio is split into
+overlapping chunks before being sent to ReazonSpeech, then chunk-local
+timestamps are shifted back onto the original audio timeline. Install it
+separately before running `--asr-backend reazon-speech`:
+
+```bash
+python -m pip install 'git+https://github.com/reazon-research/ReazonSpeech.git#subdirectory=pkg/nemo-asr'
+```
 
 Lower-level transcription defaults such as beam size, word timestamps, VAD,
 and hallucination silence filtering are centralized in
@@ -51,7 +79,11 @@ The CLI now runs the full subtitle quality workflow:
 AudioLoader
 -> WhisperStage
 -> WhisperXAlignmentStage
--> QwenRepairStage
+-> SentenceBoundaryDetectionStage
+-> QwenRepairStage (disabled by default)
+-> JapaneseWordNormalizationStage
+-> HomophoneResolutionStage (optional)
+-> SentenceBoundaryResolverStage
 -> SubtitleBuilderStage
 -> SubtitleMergerStage
 -> ReadabilityOptimizerStage
@@ -59,18 +91,73 @@ AudioLoader
 -> SubtitleWriterStage
 ```
 
-WhisperX and Qwen are external-model stages. By default, their pass-through
-adapters keep the pipeline runnable without additional model files. Enable real
-WhisperX alignment with:
+WhisperX and Qwen are external-model integrations, but only WhisperX runs by
+default. The CLI runs real WhisperX alignment after ASR transcription. Skip
+forced alignment only when the original Whisper timings should be kept:
 
 ```bash
-python -m jp_learning_platform transcribe audio.mp3 --enable-whisperx
+python -m jp_learning_platform transcribe audio.mp3 --disable-whisperx
 ```
 
-Install the optional alignment dependency first:
+Install the alignment dependency first:
 
 ```bash
 python -m pip install -e ".[align]"
+```
+
+After alignment, the CLI uses torch/torchaudio waveform energy around aligned
+word gaps to record acoustic sentence-boundary candidates. Candidates are kept
+by time so they can still be applied if optional Qwen repair changes word
+boundaries. The final sentence split is resolved later, after the current text
+and punctuation are available. Skip both boundary stages only when the original
+segment-level sentence grouping should be kept:
+
+```bash
+python -m jp_learning_platform transcribe audio.mp3 --disable-sentence-boundaries
+```
+
+Install the VAD dependency first:
+
+```bash
+python -m pip install -e ".[vad]"
+```
+
+After the optional Qwen repair workflow boundary, Japanese word timing
+normalization maps the current transcript text back onto aligned timing units.
+SudachiPy is used when available, so final text such as `天気` becomes the final
+word even if the pre-normalization ASR pieces were `天` and `気`:
+
+```bash
+python -m pip install -e ".[japanese]"
+```
+
+Skip this only when the raw ASR/aligner word pieces should be preserved in the
+final JSON:
+
+```bash
+python -m jp_learning_platform transcribe audio.mp3 --disable-word-normalization
+```
+
+Homophone semantic resolution is available after word normalization, but is
+disabled by default because it loads a Japanese masked language model. It is
+not a free text repair step: candidates must have the same Sudachi reading and
+compatible part of speech, and the language model only decides whether a
+same-reading candidate is more likely in the current sentence context:
+
+```bash
+python -m jp_learning_platform transcribe audio.mp3 --enable-homophone-resolver
+```
+
+Tune the masked language model and candidate search breadth when needed:
+
+```bash
+python -m jp_learning_platform transcribe audio.mp3 --enable-homophone-resolver --homophone-model-id tohoku-nlp/bert-base-japanese-v3 --homophone-top-k 120 --homophone-score-margin 0.05
+```
+
+Install the optional tokenizer/runtime support first:
+
+```bash
+python -m pip install -e ".[homophone]"
 ```
 
 Enable pyannote.audio speaker diarization when speaker identifiers should be
@@ -94,17 +181,28 @@ timed segments first, then pyannote speaker turns are matched to words by time
 overlap. When a sentence contains multiple speakers, it is split into
 speaker-specific segment runs before subtitle building.
 
-Enable local Qwen repair by passing a GGUF model path:
+Local Qwen repair is disabled by default. The default command does not load
+llama.cpp, call the local Qwen model, or apply Qwen text edits:
 
 ```bash
-python -m jp_learning_platform transcribe audio.mp3 --qwen-model-path models/qwen.gguf
+python -m jp_learning_platform transcribe audio.mp3
 ```
 
 Local Qwen repair uses a conservative safety policy. If a model output appears
 to add or remove spoken content, the repairer keeps the original aligned text
 so subtitle timing and word timing remain authoritative.
 
-Install the optional Qwen dependency first:
+Enable repair or override the model path when needed:
+
+```bash
+python -m jp_learning_platform transcribe audio.mp3 --enable-qwen
+python -m jp_learning_platform transcribe audio.mp3 --qwen-model-path models/Qwen2.5-7B-Instruct-Q4_K_M.gguf
+```
+
+`--disable-qwen` is still accepted as an explicit no-op for scripts that want
+to state the default.
+
+Install the Qwen dependency first:
 
 ```bash
 python -m pip install -e ".[qwen]"
@@ -112,11 +210,18 @@ python -m pip install -e ".[qwen]"
 
 ## ASR Dependency
 
-The command uses the faster-whisper infrastructure adapter for speech
-recognition. Install the optional ASR dependencies before running transcription:
+The command uses the Kotoba Whisper infrastructure adapter for speech
+recognition by default. Install the optional ASR dependencies before running
+Kotoba or faster-whisper transcription:
 
 ```bash
 python -m pip install -e ".[asr]"
+```
+
+Install the ReazonSpeech backend separately:
+
+```bash
+python -m pip install 'git+https://github.com/reazon-research/ReazonSpeech.git#subdirectory=pkg/nemo-asr'
 ```
 
 ## Pipeline
@@ -127,7 +232,11 @@ The first-stage local CLI uses the existing workflow contracts:
 AudioLoader
 -> WhisperStage
 -> WhisperXAlignmentStage
--> QwenRepairStage
+-> SentenceBoundaryDetectionStage
+-> QwenRepairStage (disabled by default)
+-> JapaneseWordNormalizationStage
+-> HomophoneResolutionStage (optional)
+-> SentenceBoundaryResolverStage
 -> WordSubtitleBuilder
 -> ConservativeSubtitleMerger
 -> LocalReadabilityOptimizer
@@ -167,12 +276,15 @@ output/.work/<run-name>/<audio-name>/manifest.json
 output/.work/<run-name>/<audio-name>/00_audio_load.json
 output/.work/<run-name>/<audio-name>/01_whisper.json
 output/.work/<run-name>/<audio-name>/02_align.json
-output/.work/<run-name>/<audio-name>/03_repair.json
-output/.work/<run-name>/<audio-name>/04_build.json
-output/.work/<run-name>/<audio-name>/05_merge.json
-output/.work/<run-name>/<audio-name>/06_readability.json
-output/.work/<run-name>/<audio-name>/07_validate.json
-output/.work/<run-name>/<audio-name>/08_write.json
+output/.work/<run-name>/<audio-name>/03_sentence_boundary_candidates.json
+output/.work/<run-name>/<audio-name>/04_repair.json
+output/.work/<run-name>/<audio-name>/05_word_normalization.json
+output/.work/<run-name>/<audio-name>/06_sentence_boundary_resolution.json
+output/.work/<run-name>/<audio-name>/07_build.json
+output/.work/<run-name>/<audio-name>/08_merge.json
+output/.work/<run-name>/<audio-name>/09_readability.json
+output/.work/<run-name>/<audio-name>/10_validate.json
+output/.work/<run-name>/<audio-name>/11_write.json
 ```
 
 Artifacts contain the source path, output path, file index, stage status,

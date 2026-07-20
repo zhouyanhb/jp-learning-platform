@@ -37,3 +37,10 @@ The stage fails fast when:
 
 The stage does not decode audio, call external SDKs, or resolve tools by itself.
 Those responsibilities remain outside the workflow layer.
+
+The local CLI wires this contract to `KotobaWhisperTranscriber` by default,
+using `kotoba-tech/kotoba-whisper-v2.1`. Pass
+`--asr-model kotoba-whisper-v2.0` to use Kotoba Whisper v2.0, or
+`--asr-backend reazon-speech` to use
+`reazon-research/reazonspeech-nemo-v2`. Pass `--asr-backend faster-whisper` to
+use the older faster-whisper adapter.

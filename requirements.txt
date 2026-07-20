@@ -1,0 +1,19 @@
+# Full subtitle pipeline runtime dependencies.
+transformers>=4.39
+accelerate>=0.28
+faster-whisper>=1.0
+whisperx>=3.3
+sudachipy>=0.6
+sudachidict-core>=2024.1
+fugashi>=1.3
+unidic-lite>=1.0
+pyannote.audio==3.3.2
+torch
+torchaudio
+llama-cpp-python>=0.2
+
+# Optional ReazonSpeech NeMo backend:
+# python -m pip install 'git+https://github.com/reazon-research/ReazonSpeech.git#subdirectory=pkg/nemo-asr'
+
+# Test dependency.
+pytest>=8.0

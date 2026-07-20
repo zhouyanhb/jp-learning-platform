@@ -123,8 +123,14 @@ class FasterWhisperTranscriber:
         )
 
         if words:
-            start_seconds = min(start_seconds, words[0].time_range.start_seconds)
-            end_seconds = max(end_seconds, words[-1].time_range.end_seconds)
+            start_seconds = min(
+                start_seconds,
+                *(word.time_range.start_seconds for word in words),
+            )
+            end_seconds = max(
+                end_seconds,
+                *(word.time_range.end_seconds for word in words),
+            )
 
         time_range = TimeRange(
             start_seconds=start_seconds,

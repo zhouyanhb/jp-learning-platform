@@ -9,16 +9,23 @@ Qwen repair, subtitle quality, and readability code.
 
 ## Configuration Groups
 
-- `WhisperTranscriptionConfig` stores faster-whisper model and decoding
-  defaults, including Japanese language selection, beam search, word timing,
-  VAD, and hallucination silence filtering.
+- `WhisperTranscriptionConfig` stores ASR backend defaults. Kotoba Whisper v2.1
+  is the default first-pass transcriber, with v2.0 selectable by model id.
+  The same config keeps the ReazonSpeech NeMo v2 model id and faster-whisper
+  fallback settings such as beam search, word timing, VAD, and hallucination
+  silence filtering.
 - `WhisperXAlignmentConfig` stores forced-alignment language defaults.
 - `PyannoteDiarizationConfig` stores the speaker diarization model name and the
   Hugging Face token environment variable used by pyannote.audio.
-- `QwenRepairConfig` stores llama.cpp generation defaults for local Qwen
-  repair.
+- `QwenRepairConfig` stores the project-local GGUF model path and llama.cpp
+  generation defaults used when local Qwen repair is explicitly enabled.
 - `QwenRepairSafetyConfig` stores conservative acceptance thresholds for model
   repairs.
+- `SentenceBoundaryDetectionConfig` stores acoustic pause detection defaults,
+  including the minimum aligned word gap, VAD silence duration, sample rate,
+  frame size, and energy threshold ratio.
+- `SentenceBoundaryResolutionConfig` stores final sentence split
+  thresholds for candidate confidence and minimum readable sentence size.
 - `SubtitleMergeConfig` stores conservative subtitle merge timing, length, and
   Japanese terminal-mark defaults.
 - `ReadabilityConfig` stores Japanese punctuation normalization defaults.

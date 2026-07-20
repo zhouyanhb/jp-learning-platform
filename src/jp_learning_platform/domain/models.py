@@ -227,19 +227,81 @@ class Subtitle:
 
 
 @dataclass(frozen=True, slots=True)
+class SentenceBoundaryCandidate:
+    segment_position: int
+    after_word_index: int
+    boundary_time_seconds: float
+    pause_time_range: TimeRange
+    acoustic_score: float
+    source: str = "unknown"
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.pause_time_range, TimeRange):
+            raise TypeError("pause_time_range must be a TimeRange.")
+
+        boundary_time_seconds = _normalize_seconds(
+            self.boundary_time_seconds,
+            "boundary_time_seconds",
+        )
+        if not self.pause_time_range.contains(
+            TimeRange(boundary_time_seconds, boundary_time_seconds)
+        ):
+            raise ValueError(
+                "boundary_time_seconds must fall within the pause time range."
+            )
+
+        object.__setattr__(
+            self,
+            "segment_position",
+            _normalize_position(
+                self.segment_position,
+                "segment_position",
+                MIN_SEGMENT_POSITION,
+            ),
+        )
+        object.__setattr__(
+            self,
+            "after_word_index",
+            _normalize_position(self.after_word_index, "after_word_index", 0),
+        )
+        object.__setattr__(
+            self,
+            "boundary_time_seconds",
+            boundary_time_seconds,
+        )
+        acoustic_score = _normalize_optional_confidence(self.acoustic_score)
+        if acoustic_score is None:
+            raise TypeError("acoustic_score must be a number.")
+
+        object.__setattr__(self, "acoustic_score", acoustic_score)
+        object.__setattr__(self, "source", _normalize_text(self.source, "source"))
+
+
+@dataclass(frozen=True, slots=True)
 class Document:
     source_path: Path
     segments: tuple[Segment, ...] = ()
     subtitles: tuple[Subtitle, ...] = ()
+    sentence_boundary_candidates: tuple[SentenceBoundaryCandidate, ...] = ()
 
     def __post_init__(self) -> None:
         source_path = Path(self.source_path)
         segments = _tuple_of_type(self.segments, Segment, "segments")
         subtitles = _tuple_of_type(self.subtitles, Subtitle, "subtitles")
+        sentence_boundary_candidates = _tuple_of_type(
+            self.sentence_boundary_candidates,
+            SentenceBoundaryCandidate,
+            "sentence_boundary_candidates",
+        )
 
         object.__setattr__(self, "source_path", source_path)
         object.__setattr__(self, "segments", segments)
         object.__setattr__(self, "subtitles", subtitles)
+        object.__setattr__(
+            self,
+            "sentence_boundary_candidates",
+            sentence_boundary_candidates,
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -261,6 +323,7 @@ __all__ = [
     "PipelineContext",
     "Segment",
     "Sentence",
+    "SentenceBoundaryCandidate",
     "Subtitle",
     "TimeRange",
     "Word",

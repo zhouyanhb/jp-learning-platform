@@ -14,6 +14,7 @@ from jp_learning_platform.application import (
 from jp_learning_platform.domain import (
     Segment,
     Sentence,
+    SentenceBoundaryCandidate,
     TimeRange,
     ValidationResult,
     Word,
@@ -28,11 +29,21 @@ from jp_learning_platform.infrastructure import (
 )
 from jp_learning_platform.workflow import (
     DuplicateSubtitleOutputError,
+    HomophoneResolution,
+    HomophoneResolutionDecision,
+    HomophoneResolutionRequest,
+    JapaneseWordNormalization,
+    JapaneseWordNormalizationRequest,
     PipelineProgressEvent,
     QwenRepair,
+    QwenRepairDecision,
     QwenRepairRequest,
     ReadabilityOptimization,
     ReadabilityOptimizationRequest,
+    SentenceBoundaryDetection,
+    SentenceBoundaryDetectionRequest,
+    SentenceBoundaryResolution,
+    SentenceBoundaryResolutionRequest,
     SubtitleMerge,
     SubtitleMergeRequest,
     SubtitlePipelineRunner,
@@ -85,12 +96,104 @@ class RecordingAligner:
 
 
 @dataclass(slots=True)
+class RecordingWordNormalizer:
+    requests: list[JapaneseWordNormalizationRequest]
+
+    def normalize(
+        self,
+        request: JapaneseWordNormalizationRequest,
+    ) -> JapaneseWordNormalization:
+        self.requests.append(request)
+        return JapaneseWordNormalization(
+            source_path=request.source_path,
+            segments=request.segments,
+        )
+
+
+@dataclass(slots=True)
 class RecordingRepairer:
     requests: list[QwenRepairRequest]
 
     def repair(self, request: QwenRepairRequest) -> QwenRepair:
         self.requests.append(request)
         return QwenRepair(
+            source_path=request.source_path,
+            segments=request.segments,
+            decisions=(
+                QwenRepairDecision(
+                    segment_position=0,
+                    original_text="日本語です",
+                    raw_text="日本語です。",
+                    candidate_text="日本語です。",
+                    selected_text="日本語です。",
+                    accepted=True,
+                    reason="accepted",
+                    length_delta_ratio=0.0,
+                    content_change_ratio=0.0,
+                ),
+            ),
+        )
+
+
+@dataclass(slots=True)
+class RecordingHomophoneResolver:
+    requests: list[HomophoneResolutionRequest]
+
+    def resolve(
+        self,
+        request: HomophoneResolutionRequest,
+    ) -> HomophoneResolution:
+        self.requests.append(request)
+        return HomophoneResolution(
+            source_path=request.source_path,
+            segments=request.segments,
+            decisions=(
+                HomophoneResolutionDecision(
+                    segment_position=0,
+                    sentence_index=0,
+                    original_text="日本語",
+                    selected_text="日本語",
+                    reading="にほんご",
+                    accepted=False,
+                    reason="no_same_reading_candidate",
+                ),
+            ),
+        )
+
+
+@dataclass(slots=True)
+class RecordingSentenceBoundaryDetector:
+    requests: list[SentenceBoundaryDetectionRequest]
+
+    def detect(
+        self,
+        request: SentenceBoundaryDetectionRequest,
+    ) -> SentenceBoundaryDetection:
+        self.requests.append(request)
+        candidate = SentenceBoundaryCandidate(
+            segment_position=0,
+            after_word_index=0,
+            boundary_time_seconds=0.55,
+            pause_time_range=TimeRange(0.5, 0.6),
+            acoustic_score=0.9,
+            source="test",
+        )
+        return SentenceBoundaryDetection(
+            source_path=request.source_path,
+            candidates=(candidate,),
+        )
+
+
+@dataclass(slots=True)
+class RecordingSentenceBoundaryResolver:
+    requests: list[SentenceBoundaryResolutionRequest]
+
+    def resolve(
+        self,
+        request: SentenceBoundaryResolutionRequest,
+    ) -> SentenceBoundaryResolution:
+        self.requests.append(request)
+        return SentenceBoundaryResolution(
             source_path=request.source_path,
             segments=request.segments,
         )
@@ -210,7 +313,11 @@ def test_subtitle_pipeline_runner_can_execute_quality_stages(
     _write_audio(audio_path)
     transcriber = FakeTranscriber(requests=[])
     aligner = RecordingAligner(requests=[])
+    word_normalizer = RecordingWordNormalizer(requests=[])
+    boundary_detector = RecordingSentenceBoundaryDetector(requests=[])
     repairer = RecordingRepairer(requests=[])
+    homophone_resolver = RecordingHomophoneResolver(requests=[])
+    boundary_resolver = RecordingSentenceBoundaryResolver(requests=[])
     merger = RecordingMerger(requests=[])
     optimizer = RecordingOptimizer(requests=[])
     validator = RecordingValidator(requests=[])
@@ -218,7 +325,11 @@ def test_subtitle_pipeline_runner_can_execute_quality_stages(
         audio_loader=AudioLoader(),
         transcriber=transcriber,
         aligner=aligner,
+        word_normalizer=word_normalizer,
+        sentence_boundary_detector=boundary_detector,
         repairer=repairer,
+        homophone_resolver=homophone_resolver,
+        sentence_boundary_resolver=boundary_resolver,
         builder=WordSubtitleBuilder(),
         merger=merger,
         optimizer=optimizer,
@@ -235,7 +346,11 @@ def test_subtitle_pipeline_runner_can_execute_quality_stages(
 
     assert result.output_paths == (output_directory / "lesson.srt",)
     assert len(aligner.requests) == 1
+    assert len(word_normalizer.requests) == 1
+    assert len(boundary_detector.requests) == 1
     assert len(repairer.requests) == 1
+    assert len(homophone_resolver.requests) == 1
+    assert len(boundary_resolver.requests) == 1
     assert len(merger.requests) == 1
     assert len(optimizer.requests) == 1
     assert len(validator.requests) == 1
@@ -248,6 +363,9 @@ def test_subtitle_pipeline_runner_records_progress_and_stage_artifacts(
     output_directory = tmp_path / "output"
     _write_audio(audio_path)
     reporter = RecordingProgressReporter(events=[])
+    boundary_detector = RecordingSentenceBoundaryDetector(requests=[])
+    boundary_resolver = RecordingSentenceBoundaryResolver(requests=[])
+    word_normalizer = RecordingWordNormalizer(requests=[])
     artifact_store = StageArtifactStore(
         root_directory=output_directory / ".work",
         run_name="run-001",
@@ -256,7 +374,10 @@ def test_subtitle_pipeline_runner_records_progress_and_stage_artifacts(
         audio_loader=AudioLoader(),
         transcriber=FakeTranscriber(requests=[]),
         aligner=RecordingAligner(requests=[]),
+        word_normalizer=word_normalizer,
+        sentence_boundary_detector=boundary_detector,
         repairer=RecordingRepairer(requests=[]),
+        sentence_boundary_resolver=boundary_resolver,
         builder=WordSubtitleBuilder(),
         merger=RecordingMerger(requests=[]),
         optimizer=RecordingOptimizer(requests=[]),
@@ -276,12 +397,15 @@ def test_subtitle_pipeline_runner_records_progress_and_stage_artifacts(
         "00_audio_load.json",
         "01_whisper.json",
         "02_align.json",
-        "03_repair.json",
-        "04_build.json",
-        "05_merge.json",
-        "06_readability.json",
-        "07_validate.json",
-        "08_write.json",
+        "03_sentence_boundary_candidates.json",
+        "04_repair.json",
+        "05_word_normalization.json",
+        "06_sentence_boundary_resolution.json",
+        "07_build.json",
+        "08_merge.json",
+        "09_readability.json",
+        "10_validate.json",
+        "11_write.json",
     )
     for artifact_name in expected_artifacts:
         assert (artifact_directory / artifact_name).exists()
@@ -291,12 +415,21 @@ def test_subtitle_pipeline_runner_records_progress_and_stage_artifacts(
     )
     assert manifest["current_stage"] == "subtitle-writer"
     assert manifest["status"] == "succeeded"
+    repair_artifact = json.loads(
+        (artifact_directory / "04_repair.json").read_text(encoding="utf-8")
+    )
+    assert repair_artifact["data"]["decisions"][0]["raw_text"] == "日本語です。"
+    assert repair_artifact["data"]["decisions"][0]["selected_text"] == "日本語です。"
+    assert repair_artifact["data"]["decisions"][0]["accepted"]
 
     assert [event.stage_name for event in reporter.events[::2]] == [
         "audio-loader",
         "whisper",
         "whisperx-alignment",
+        "sentence-boundary-detection",
         "qwen-repair",
+        "japanese-word-normalization",
+        "sentence-boundary-resolver",
         "subtitle-builder",
         "subtitle-merger",
         "readability-optimizer",

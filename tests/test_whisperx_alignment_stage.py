@@ -272,3 +272,86 @@ def test_whisperx_adapter_maps_external_speaker_labels() -> None:
         "speaker-1",
         "speaker-2",
     )
+
+
+def test_whisperx_adapter_preserves_source_word_boundaries_for_japanese_text() -> None:
+    adapter = WhisperXAlignerAdapter(device="cpu")
+    source_words = (
+        Word(text="これ", time_range=TimeRange(3.86, 4.3), confidence=0.94),
+        Word(text="から", time_range=TimeRange(4.3, 4.56), confidence=0.99),
+        Word(text="音", time_range=TimeRange(4.56, 5.18), confidence=0.97),
+        Word(text="を", time_range=TimeRange(5.18, 5.44), confidence=0.99),
+        Word(text="聞", time_range=TimeRange(5.44, 5.54), confidence=0.97),
+        Word(text="いて", time_range=TimeRange(5.54, 5.76), confidence=0.99),
+        Word(text="ください", time_range=TimeRange(5.76, 6.16), confidence=0.99),
+        Word(text="音", time_range=TimeRange(6.81, 7.67), confidence=0.99),
+    )
+    source_sentence = Sentence(
+        text="これから音を聞いてください 音",
+        time_range=TimeRange(3.86, 7.67),
+        words=source_words,
+    )
+    source_segment = Segment(
+        position=0,
+        text=source_sentence.text,
+        time_range=source_sentence.time_range,
+        sentences=(source_sentence,),
+    )
+
+    segments = adapter._to_domain_segments(
+        (
+            {
+                "text": source_sentence.text,
+                "start": 4.2,
+                "end": 7.926,
+                "words": (
+                    {"word": "こ", "start": 4.2, "end": 4.321, "score": 1.0},
+                    {"word": "れ", "start": 4.321, "end": 4.461, "score": 1.0},
+                    {"word": "か", "start": 4.461, "end": 4.581, "score": 1.0},
+                    {"word": "ら", "start": 4.581, "end": 5.102, "score": 1.0},
+                    {"word": "音", "start": 5.102, "end": 5.402, "score": 1.0},
+                    {"word": "を", "start": 5.402, "end": 5.582, "score": 1.0},
+                    {"word": "聞", "start": 5.582, "end": 5.703, "score": 1.0},
+                    {"word": "い", "start": 5.703, "end": 5.803, "score": 0.998},
+                    {"word": "て", "start": 5.803, "end": 5.923, "score": 1.0},
+                    {"word": "く", "start": 5.923, "end": 6.003, "score": 0.999},
+                    {"word": "だ", "start": 6.003, "end": 6.223, "score": 1.0},
+                    {"word": "さ", "start": 6.223, "end": 6.364, "score": 0.995},
+                    {"word": "い", "start": 6.364, "end": 7.625, "score": 1.0},
+                    {"word": "音", "start": 7.625, "end": 7.926, "score": 1.0},
+                ),
+            },
+        ),
+        (source_segment,),
+    )
+
+    words = segments[0].sentences[0].words
+    assert tuple(word.text for word in words) == tuple(
+        word.text for word in source_words
+    )
+    assert words[6].text == "ください"
+    assert words[6].time_range == TimeRange(5.76, 6.16)
+    assert words[7].text == "音"
+    assert words[7].time_range == TimeRange(6.81, 7.67)
+
+
+def test_whisperx_adapter_sentence_range_covers_all_aligned_words() -> None:
+    adapter = WhisperXAlignerAdapter(device="cpu")
+
+    segments = adapter._to_domain_segments(
+        (
+            {
+                "text": "abc",
+                "start": 10.0,
+                "end": 11.0,
+                "words": (
+                    {"word": "a", "start": 10.0, "end": 10.1},
+                    {"word": "b", "start": 9.6, "end": 9.8},
+                    {"word": "c", "start": 10.8, "end": 11.0},
+                ),
+            },
+        )
+    )
+
+    assert segments[0].time_range == TimeRange(9.6, 11.0)
+    assert segments[0].sentences[0].time_range == TimeRange(9.6, 11.0)

@@ -68,11 +68,62 @@ class QwenRepairRequest:
 
 
 @dataclass(frozen=True, slots=True)
+class QwenRepairDecision:
+    """Diagnostic record for one Qwen repair candidate and safety decision."""
+
+    segment_position: int
+    original_text: str
+    raw_text: str
+    candidate_text: str
+    selected_text: str
+    accepted: bool
+    reason: str
+    length_delta_ratio: float
+    content_change_ratio: float
+
+    def __post_init__(self) -> None:
+        if isinstance(self.segment_position, bool) or not isinstance(
+            self.segment_position,
+            int,
+        ):
+            raise TypeError("segment_position must be an integer.")
+
+        if self.segment_position < 0:
+            raise ValueError("segment_position must be non-negative.")
+
+        for field_name in (
+            "original_text",
+            "raw_text",
+            "candidate_text",
+            "selected_text",
+            "reason",
+        ):
+            value = getattr(self, field_name)
+            if not isinstance(value, str):
+                raise TypeError(f"{field_name} must be a string.")
+
+        if not isinstance(self.accepted, bool):
+            raise TypeError("accepted must be a bool.")
+
+        object.__setattr__(
+            self,
+            "length_delta_ratio",
+            float(self.length_delta_ratio),
+        )
+        object.__setattr__(
+            self,
+            "content_change_ratio",
+            float(self.content_change_ratio),
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class QwenRepair:
     """Normalized Qwen repair output."""
 
     source_path: Path
     segments: tuple[Segment, ...]
+    decisions: tuple[QwenRepairDecision, ...] = ()
 
     def __post_init__(self) -> None:
         segments = _tuple_of_type(self.segments, Segment, "segments")
@@ -81,6 +132,15 @@ class QwenRepair:
 
         object.__setattr__(self, "source_path", Path(self.source_path))
         object.__setattr__(self, "segments", segments)
+        object.__setattr__(
+            self,
+            "decisions",
+            _tuple_of_type(
+                self.decisions,
+                QwenRepairDecision,
+                "decisions",
+            ),
+        )
 
 
 class QwenRepairer(Protocol):
@@ -153,6 +213,9 @@ class QwenRepairStage:
             source_path=context.document.source_path,
             segments=repair.segments,
             subtitles=context.document.subtitles,
+            sentence_boundary_candidates=(
+                context.document.sentence_boundary_candidates
+            ),
         )
         next_context = PipelineContext(
             run_id=context.run_id,
@@ -160,7 +223,11 @@ class QwenRepairStage:
             working_directory=context.working_directory,
         )
 
-        return StageResult(stage_name=self.name, context=next_context)
+        return StageResult(
+            stage_name=self.name,
+            context=next_context,
+            data={"decisions": repair.decisions},
+        )
 
 
 __all__ = [
@@ -169,6 +236,7 @@ __all__ = [
     "MissingAlignedSegmentsError",
     "QWEN_REPAIR_STAGE_NAME",
     "QwenRepair",
+    "QwenRepairDecision",
     "QwenRepairRequest",
     "QwenRepairStage",
     "QwenRepairStageError",

@@ -1,4 +1,4 @@
-"""WhisperX alignment workflow stage."""
+"""Japanese word timing normalization workflow stage."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from typing import Protocol, TypeVar
 from jp_learning_platform.domain import Document, PipelineContext, Segment
 from jp_learning_platform.workflow.runtime import StageResult
 
-WHISPERX_ALIGNMENT_STAGE_NAME = "whisperx-alignment"
+JAPANESE_WORD_NORMALIZATION_STAGE_NAME = "japanese-word-normalization"
 
 T = TypeVar("T")
 
@@ -44,8 +44,8 @@ def _tuple_of_type(
 
 
 @dataclass(frozen=True, slots=True)
-class WhisperXAlignmentRequest:
-    """Input passed from the workflow stage to a WhisperX aligner."""
+class JapaneseWordNormalizationRequest:
+    """Input passed to Japanese word timing normalizers."""
 
     source_path: Path
     working_directory: Path
@@ -54,11 +54,7 @@ class WhisperXAlignmentRequest:
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "source_path", Path(self.source_path))
-        object.__setattr__(
-            self,
-            "working_directory",
-            Path(self.working_directory),
-        )
+        object.__setattr__(self, "working_directory", Path(self.working_directory))
         object.__setattr__(self, "run_id", _normalize_name(self.run_id, "run_id"))
         object.__setattr__(
             self,
@@ -68,8 +64,8 @@ class WhisperXAlignmentRequest:
 
 
 @dataclass(frozen=True, slots=True)
-class WhisperXAlignment:
-    """Normalized WhisperX alignment output."""
+class JapaneseWordNormalization:
+    """Normalized Japanese word timings for existing transcript segments."""
 
     source_path: Path
     segments: tuple[Segment, ...]
@@ -83,45 +79,52 @@ class WhisperXAlignment:
         object.__setattr__(self, "segments", segments)
 
 
-class WhisperXAligner(Protocol):
-    """Contract implemented by infrastructure or plugin WhisperX adapters."""
+class JapaneseWordNormalizer(Protocol):
+    """Contract implemented by Japanese tokenization/timing adapters."""
 
-    def align(self, request: WhisperXAlignmentRequest) -> WhisperXAlignment:
-        """Align transcribed segments into normalized domain segments."""
-
-
-class WhisperXAlignmentStageError(RuntimeError):
-    """Base error for WhisperX alignment stage failures."""
-
-
-class InvalidWhisperXAlignerError(WhisperXAlignmentStageError):
-    """Raised when a configured aligner does not satisfy the stage contract."""
-
-    def __init__(self) -> None:
-        super().__init__("WhisperX aligner must define a callable align method.")
+    def normalize(
+        self,
+        request: JapaneseWordNormalizationRequest,
+    ) -> JapaneseWordNormalization:
+        """Merge ASR/aligner pieces into Japanese word-level timings."""
 
 
-class MissingWhisperSegmentsError(WhisperXAlignmentStageError):
-    """Raised when the document has no Whisper segments to align."""
+class JapaneseWordStageError(RuntimeError):
+    """Base error for Japanese word normalization failures."""
+
+
+class InvalidJapaneseWordNormalizerError(JapaneseWordStageError):
+    """Raised when a normalizer does not satisfy the stage contract."""
 
     def __init__(self) -> None:
-        super().__init__("WhisperX alignment requires existing document segments.")
+        super().__init__(
+            "Japanese word normalizer must define a callable normalize method."
+        )
 
 
-class InvalidWhisperXAlignmentError(WhisperXAlignmentStageError):
-    """Raised when an aligner returns an invalid alignment."""
+class MissingJapaneseWordSegmentsError(JapaneseWordStageError):
+    """Raised when word normalization has no segments to inspect."""
+
+    def __init__(self) -> None:
+        super().__init__(
+            "Japanese word normalization requires existing document segments."
+        )
+
+
+class InvalidJapaneseWordNormalizationError(JapaneseWordStageError):
+    """Raised when a normalizer returns an invalid normalization result."""
 
 
 @dataclass(frozen=True, slots=True)
-class WhisperXAlignmentStage:
-    """Workflow stage that coordinates WhisperX alignment."""
+class JapaneseWordNormalizationStage:
+    """Workflow stage that normalizes Japanese word timing granularity."""
 
-    aligner: WhisperXAligner
-    name: str = WHISPERX_ALIGNMENT_STAGE_NAME
+    normalizer: JapaneseWordNormalizer
+    name: str = JAPANESE_WORD_NORMALIZATION_STAGE_NAME
 
     def __post_init__(self) -> None:
-        if not callable(getattr(self.aligner, "align", None)):
-            raise InvalidWhisperXAlignerError()
+        if not callable(getattr(self.normalizer, "normalize", None)):
+            raise InvalidJapaneseWordNormalizerError()
 
         object.__setattr__(self, "name", _normalize_name(self.name, "name"))
 
@@ -130,50 +133,47 @@ class WhisperXAlignmentStage:
             raise TypeError("context must be a PipelineContext.")
 
         if not context.document.segments:
-            raise MissingWhisperSegmentsError()
+            raise MissingJapaneseWordSegmentsError()
 
-        request = WhisperXAlignmentRequest(
+        request = JapaneseWordNormalizationRequest(
             source_path=context.document.source_path,
             working_directory=context.working_directory,
             run_id=context.run_id,
             segments=context.document.segments,
         )
-        alignment = self.aligner.align(request)
-        if not isinstance(alignment, WhisperXAlignment):
-            raise InvalidWhisperXAlignmentError(
-                "WhisperX aligner must return a WhisperXAlignment."
+        normalization = self.normalizer.normalize(request)
+        if not isinstance(normalization, JapaneseWordNormalization):
+            raise InvalidJapaneseWordNormalizationError(
+                "Japanese word normalizer must return JapaneseWordNormalization."
             )
 
-        if alignment.source_path != request.source_path:
-            raise InvalidWhisperXAlignmentError(
-                "WhisperX alignment source path must match the request source path."
+        if normalization.source_path != request.source_path:
+            raise InvalidJapaneseWordNormalizationError(
+                "Japanese word normalization source path must match the request."
             )
 
         document = Document(
             source_path=context.document.source_path,
-            segments=alignment.segments,
+            segments=normalization.segments,
             subtitles=context.document.subtitles,
-            sentence_boundary_candidates=(
-                context.document.sentence_boundary_candidates
-            ),
+            sentence_boundary_candidates=context.document.sentence_boundary_candidates,
         )
         next_context = PipelineContext(
             run_id=context.run_id,
             document=document,
             working_directory=context.working_directory,
         )
-
         return StageResult(stage_name=self.name, context=next_context)
 
 
 __all__ = [
-    "InvalidWhisperXAlignerError",
-    "InvalidWhisperXAlignmentError",
-    "MissingWhisperSegmentsError",
-    "WHISPERX_ALIGNMENT_STAGE_NAME",
-    "WhisperXAligner",
-    "WhisperXAlignment",
-    "WhisperXAlignmentRequest",
-    "WhisperXAlignmentStage",
-    "WhisperXAlignmentStageError",
+    "InvalidJapaneseWordNormalizationError",
+    "InvalidJapaneseWordNormalizerError",
+    "JAPANESE_WORD_NORMALIZATION_STAGE_NAME",
+    "JapaneseWordNormalization",
+    "JapaneseWordNormalizationRequest",
+    "JapaneseWordNormalizationStage",
+    "JapaneseWordNormalizer",
+    "JapaneseWordStageError",
+    "MissingJapaneseWordSegmentsError",
 ]

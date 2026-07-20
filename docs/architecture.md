@@ -56,6 +56,12 @@ The local audio transcribe CLI runner is documented in
 The Whisper transcription stage is documented in `docs/whisper-stage.md`.
 The WhisperX alignment stage is documented in
 `docs/whisperx-alignment-stage.md`.
+Japanese word timing normalization runs after the optional Qwen repair boundary
+so the current transcript text is tokenized into Japanese words and mapped back
+onto aligned timing units. It is documented in
+`docs/japanese-word-normalization-stage.md`.
+The sentence boundary detection and resolver stages are documented in
+`docs/sentence-boundary-stage.md`.
 The Qwen repair stage is documented in `docs/qwen-repair-stage.md`.
 The subtitle builder stage is documented in `docs/subtitle-builder-stage.md`.
 The subtitle merger stage is documented in `docs/subtitle-merger-stage.md`.
@@ -67,8 +73,9 @@ The subtitle writer stage is documented in `docs/subtitle-writer-stage.md`.
 ## Infrastructure
 
 Infrastructure wraps third-party libraries and processes such as Whisper,
-WhisperX, Qwen, and FFmpeg. Adapters translate external SDK inputs and outputs
-into project contracts without leaking third-party APIs into the domain.
+WhisperX, SudachiPy, torch/torchaudio VAD, Qwen, and FFmpeg. Adapters translate
+external SDK inputs and outputs into project contracts without leaking
+third-party APIs into the domain.
 Tool adapter resolution is handled by the registry documented in
 `docs/tool-registry.md`.
 Local audio loading is documented in `docs/audio-loader.md`.
@@ -76,15 +83,17 @@ Local structured JSON writing is implemented by the listening JSON writer
 adapter, with SRT available as an optional export writer.
 Local infrastructure configuration defaults are centralized in
 `jp_learning_platform.infrastructure.pipeline_config` and consumed by the
-adapters that call Whisper, WhisperX, Qwen, and subtitle quality code.
+adapters that call Whisper, WhisperX, sentence boundary detection, Qwen, and
+subtitle quality code.
 Optional pyannote.audio speaker diarization is implemented as an infrastructure
 adapter that wraps the WhisperX aligner contract and assigns speaker metadata
 without adding SDK calls to workflow stages.
-Local CLI quality adapters provide optional WhisperX alignment, optional Qwen
-repair, subtitle merging, readability optimization, and final domain
-validation while preserving the workflow stage contracts. Local CLI progress
-reporting and JSON stage artifact storage are infrastructure adapters wired by
-the entrypoint and runner.
+Local CLI quality adapters provide default WhisperX alignment, acoustic
+sentence-boundary candidates, disabled-by-default Qwen repair, post-boundary
+sentence boundary resolution, subtitle merging, readability optimization, and
+final domain validation while preserving the workflow stage contracts. Local
+CLI progress reporting and JSON stage artifact storage are infrastructure
+adapters wired by the entrypoint and runner.
 Speaker metadata remains internal domain metadata for preserving dialogue
 boundaries; optional SRT writing does not add speaker labels.
 

@@ -15,13 +15,33 @@ dependencies = []
 
 [project.optional-dependencies]
 asr = [
+  "transformers>=4.39",
+  "accelerate>=0.28",
+  "torch>=2.0",
+  "torchaudio>=2.0",
   "faster-whisper>=1.0"
 ]
 align = [
   "whisperx>=3.3"
 ]
+japanese = [
+  "sudachipy>=0.6",
+  "sudachidict-core>=2024.1"
+]
+homophone = [
+  "transformers>=4.39",
+  "torch>=2.0",
+  "sudachipy>=0.6",
+  "sudachidict-core>=2024.1",
+  "fugashi>=1.3",
+  "unidic-lite>=1.0"
+]
 diarization = [
   "pyannote.audio>=3.1"
+]
+vad = [
+  "torch>=2.0",
+  "torchaudio>=2.0"
 ]
 qwen = [
   "llama-cpp-python>=0.2"

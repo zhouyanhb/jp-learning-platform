@@ -64,7 +64,10 @@ class WhisperXAlignerAdapter:
             audio,
             self.device,
         )
-        segments = self._to_domain_segments(aligned.get("segments", ()))
+        segments = self._to_domain_segments(
+            aligned.get("segments", ()),
+            request.segments,
+        )
         if not segments:
             segments = request.segments
 
@@ -103,16 +106,25 @@ class WhisperXAlignerAdapter:
             for segment in segments
         ]
 
-    def _to_domain_segments(self, external_segments: Any) -> tuple[Segment, ...]:
+    def _to_domain_segments(
+        self,
+        external_segments: Any,
+        source_segments: tuple[Segment, ...] = (),
+    ) -> tuple[Segment, ...]:
         segments: list[Segment] = []
         for external_segment in external_segments:
             text = str(_value(external_segment, "text", "")).strip()
             if not text:
                 continue
 
+            source_segment = (
+                source_segments[len(segments)]
+                if len(segments) < len(source_segments)
+                else None
+            )
             start_seconds = float(_value(external_segment, "start", 0.0))
             end_seconds = float(_value(external_segment, "end", start_seconds))
-            words = tuple(
+            aligned_words = tuple(
                 word
                 for word in (
                     self._to_domain_word(external_word)
@@ -120,10 +132,17 @@ class WhisperXAlignerAdapter:
                 )
                 if word is not None
             )
+            words = _project_source_words(source_segment, aligned_words, text)
 
             if words:
-                start_seconds = min(start_seconds, words[0].time_range.start_seconds)
-                end_seconds = max(end_seconds, words[-1].time_range.end_seconds)
+                start_seconds = min(
+                    start_seconds,
+                    *(word.time_range.start_seconds for word in words),
+                )
+                end_seconds = max(
+                    end_seconds,
+                    *(word.time_range.end_seconds for word in words),
+                )
 
             time_range = TimeRange(start_seconds, end_seconds)
             speaker_id = _speaker_id(external_segment) or _common_speaker_id(words)
@@ -188,6 +207,161 @@ def _value(source: Any, key: str, default: Any) -> Any:
         return source.get(key, default)
 
     return getattr(source, key, default)
+
+
+def _project_source_words(
+    source_segment: Segment | None,
+    aligned_words: tuple[Word, ...],
+    aligned_text: str,
+) -> tuple[Word, ...]:
+    if source_segment is None or not aligned_words:
+        return aligned_words
+
+    source_words = tuple(
+        word for sentence in source_segment.sentences for word in sentence.words
+    )
+    if not source_words:
+        return aligned_words
+
+    source_text = _compact_text("".join(word.text for word in source_words))
+    aligned_words_text = _compact_text("".join(word.text for word in aligned_words))
+    if source_text != aligned_words_text and source_text != _compact_text(aligned_text):
+        return aligned_words
+
+    projected_words: list[Word] = []
+    aligned_index = 0
+    for source_index, source_word in enumerate(source_words):
+        target_text = _compact_text(source_word.text)
+        if not target_text:
+            return aligned_words
+
+        pieces: list[Word] = []
+        collected_text = ""
+        while aligned_index < len(aligned_words) and len(collected_text) < len(target_text):
+            piece = aligned_words[aligned_index]
+            pieces.append(piece)
+            collected_text += _compact_text(piece.text)
+            aligned_index += 1
+
+        if collected_text != target_text:
+            return aligned_words
+
+        previous_source_word = (
+            source_words[source_index - 1] if source_index > 0 else None
+        )
+        next_source_word = (
+            source_words[source_index + 1]
+            if source_index + 1 < len(source_words)
+            else None
+        )
+        pieces_tuple = tuple(pieces)
+        projected_words.append(
+            Word(
+                text=source_word.text,
+                time_range=_projected_time_range(
+                    source_word,
+                    pieces_tuple,
+                    previous_source_word,
+                    next_source_word,
+                ),
+                confidence=_mean_confidence(pieces_tuple, source_word.confidence),
+                speaker_id=_common_word_speaker_id(pieces_tuple)
+                or source_word.speaker_id,
+            )
+        )
+
+    if aligned_index != len(aligned_words):
+        return aligned_words
+
+    return tuple(projected_words)
+
+
+def _compact_text(text: str) -> str:
+    return "".join(str(text).split())
+
+
+def _projected_time_range(
+    source_word: Word,
+    aligned_pieces: tuple[Word, ...],
+    previous_source_word: Word | None,
+    next_source_word: Word | None,
+) -> TimeRange:
+    if not aligned_pieces:
+        return source_word.time_range
+
+    aligned_time_range = TimeRange(
+        aligned_pieces[0].time_range.start_seconds,
+        aligned_pieces[-1].time_range.end_seconds,
+    )
+    if _looks_like_pause_swallowing(
+        source_word,
+        aligned_time_range,
+        previous_source_word,
+        next_source_word,
+    ):
+        return source_word.time_range
+
+    return aligned_time_range
+
+
+def _looks_like_pause_swallowing(
+    source_word: Word,
+    aligned_time_range: TimeRange,
+    previous_source_word: Word | None,
+    next_source_word: Word | None,
+) -> bool:
+    source_duration = source_word.time_range.duration_seconds
+    aligned_duration = aligned_time_range.duration_seconds
+    if aligned_duration > max(source_duration * 2.5, source_duration + 0.4):
+        return True
+
+    if previous_source_word is not None:
+        previous_gap = (
+            source_word.time_range.start_seconds
+            - previous_source_word.time_range.end_seconds
+        )
+        start_drift = abs(
+            aligned_time_range.start_seconds - source_word.time_range.start_seconds
+        )
+        if previous_gap >= 0.4 and start_drift > 0.25:
+            return True
+
+    if next_source_word is not None:
+        next_gap = (
+            next_source_word.time_range.start_seconds
+            - source_word.time_range.end_seconds
+        )
+        if (
+            next_gap >= 0.4
+            and aligned_time_range.end_seconds
+            > next_source_word.time_range.start_seconds - 0.05
+        ):
+            return True
+
+    return False
+
+
+def _mean_confidence(
+    aligned_pieces: tuple[Word, ...],
+    fallback: float | None,
+) -> float | None:
+    confidences = tuple(
+        word.confidence for word in aligned_pieces if word.confidence is not None
+    )
+    if not confidences:
+        return fallback
+
+    return sum(confidences) / len(confidences)
+
+
+def _common_word_speaker_id(words: tuple[Word, ...]) -> str | None:
+    speaker_ids = tuple(
+        dict.fromkeys(word.speaker_id for word in words if word.speaker_id is not None)
+    )
+    if len(speaker_ids) == 1:
+        return speaker_ids[0]
+
+    return None
 
 
 __all__ = [

@@ -19,6 +19,7 @@ from jp_learning_platform.workflow import (
     InvalidQwenRepairerError,
     MissingAlignedSegmentsError,
     QwenRepair,
+    QwenRepairDecision,
     QwenRepairRequest,
     QwenRepairStage,
     StageResult,
@@ -131,6 +132,35 @@ def test_qwen_repair_stage_repairs_existing_segments(tmp_path: Path) -> None:
     assert result.context.document.segments == (repaired_segment,)
     assert result.context.run_id == "run-001"
     assert result.context.working_directory == tmp_path / "work"
+
+
+def test_qwen_repair_stage_exposes_decisions_as_stage_data(tmp_path: Path) -> None:
+    source_path = tmp_path / "input.wav"
+    decision = QwenRepairDecision(
+        segment_position=0,
+        original_text="懲戒N2",
+        raw_text="聴解N2",
+        candidate_text="聴解N2",
+        selected_text="聴解N2",
+        accepted=True,
+        reason="accepted",
+        length_delta_ratio=0.0,
+        content_change_ratio=0.1,
+    )
+    repairer = FakeRepairer(
+        repair_result=QwenRepair(
+            source_path=source_path,
+            segments=(_repaired_segment(),),
+            decisions=(decision,),
+        ),
+        requests=[],
+    )
+
+    result = QwenRepairStage(repairer=repairer).run(
+        _context(source_path, (_aligned_segment(),))
+    )
+
+    assert result.data == {"decisions": (decision,)}
 
 
 def test_qwen_repair_stage_preserves_subtitles(tmp_path: Path) -> None:
