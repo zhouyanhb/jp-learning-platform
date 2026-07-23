@@ -44,6 +44,8 @@ All notable changes to this project are documented in this file.
 - Made homophone correction fail closed unless ASR confidence, absolute model
   probability, contextual score ratio, reading, word class, and script profile
   independently support the replacement.
+- Added conflict-safe document consistency propagation from strict homophone
+  confirmations to matching high-confidence occurrences.
 
 - Made the package entrypoint report release status and version output when run
   directly.

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any, Protocol
 import unicodedata
 
@@ -668,10 +668,55 @@ class BertHomophoneResolver:
             resolved_segments.append(resolved_segment)
             decisions.extend(segment_decisions)
 
+        confirmed = _unambiguous_confirmed_replacements(tuple(decisions))
+        propagated_decisions = tuple(
+            self._propagate_decision(decision, confirmed)
+            for decision in decisions
+        )
+        if propagated_decisions != tuple(decisions):
+            resolved_segments = list(
+                _apply_accepted_decisions(
+                    request.segments,
+                    propagated_decisions,
+                )
+            )
+
         return HomophoneResolution(
             source_path=request.source_path,
             segments=tuple(resolved_segments),
-            decisions=tuple(decisions),
+            decisions=propagated_decisions,
+        )
+
+    def _propagate_decision(
+        self,
+        decision: HomophoneResolutionDecision,
+        confirmed: dict[str, str],
+    ) -> HomophoneResolutionDecision:
+        selected_text = confirmed.get(decision.original_text)
+        if selected_text is None or decision.reason != "asr_confidence_too_high":
+            return decision
+        selected = next(
+            (
+                candidate
+                for candidate in decision.candidates
+                if candidate.text == selected_text
+            ),
+            None,
+        )
+        if selected is None or selected.score is None:
+            return decision
+        if selected.score < self.min_candidate_score:
+            return decision
+        if decision.original_score is None:
+            return decision
+        if selected.score <= decision.original_score + self.score_margin:
+            return decision
+        return replace(
+            decision,
+            selected_text=selected_text,
+            accepted=True,
+            reason="accepted_document_consistency",
+            selected_score=selected.score,
         )
 
     def _resolve_segment(
@@ -939,6 +984,8 @@ class BertHomophoneResolver:
                 original_score=original_score,
                 selected_score=None,
                 candidates=(),
+                target_start=morpheme.start,
+                target_end=morpheme.end,
             )
 
         selected = max(
@@ -965,6 +1012,8 @@ class BertHomophoneResolver:
             original_score=original_score,
             selected_score=selected_score,
             candidates=tuple(scored_candidates),
+            target_start=morpheme.start,
+            target_end=morpheme.end,
         )
 
     def _should_consider(self, morpheme: _AnalyzedMorpheme) -> bool:
@@ -1023,6 +1072,87 @@ def _apply_text_changes(
     for change in sorted(changes, key=lambda item: item.start, reverse=True):
         updated = f"{updated[:change.start]}{change.selected_text}{updated[change.end:]}"
     return updated
+
+
+def _unambiguous_confirmed_replacements(
+    decisions: tuple[HomophoneResolutionDecision, ...],
+) -> dict[str, str]:
+    candidates: dict[str, set[str]] = {}
+    for decision in decisions:
+        if not decision.accepted or decision.selected_text == decision.original_text:
+            continue
+        candidates.setdefault(decision.original_text, set()).add(
+            decision.selected_text
+        )
+    return {
+        original: next(iter(replacements))
+        for original, replacements in candidates.items()
+        if len(replacements) == 1
+    }
+
+
+def _apply_accepted_decisions(
+    segments: tuple[Segment, ...],
+    decisions: tuple[HomophoneResolutionDecision, ...],
+) -> tuple[Segment, ...]:
+    decisions_by_sentence: dict[
+        tuple[int, int],
+        list[HomophoneResolutionDecision],
+    ] = {}
+    for decision in decisions:
+        if not decision.accepted or decision.selected_text == decision.original_text:
+            continue
+        decisions_by_sentence.setdefault(
+            (decision.segment_position, decision.sentence_index),
+            [],
+        ).append(decision)
+
+    resolved_segments: list[Segment] = []
+    for segment in segments:
+        source_sentences = segment.sentences or (
+            Sentence(
+                text=segment.text,
+                time_range=segment.time_range,
+                words=(),
+                speaker_id=segment.speaker_id,
+            ),
+        )
+        resolved_sentences: list[Sentence] = []
+        for sentence_index, sentence in enumerate(source_sentences):
+            changes = tuple(
+                _AcceptedChange(
+                    start=decision.target_start,
+                    end=decision.target_end,
+                    original_text=decision.original_text,
+                    selected_text=decision.selected_text,
+                )
+                for decision in decisions_by_sentence.get(
+                    (segment.position, sentence_index),
+                    (),
+                )
+                if decision.target_start is not None and decision.target_end is not None
+            )
+            if not changes:
+                resolved_sentences.append(sentence)
+                continue
+            resolved_sentences.append(
+                Sentence(
+                    text=_apply_text_changes(sentence.text, changes),
+                    time_range=sentence.time_range,
+                    words=_apply_word_changes(sentence.words, changes),
+                    speaker_id=sentence.speaker_id,
+                )
+            )
+        resolved_segments.append(
+            Segment(
+                position=segment.position,
+                text="".join(sentence.text for sentence in resolved_sentences),
+                time_range=segment.time_range,
+                sentences=tuple(resolved_sentences),
+                speaker_id=segment.speaker_id,
+            )
+        )
+    return tuple(resolved_segments)
 
 
 def _prefilter_sort_key(

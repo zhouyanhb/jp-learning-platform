@@ -148,3 +148,8 @@ learning units using Sudachi morphology without sentence-specific replacements.
 
 Require independent ASR and contextual evidence before applying a same-reading
 replacement so the resolver fails closed when semantic evidence is ambiguous.
+
+- [x] Maintenance Document-consistent Homophone Propagation
+
+Propagate an unambiguous strictly confirmed same-reading correction to matching
+high-confidence occurrences within the same document.

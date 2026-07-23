@@ -8,7 +8,7 @@ project:
 repository:
   branch: master
   working_tree: clean
-  remote_status: ahead_of_origin_by_3_commits
+  remote_status: ahead_of_origin_by_4_commits
   runnable: true
 
 architecture:
@@ -45,6 +45,8 @@ architecture:
       conjugation metadata rather than sentence-specific replacement tables.
     - Homophone replacement requires low ASR confidence, absolute and relative
       contextual evidence, and a stable Japanese script profile.
+    - Unambiguous strict homophone confirmations may propagate within one
+      document when each target retains local contextual support.
 
 roadmap:
   completed:
@@ -71,6 +73,7 @@ roadmap:
     - Maintenance Japanese Learning Word Normalization
     - Maintenance Japanese Inflectional Learning Units
     - Maintenance Conservative Homophone Acceptance
+    - Maintenance Document-consistent Homophone Propagation
 
   current: null
 
@@ -78,11 +81,11 @@ roadmap:
 
 latest_commit:
   hash: created_by_this_commit
-  message: "fix(homophones): require conservative evidence"
+  message: "fix(homophones): propagate confirmed corrections"
 
 tests:
-  total: 231
-  passed: 231
+  total: 233
+  passed: 233
   failed: 0
 
 checks:

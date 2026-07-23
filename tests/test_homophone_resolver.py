@@ -14,8 +14,13 @@ from jp_learning_platform.infrastructure.homophone_resolver import (
     HomophoneLanguageModelCandidate,
     HomophoneTarget,
     _AnalyzedMorpheme,
+    _unambiguous_confirmed_replacements,
 )
-from jp_learning_platform.workflow import HomophoneResolutionRequest
+from jp_learning_platform.workflow import (
+    HomophoneCandidateScore,
+    HomophoneResolutionDecision,
+    HomophoneResolutionRequest,
+)
 
 
 _NOUN_POS = ("名詞", "普通名詞", "サ変可能", "*", "*", "*")
@@ -178,6 +183,92 @@ def test_homophone_resolver_accepts_same_reading_candidate_with_better_context_s
     assert decision.reason == "accepted_same_reading_context"
     assert decision.original_score == 0.01
     assert decision.selected_score == 0.8
+
+
+def test_homophone_resolver_propagates_strict_confirmation_within_document() -> None:
+    texts = (
+        "2021年第2回日本語能力試験 懲戒N2",
+        "これからN2の懲戒試験を始めます",
+        "これで懲戒試験を終わります",
+    )
+    analyzer = FakeAnalyzer(
+        tokens={text: (("懲戒", "ちょうかい", _NOUN_POS),) for text in texts},
+        single_tokens={"聴解": ("ちょうかい", _GENERAL_NOUN_POS)},
+    )
+    generator = FakeCandidateGenerator(
+        candidates={
+            "懲戒": (HomophoneLanguageModelCandidate("聴解", 0.8),),
+        },
+        scores={"懲戒": 0.001, "聴解": 0.8},
+    )
+    segments = tuple(
+        Segment(
+            position=index,
+            text=text,
+            time_range=TimeRange(index, index + 1),
+            sentences=(
+                Sentence(
+                    text=text,
+                    time_range=TimeRange(index, index + 1),
+                    words=(
+                        Word(
+                            "懲戒",
+                            TimeRange(index + 0.2, index + 0.8),
+                            0.7 if index == 0 else 0.99,
+                        ),
+                    ),
+                ),
+            ),
+        )
+        for index, text in enumerate(texts)
+    )
+
+    result = BertHomophoneResolver(
+        candidate_generator=generator,
+        analyzer=analyzer,
+    ).resolve(
+        HomophoneResolutionRequest(
+            source_path=Path("lesson.mp3"),
+            working_directory=Path("work"),
+            run_id="run-001",
+            segments=segments,
+        )
+    )
+
+    assert tuple("懲戒" not in segment.text for segment in result.segments) == (
+        True,
+        True,
+        True,
+    )
+    assert [decision.reason for decision in result.decisions] == [
+        "accepted_same_reading_context",
+        "accepted_document_consistency",
+        "accepted_document_consistency",
+    ]
+
+
+def test_document_confirmation_rejects_conflicting_mappings() -> None:
+    def accepted(selected_text: str) -> HomophoneResolutionDecision:
+        return HomophoneResolutionDecision(
+            segment_position=0,
+            sentence_index=0,
+            original_text="回答",
+            selected_text=selected_text,
+            reading="かいとう",
+            accepted=True,
+            reason="accepted_same_reading_context",
+            original_score=0.001,
+            selected_score=0.8,
+            candidates=(HomophoneCandidateScore(selected_text, "かいとう", 0.8),),
+            target_start=0,
+            target_end=2,
+        )
+
+    confirmed = _unambiguous_confirmed_replacements(
+        (accepted("解答"), accepted("解糖"))
+    )
+
+    assert "回答" not in confirmed
 
 
 def test_homophone_resolver_rejects_different_reading_candidate() -> None:

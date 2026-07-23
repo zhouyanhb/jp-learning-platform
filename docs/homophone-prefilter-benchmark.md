@@ -41,6 +41,23 @@ ASR confidence is low and `買える → 変える`; observed corruptions includ
 `寄付 → 記譜`, `学生 → 学政`, `もらえる → 貰る`, and `なかなか → 中中`
 are rejected.
 
+## Document consistency propagation
+
+Resolution runs in two passes within one document. The first pass uses every
+strict acceptance gate above. If those accepted decisions establish exactly
+one replacement for an original surface, the second pass may propagate that
+mapping to occurrences rejected only because ASR confidence was high.
+
+A propagated occurrence must already contain the same candidate in its local
+scored candidates, and that candidate must still exceed the configured minimum
+score and beat the local original score. Conflicting strict mappings disable
+propagation for that surface. Exact target spans are recorded so all accepted
+changes are reapplied from original sentence offsets without cascading edits.
+
+For run `20260723_220113_806036`, the strict title correction confirms
+`懲戒 → 聴解`; the same unambiguous mapping then repairs the start and end
+announcements while the unrelated rejected candidates remain unchanged.
+
 ## Reproducible benchmark
 
 Date: 2026-07-23

@@ -1743,3 +1743,51 @@ created by this commit
 ```
 fix(homophones): require conservative evidence
 ```
+
+---
+
+# Session 035
+
+Date
+
+2026-07-23
+
+Roadmap
+
+Maintenance Document-consistent Homophone Propagation
+
+Summary
+
+Propagated unambiguous strict homophone confirmations within one document.
+
+Changes
+
+- Recorded exact source spans in homophone decisions.
+- Derived document mappings only from strict accepted decisions.
+- Disabled propagation when strict decisions disagree on a replacement.
+- Required each high-confidence occurrence to retain local candidate support.
+- Reapplied all accepted changes from original sentence offsets.
+- Added regression coverage for three `懲戒 → 聴解` occurrences.
+
+Documentation
+
+- docs/homophone-prefilter-benchmark.md
+- CHANGELOG.md
+
+Tests
+
+- test_homophone_resolver.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (233 passed)
+
+Commit
+
+created by this commit
+
+```
+fix(homophones): propagate confirmed corrections
+```

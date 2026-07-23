@@ -118,6 +118,8 @@ class HomophoneResolutionDecision:
     original_score: float | None = None
     selected_score: float | None = None
     candidates: tuple[HomophoneCandidateScore, ...] = ()
+    target_start: int | None = None
+    target_end: int | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(
@@ -164,6 +166,22 @@ class HomophoneResolutionDecision:
                 "candidates",
             ),
         )
+        for field_name in ("target_start", "target_end"):
+            value = getattr(self, field_name)
+            if value is not None:
+                object.__setattr__(
+                    self,
+                    field_name,
+                    _normalize_position(value, field_name),
+                )
+        if (self.target_start is None) != (self.target_end is None):
+            raise ValueError("target_start and target_end must be provided together.")
+        if (
+            self.target_start is not None
+            and self.target_end is not None
+            and self.target_end <= self.target_start
+        ):
+            raise ValueError("target_end must be greater than target_start.")
 
 
 @dataclass(frozen=True, slots=True)
