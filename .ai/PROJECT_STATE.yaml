@@ -35,6 +35,8 @@ architecture:
       around the WhisperX alignment contract.
     - Homophone resolution analyzes every sentence with Sudachi, then limits
       full contextual candidate scoring to three risk-ranked targets.
+    - Local readability normalization restores commas after configured
+      sentence-initial discourse markers without changing subtitle timing.
 
 roadmap:
   completed:
@@ -56,18 +58,19 @@ roadmap:
     - Commit0016
     - Commit0017
     - Maintenance Homophone Candidate Prefiltering and Benchmark
+    - Maintenance Sentence-initial Discourse Marker Punctuation
 
-  current: null
+  current: Maintenance Sentence-initial Discourse Marker Punctuation
 
   next: null
 
 latest_commit:
   hash: created_by_this_commit
-  message: "perf(homophones): prefilter contextual candidates"
+  message: "fix(readability): punctuate discourse markers"
 
 tests:
-  total: 212
-  passed: 212
+  total: 214
+  passed: 214
   failed: 0
 
 checks:

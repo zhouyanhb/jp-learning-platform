@@ -105,6 +105,19 @@ class ReadabilityConfig:
 
     japanese_comma: str = "、"
     japanese_period: str = "。"
+    sentence_initial_discourse_markers: tuple[str, ...] = (
+        "それでは",
+        "ところで",
+        "しかし",
+        "では",
+        "さて",
+    )
+    non_discourse_prefixes: tuple[str, ...] = (
+        "ではありません",
+        "ではない",
+        "ではなく",
+        "ではなければ",
+    )
 
 
 DEFAULT_WHISPER_TRANSCRIPTION_CONFIG = WhisperTranscriptionConfig()

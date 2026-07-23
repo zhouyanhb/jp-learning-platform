@@ -36,3 +36,8 @@ later validation can compare subtitle output against transcript context.
 The workflow stage does not decide reading-speed thresholds, line-length
 limits, or subtitle splitting heuristics. Those responsibilities belong to the
 configured `ReadabilityOptimizer` and the later validation stage.
+
+The local readability adapter also restores a Japanese comma after configured
+sentence-initial discourse markers such as `では` and `それでは`. It does not
+create subtitle boundaries or alter timing, and configured negative-predicate
+prefixes prevent `ではありません`-style false positives.

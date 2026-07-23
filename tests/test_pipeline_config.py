@@ -55,3 +55,5 @@ def test_pipeline_config_centralizes_quality_defaults() -> None:
     assert DEFAULT_SUBTITLE_MERGE_CONFIG.terminal_marks == ("。", "？", "！")
     assert DEFAULT_READABILITY_CONFIG.japanese_comma == "、"
     assert DEFAULT_READABILITY_CONFIG.japanese_period == "。"
+    assert "では" in DEFAULT_READABILITY_CONFIG.sentence_initial_discourse_markers
+    assert "ではありません" in DEFAULT_READABILITY_CONFIG.non_discourse_prefixes

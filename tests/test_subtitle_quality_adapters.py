@@ -193,6 +193,54 @@ def test_local_readability_optimizer_removes_spaces_between_japanese_words() -> 
     assert result.subtitles[0].text == "最も良いものを一つ"
 
 
+def test_local_readability_optimizer_restores_discourse_marker_comma() -> None:
+    subtitles = (
+        _subtitle(1, "では練習しましょう", 91.95, 93.87),
+        _subtitle(2, "それでは始めます", 94.0, 95.0),
+    )
+
+    result = LocalReadabilityOptimizer().optimize(
+        ReadabilityOptimizationRequest(
+            source_path=Path("audio.mp3"),
+            working_directory=Path("work"),
+            run_id="run-001",
+            segments=(_segment(),),
+            subtitles=subtitles,
+        )
+    )
+
+    assert tuple(subtitle.text for subtitle in result.subtitles) == (
+        "では、練習しましょう",
+        "それでは、始めます",
+    )
+    assert tuple(subtitle.time_range for subtitle in result.subtitles) == (
+        TimeRange(91.95, 93.87),
+        TimeRange(94.0, 95.0),
+    )
+
+
+def test_local_readability_optimizer_avoids_non_discourse_dewa() -> None:
+    subtitles = (
+        _subtitle(1, "日本では人気があります", 0.0, 1.0),
+        _subtitle(2, "ではありません", 1.0, 2.0),
+        _subtitle(3, "では、練習しましょう", 2.0, 3.0),
+    )
+
+    result = LocalReadabilityOptimizer().optimize(
+        ReadabilityOptimizationRequest(
+            source_path=Path("audio.mp3"),
+            working_directory=Path("work"),
+            run_id="run-001",
+            segments=(_segment(),),
+            subtitles=subtitles,
+        )
+    )
+
+    assert tuple(subtitle.text for subtitle in result.subtitles) == tuple(
+        subtitle.text for subtitle in subtitles
+    )
+
+
 def test_domain_subtitle_validator_accepts_valid_subtitles() -> None:
     result = DomainSubtitleValidator().validate(
         SubtitleValidationRequest(

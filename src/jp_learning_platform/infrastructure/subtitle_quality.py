@@ -133,11 +133,39 @@ class LocalReadabilityOptimizer:
             "",
             normalized,
         )
+        normalized = _restore_sentence_initial_discourse_comma(
+            normalized,
+            comma=comma,
+        )
         normalized = re.sub(rf"{re.escape(period)}{{2,}}", period, normalized)
         normalized = re.sub(rf"{re.escape(comma)}{{2,}}", comma, normalized)
         normalized = re.sub(r"？{2,}", "？", normalized)
         normalized = re.sub(r"！{2,}", "！", normalized)
         return normalized
+
+
+def _restore_sentence_initial_discourse_comma(
+    text: str,
+    *,
+    comma: str,
+) -> str:
+    config = DEFAULT_READABILITY_CONFIG
+    if text.startswith(config.non_discourse_prefixes):
+        return text
+
+    for marker in sorted(
+        config.sentence_initial_discourse_markers,
+        key=len,
+        reverse=True,
+    ):
+        if not text.startswith(marker):
+            continue
+        remainder = text[len(marker) :]
+        if not remainder or remainder.startswith(comma):
+            return text
+        return f"{marker}{comma}{remainder}"
+
+    return text
 
 
 @dataclass(frozen=True, slots=True)

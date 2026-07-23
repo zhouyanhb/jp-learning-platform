@@ -6,6 +6,9 @@ All notable changes to this project are documented in this file.
 
 ### Added
 
+- Added sentence-initial Japanese discourse-marker comma restoration without
+  changing subtitle boundaries or timing.
+
 - Added risk-based homophone target prefiltering and a reproducible runtime
   benchmark for contextual correction performance.
 

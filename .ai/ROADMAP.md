@@ -123,3 +123,8 @@ Execution Engine
 Limit contextual language-model scoring to a small number of suspicious
 same-reading targets per sentence and record a reproducible before/after
 runtime comparison.
+
+- [x] Maintenance Sentence-initial Discourse Marker Punctuation
+
+Restore Japanese commas after sentence-initial discourse markers without
+changing subtitle boundaries or timing.

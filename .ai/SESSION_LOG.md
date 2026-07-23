@@ -1496,3 +1496,53 @@ created by this commit
 ```
 perf(homophones): prefilter contextual candidates
 ```
+
+---
+
+# Session 030
+
+Date
+
+2026-07-23
+
+Roadmap
+
+Maintenance Sentence-initial Discourse Marker Punctuation
+
+Summary
+
+Restored Japanese commas after sentence-initial discourse markers without
+changing subtitle boundaries or timing.
+
+Changes
+
+- Added configurable sentence-initial discourse markers to readability
+  defaults.
+- Added configured non-discourse prefixes for negative-predicate protection.
+- Restored commas after discourse markers during local readability
+  normalization.
+- Preserved existing commas, subtitle indexes, and time ranges.
+
+Documentation
+
+- docs/readability-optimizer-stage.md
+- CHANGELOG.md
+
+Tests
+
+- test_subtitle_quality_adapters.py
+- test_pipeline_config.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (214 passed)
+
+Commit
+
+created by this commit
+
+```
+fix(readability): punctuate discourse markers
+```
