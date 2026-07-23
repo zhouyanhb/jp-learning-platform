@@ -47,6 +47,7 @@ class JapaneseSentenceBoundaryResolver:
 
         segments = _merge_adjacent_sentence_overlaps(request.segments)
         segments = _remove_adjacent_boundary_echoes(segments)
+        segments = _merge_adjacent_dependent_continuations(segments)
         segments = _restore_inter_segment_commas(segments)
         resolved_segments: list[Segment] = []
         decisions: list[SentenceBoundaryDecision] = []
@@ -183,6 +184,8 @@ class JapaneseSentenceBoundaryResolver:
         right_text = _words_text(words[word_index + 1 :])
         if _starts_with_sentence_final_particle(right_text):
             return None
+        if _starts_with_dependent_continuation(right_text):
+            return None
 
         if right_text[:1].isdigit() and not _looks_sentence_final(
             left_text,
@@ -265,6 +268,13 @@ def _compact_text(text: str) -> str:
 def _starts_with_sentence_final_particle(text: str) -> bool:
     normalized = _compact_text(text)
     return bool(normalized) and normalized[0] in _SENTENCE_FINAL_PARTICLES
+
+
+def _starts_with_dependent_continuation(text: str) -> bool:
+    normalized = _compact_text(text)
+    return normalized.startswith(
+        DEFAULT_SENTENCE_BOUNDARY_CONFIG.dependent_continuation_prefixes
+    )
 
 
 def _common_speaker_id(words: tuple[Word, ...]) -> str | None:
@@ -402,6 +412,84 @@ def _boundary_overlap(left: str, right: str) -> int:
         if left_compact.endswith(right_compact[:size]):
             return size
     return 0
+
+
+def _merge_adjacent_dependent_continuations(
+    segments: tuple[Segment, ...],
+) -> tuple[Segment, ...]:
+    """Join a contiguous dependent continuation to its preceding clause."""
+    config = DEFAULT_SENTENCE_BOUNDARY_CONFIG
+    merged: list[Segment] = []
+    for segment in segments:
+        if not merged or not segment.sentences:
+            merged.append(segment)
+            continue
+
+        previous = merged[-1]
+        if not previous.sentences:
+            merged.append(segment)
+            continue
+
+        left = previous.sentences[-1]
+        right = segment.sentences[0]
+        gap_seconds = (
+            right.time_range.start_seconds - left.time_range.end_seconds
+        )
+        right_text = _compact_text(right.text)
+        if (
+            gap_seconds < 0
+            or gap_seconds > config.max_dependent_continuation_gap_seconds
+            or _ends_with_terminal_mark(
+                left.text,
+                (*config.terminal_marks, "?", "!"),
+            )
+            or not right_text.startswith(config.dependent_continuation_prefixes)
+            or _speaker_boundary(left, right)
+        ):
+            merged.append(segment)
+            continue
+
+        combined = Sentence(
+            text=f"{left.text}{right.text}",
+            time_range=TimeRange(
+                left.time_range.start_seconds,
+                right.time_range.end_seconds,
+            ),
+            words=(*left.words, *right.words),
+            speaker_id=left.speaker_id or right.speaker_id,
+        )
+        sentences = (
+            *previous.sentences[:-1],
+            combined,
+            *segment.sentences[1:],
+        )
+        merged[-1] = Segment(
+            position=previous.position,
+            text="".join(sentence.text for sentence in sentences),
+            time_range=TimeRange(
+                previous.time_range.start_seconds,
+                segment.time_range.end_seconds,
+            ),
+            sentences=sentences,
+            speaker_id=previous.speaker_id or segment.speaker_id,
+        )
+
+    return tuple(
+        Segment(
+            position=position,
+            text=segment.text,
+            time_range=segment.time_range,
+            sentences=segment.sentences,
+            speaker_id=segment.speaker_id,
+        )
+        for position, segment in enumerate(merged)
+    )
+
+
+def _speaker_boundary(left: Sentence, right: Sentence) -> bool:
+    if left.speaker_id is None and right.speaker_id is None:
+        return False
+    return left.speaker_id != right.speaker_id
 
 
 def _restore_inter_segment_commas(

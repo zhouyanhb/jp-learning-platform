@@ -47,6 +47,11 @@ def test_pipeline_config_centralizes_quality_defaults() -> None:
     assert DEFAULT_QWEN_REPAIR_SAFETY_CONFIG.max_length_delta_ratio == 0.2
     assert DEFAULT_QWEN_REPAIR_SAFETY_CONFIG.max_content_change_ratio == 0.2
     assert DEFAULT_SENTENCE_BOUNDARY_CONFIG.min_pause_seconds == 0.5
+    assert (
+        DEFAULT_SENTENCE_BOUNDARY_CONFIG.max_dependent_continuation_gap_seconds
+        == 0.2
+    )
+    assert "とき" in DEFAULT_SENTENCE_BOUNDARY_CONFIG.dependent_continuation_prefixes
     assert DEFAULT_SENTENCE_BOUNDARY_CONFIG.terminal_marks == ("。", "？", "！")
     assert "ください" in DEFAULT_SENTENCE_BOUNDARY_CONFIG.sentence_final_suffixes
     assert "ましょう" in DEFAULT_SENTENCE_BOUNDARY_CONFIG.sentence_final_suffixes

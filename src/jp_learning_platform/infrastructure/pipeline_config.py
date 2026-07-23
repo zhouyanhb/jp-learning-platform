@@ -80,6 +80,7 @@ class SentenceBoundaryConfig:
     """Default pause-aware Japanese sentence boundary settings."""
 
     min_pause_seconds: float = 0.5
+    max_dependent_continuation_gap_seconds: float = 0.2
     terminal_marks: tuple[str, ...] = ("。", "？", "！")
     sentence_final_suffixes: tuple[str, ...] = (
         "ください",
@@ -96,6 +97,17 @@ class SentenceBoundaryConfig:
         "でしょう",
         "だ",
         "だった",
+    )
+    dependent_continuation_prefixes: tuple[str, ...] = (
+        "とき",
+        "時",
+        "場合",
+        "ため",
+        "ので",
+        "のに",
+        "なら",
+        "けれど",
+        "けど",
     )
 
 

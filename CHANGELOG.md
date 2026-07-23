@@ -6,6 +6,9 @@ All notable changes to this project are documented in this file.
 
 ### Added
 
+- Added grammar-aware merging for contiguous cross-segment Japanese dependent
+  continuations while preserving punctuation, speaker, and timing boundaries.
+
 - Added sentence-initial Japanese discourse-marker comma restoration without
   changing subtitle boundaries or timing.
 

@@ -128,3 +128,8 @@ runtime comparison.
 
 Restore Japanese commas after sentence-initial discourse markers without
 changing subtitle boundaries or timing.
+
+- [x] Maintenance Cross-segment Dependent Continuation Merge
+
+Merge adjacent same-speaker sentence fragments when the next segment begins
+with a Japanese dependent continuation and timing is contiguous.

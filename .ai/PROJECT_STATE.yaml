@@ -37,6 +37,8 @@ architecture:
       full contextual candidate scoring to three risk-ranked targets.
     - Local readability normalization restores commas after configured
       sentence-initial discourse markers without changing subtitle timing.
+    - Sentence boundary resolution merges contiguous same-speaker dependent
+      continuations before subtitle construction.
 
 roadmap:
   completed:
@@ -59,18 +61,19 @@ roadmap:
     - Commit0017
     - Maintenance Homophone Candidate Prefiltering and Benchmark
     - Maintenance Sentence-initial Discourse Marker Punctuation
+    - Maintenance Cross-segment Dependent Continuation Merge
 
-  current: Maintenance Sentence-initial Discourse Marker Punctuation
+  current: null
 
   next: null
 
 latest_commit:
   hash: created_by_this_commit
-  message: "fix(readability): punctuate discourse markers"
+  message: "fix(sentences): merge dependent continuations"
 
 tests:
-  total: 214
-  passed: 214
+  total: 216
+  passed: 216
   failed: 0
 
 checks:

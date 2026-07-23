@@ -1546,3 +1546,54 @@ created by this commit
 ```
 fix(readability): punctuate discourse markers
 ```
+
+---
+
+# Session 031
+
+Date
+
+2026-07-23
+
+Roadmap
+
+Maintenance Cross-segment Dependent Continuation Merge
+
+Summary
+
+Merged contiguous same-speaker sentence fragments when the next segment begins
+with a configured Japanese dependent continuation.
+
+Changes
+
+- Added dependent-continuation prefixes and maximum gap configuration.
+- Merged qualifying sentence text, aligned words, and time ranges before
+  subtitle construction.
+- Prioritized dependent continuations over ordinary sentence-final suffixes.
+- Preserved terminal-punctuation, speaker, and long-gap boundaries.
+- Reindexed segments after merging.
+
+Documentation
+
+- docs/japanese-sentence-boundary-resolution.md
+- docs/local-audio-srt-cli.md
+- CHANGELOG.md
+
+Tests
+
+- test_japanese_sentence_boundary_resolver.py
+- test_pipeline_config.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (216 passed)
+
+Commit
+
+created by this commit
+
+```
+fix(sentences): merge dependent continuations
+```

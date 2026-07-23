@@ -35,6 +35,34 @@ def _request(segment: Segment) -> SentenceBoundaryResolutionRequest:
     )
 
 
+def _sentence_segment(
+    position: int,
+    text: str,
+    start: float,
+    end: float,
+    *,
+    speaker_id: str | None = None,
+) -> Segment:
+    word = Word(
+        text=text,
+        time_range=TimeRange(start, end),
+        speaker_id=speaker_id,
+    )
+    sentence = Sentence(
+        text=text,
+        time_range=word.time_range,
+        words=(word,),
+        speaker_id=speaker_id,
+    )
+    return Segment(
+        position=position,
+        text=text,
+        time_range=sentence.time_range,
+        sentences=(sentence,),
+        speaker_id=speaker_id,
+    )
+
+
 def test_sentence_boundary_resolver_splits_pause_after_sentence_final_expression() -> None:
     words = (
         _word("これ", 4.2, 4.46),
@@ -263,3 +291,57 @@ def test_sentence_boundary_resolver_adds_comma_to_connective_te_at_segment_bound
     assert len(result.segments) == 2
     assert result.segments[0].sentences[0].text == "それから話を聞いて、"
     assert result.segments[0].time_range == TimeRange(79.14, 82.35)
+
+
+def test_sentence_boundary_resolver_merges_contiguous_dependent_continuation() -> None:
+    request = SentenceBoundaryResolutionRequest(
+        source_path=Path("input.mp3"),
+        working_directory=Path("work"),
+        run_id="run-001",
+        segments=(
+            _sentence_segment(0, "学生は授業を休んだ", 104.62, 107.94),
+            _sentence_segment(
+                1,
+                "とき、どのように宿題を確認しますか?",
+                107.94,
+                111.08,
+            ),
+        ),
+    )
+
+    result = JapaneseSentenceBoundaryResolver().resolve(request)
+
+    assert len(result.segments) == 1
+    assert result.segments[0].position == 0
+    assert result.segments[0].sentences[0].text == (
+        "学生は授業を休んだとき、"
+        "どのように宿題を確認しますか?"
+    )
+    assert result.segments[0].time_range == TimeRange(104.62, 111.08)
+
+
+def test_sentence_boundary_resolver_keeps_guarded_dependent_segments_separate() -> None:
+    guarded_pairs = (
+        (
+            _sentence_segment(0, "学生は授業を休んだ。", 0.0, 1.0),
+            _sentence_segment(1, "ときには休むことも必要です", 1.0, 2.0),
+        ),
+        (
+            _sentence_segment(0, "学生は授業を休んだ", 0.0, 1.0, speaker_id="a"),
+            _sentence_segment(1, "ときどうしますか", 1.0, 2.0, speaker_id="b"),
+        ),
+        (
+            _sentence_segment(0, "学生は授業を休んだ", 0.0, 1.0),
+            _sentence_segment(1, "ときどうしますか", 2.0, 3.0),
+        ),
+    )
+
+    for segments in guarded_pairs:
+        request = SentenceBoundaryResolutionRequest(
+            source_path=Path("input.mp3"),
+            working_directory=Path("work"),
+            run_id="run-001",
+            segments=segments,
+        )
+        result = JapaneseSentenceBoundaryResolver().resolve(request)
+        assert len(result.segments) == 2
