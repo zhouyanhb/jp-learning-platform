@@ -161,7 +161,7 @@ def _resolver(
 def test_homophone_resolver_accepts_same_reading_candidate_with_better_context_score() -> None:
     resolver = _resolver(
         (HomophoneLanguageModelCandidate(text="聴解", score=0.8),),
-        original_score=0.1,
+        original_score=0.01,
     )
 
     result = resolver.resolve(
@@ -176,7 +176,7 @@ def test_homophone_resolver_accepts_same_reading_candidate_with_better_context_s
     assert decision.reading == "ちょうかい"
     assert decision.accepted
     assert decision.reason == "accepted_same_reading_context"
-    assert decision.original_score == 0.1
+    assert decision.original_score == 0.01
     assert decision.selected_score == 0.8
 
 
@@ -213,6 +213,65 @@ def test_homophone_resolver_rejects_candidate_that_is_not_better_than_original()
     assert not decision.accepted
     assert decision.reason == "candidate_not_better_than_original"
     assert decision.candidates[0].text == "聴解"
+
+
+def test_homophone_resolver_rejects_high_confidence_asr_word() -> None:
+    resolver = _resolver(
+        (HomophoneLanguageModelCandidate(text="聴解", score=0.8),),
+        original_score=0.001,
+    )
+    segment = _segment("2021年第2回日本語能力試験 懲戒N2")
+    sentence = segment.sentences[0]
+    confident_word = Word(
+        text="懲戒",
+        time_range=sentence.words[0].time_range,
+        confidence=0.99,
+    )
+    segment = Segment(
+        position=segment.position,
+        text=segment.text,
+        time_range=segment.time_range,
+        sentences=(
+            Sentence(
+                text=sentence.text,
+                time_range=sentence.time_range,
+                words=(confident_word,),
+            ),
+        ),
+    )
+
+    result = resolver.resolve(_request(segment))
+
+    assert result.segments[0].text.endswith("懲戒N2")
+    assert result.decisions[0].reason == "asr_confidence_too_high"
+
+
+def test_homophone_resolver_rejects_weak_contextual_ratio() -> None:
+    resolver = _resolver(
+        (HomophoneLanguageModelCandidate(text="聴解", score=0.15),),
+        original_score=0.01,
+    )
+
+    result = resolver.resolve(
+        _request(_segment("2021年第2回日本語能力試験 懲戒N2"))
+    )
+
+    assert result.segments[0].text.endswith("懲戒N2")
+    assert result.decisions[0].reason == "candidate_score_ratio_too_low"
+
+
+def test_homophone_resolver_always_enforces_minimum_candidate_score() -> None:
+    resolver = _resolver(
+        (HomophoneLanguageModelCandidate(text="聴解", score=0.00001),),
+        original_score=0.00000001,
+    )
+
+    result = resolver.resolve(
+        _request(_segment("2021年第2回日本語能力試験 懲戒N2"))
+    )
+
+    assert result.segments[0].text.endswith("懲戒N2")
+    assert result.decisions[0].reason == "candidate_score_too_low"
 
 
 def test_homophone_resolver_rejects_candidate_that_is_not_a_single_token() -> None:
@@ -285,6 +344,36 @@ def test_homophone_resolver_rejects_kana_only_replacement_for_kanji_word() -> No
     result = resolver.resolve(_request(segment))
 
     assert result.segments[0].text == "手を挙げてください"
+    assert result.decisions[0].reason == "no_same_reading_candidate"
+
+
+def test_homophone_resolver_rejects_kanji_replacement_for_kana_word() -> None:
+    analyzer = FakeAnalyzer(
+        tokens={
+            "なかなか進まない": (
+                ("なかなか", "なかなか", ("副詞", "*", "*", "*", "*", "*")),
+            ),
+        },
+        single_tokens={
+            "中中": ("なかなか", ("副詞", "*", "*", "*", "*", "*")),
+        },
+    )
+    generator = FakeCandidateGenerator(
+        candidates={
+            "なかなか": (HomophoneLanguageModelCandidate(text="中中", score=0.8),),
+        },
+        scores={"なかなか": 0.001, "中中": 0.8},
+    )
+    word = Word("なかなか", TimeRange(0.0, 0.5), 0.2)
+    sentence = Sentence("なかなか進まない", TimeRange(0.0, 1.0), (word,))
+    segment = Segment(0, sentence.text, sentence.time_range, (sentence,))
+
+    result = BertHomophoneResolver(
+        candidate_generator=generator,
+        analyzer=analyzer,
+    ).resolve(_request(segment))
+
+    assert result.segments[0].text == "なかなか進まない"
     assert result.decisions[0].reason == "no_same_reading_candidate"
 
 

@@ -1694,3 +1694,52 @@ created by this commit
 ```
 fix(words): merge Japanese inflectional units
 ```
+
+---
+
+# Session 034
+
+Date
+
+2026-07-23
+
+Roadmap
+
+Maintenance Conservative Homophone Acceptance
+
+Summary
+
+Made contextual homophone replacement fail closed without independent ASR
+evidence.
+
+Changes
+
+- Required aligned ASR confidence at or below 0.9.
+- Enforced minimum candidate probability in every acceptance path.
+- Required a 20x contextual score ratio over the original token.
+- Prevented replacements that change the Japanese script profile.
+- Added explicit rejection reasons to stage decision artifacts.
+- Audited the reported run, reducing 76 automatic changes to 2.
+
+Documentation
+
+- docs/homophone-prefilter-benchmark.md
+- CHANGELOG.md
+
+Tests
+
+- test_homophone_resolver.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (231 passed)
+
+Commit
+
+created by this commit
+
+```
+fix(homophones): require conservative evidence
+```

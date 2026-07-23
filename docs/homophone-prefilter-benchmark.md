@@ -19,6 +19,28 @@ computed in one model batch. Only the highest-risk targets proceed to full
 candidate generation and replacement scoring. No source-to-replacement word
 mapping is embedded in the resolver.
 
+## Conservative acceptance
+
+Target prefiltering decides which suspicious words are worth scoring; it does
+not authorize a replacement. Automatic replacement requires all of these
+independent signals:
+
+- aligned ASR confidence is at most `0.9`;
+- candidate probability is at least `0.0001`;
+- candidate probability is at least `20` times the original probability;
+- source and candidate retain the same kanji, hiragana, and katakana profile;
+- reading and compatible part of speech still match.
+
+Missing ASR confidence fails closed. Rejections remain in the stage artifact
+with reasons such as `asr_confidence_too_high`, `candidate_score_too_low`, and
+`candidate_score_ratio_too_low`.
+
+An artifact audit of run `20260723_185826_324291` reduced automatic changes
+from 76 to 2 without another model inference. It retains `懲戒 → 聴解` where
+ASR confidence is low and `買える → 変える`; observed corruptions including
+`寄付 → 記譜`, `学生 → 学政`, `もらえる → 貰る`, and `なかなか → 中中`
+are rejected.
+
 ## Reproducible benchmark
 
 Date: 2026-07-23

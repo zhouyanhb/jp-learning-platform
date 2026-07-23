@@ -20,7 +20,9 @@ from jp_learning_platform.workflow.homophone_stage import (
 DEFAULT_HOMOPHONE_MODEL_ID = "tohoku-nlp/bert-base-japanese-v3"
 DEFAULT_HOMOPHONE_TOP_K = 80
 DEFAULT_HOMOPHONE_SCORE_MARGIN = 0.0
-DEFAULT_HOMOPHONE_MIN_CANDIDATE_SCORE = 0.001
+DEFAULT_HOMOPHONE_MIN_CANDIDATE_SCORE = 0.0001
+DEFAULT_HOMOPHONE_MIN_SCORE_RATIO = 20.0
+DEFAULT_HOMOPHONE_MAX_ASR_CONFIDENCE = 0.9
 DEFAULT_HOMOPHONE_MIN_TOKEN_CHARS = 2
 DEFAULT_HOMOPHONE_MAX_CANDIDATE_PIECES = 3
 DEFAULT_HOMOPHONE_MAX_LEXICAL_CANDIDATES = 64
@@ -614,6 +616,8 @@ class BertHomophoneResolver:
     top_k: int = DEFAULT_HOMOPHONE_TOP_K
     score_margin: float = DEFAULT_HOMOPHONE_SCORE_MARGIN
     min_candidate_score: float = DEFAULT_HOMOPHONE_MIN_CANDIDATE_SCORE
+    min_score_ratio: float = DEFAULT_HOMOPHONE_MIN_SCORE_RATIO
+    max_asr_confidence: float = DEFAULT_HOMOPHONE_MAX_ASR_CONFIDENCE
     min_token_chars: int = DEFAULT_HOMOPHONE_MIN_TOKEN_CHARS
     max_targets_per_sentence: int = DEFAULT_HOMOPHONE_MAX_TARGETS_PER_SENTENCE
     require_original_score: bool = True
@@ -630,6 +634,14 @@ class BertHomophoneResolver:
 
         self.score_margin = float(self.score_margin)
         self.min_candidate_score = float(self.min_candidate_score)
+        self.min_score_ratio = float(self.min_score_ratio)
+        self.max_asr_confidence = float(self.max_asr_confidence)
+        if self.min_candidate_score < 0:
+            raise ValueError("min_candidate_score must be non-negative.")
+        if self.min_score_ratio <= 1:
+            raise ValueError("min_score_ratio must be greater than 1.0.")
+        if not 0 <= self.max_asr_confidence <= 1:
+            raise ValueError("max_asr_confidence must be between 0.0 and 1.0.")
         if isinstance(self.min_token_chars, bool) or not isinstance(
             self.min_token_chars,
             int,
@@ -725,6 +737,7 @@ class BertHomophoneResolver:
                 segment_position=segment_position,
                 sentence_index=sentence_index,
                 sentence_text=sentence.text,
+                sentence_words=sentence.words,
                 morpheme=morpheme,
                 prefetched_original_score=original_scores.get(
                     (morpheme.start, morpheme.end)
@@ -860,6 +873,7 @@ class BertHomophoneResolver:
         segment_position: int,
         sentence_index: int,
         sentence_text: str,
+        sentence_words: tuple[Word, ...],
         morpheme: _AnalyzedMorpheme,
         prefetched_original_score: float | None = None,
         has_prefetched_original_score: bool = False,
@@ -935,6 +949,10 @@ class BertHomophoneResolver:
         accepted, reason = self._accept_candidate(
             original_score=original_score,
             selected_score=selected_score,
+            asr_confidence=_surface_confidence(
+                sentence_words,
+                morpheme.surface,
+            ),
         )
         return HomophoneResolutionDecision(
             segment_position=segment_position,
@@ -969,19 +987,30 @@ class BertHomophoneResolver:
         *,
         original_score: float | None,
         selected_score: float | None,
+        asr_confidence: float | None,
     ) -> tuple[bool, str]:
         if selected_score is None:
             return False, "missing_candidate_score"
 
+        if selected_score < self.min_candidate_score:
+            return False, "candidate_score_too_low"
+
+        if asr_confidence is None:
+            return False, "missing_asr_confidence"
+
+        if asr_confidence > self.max_asr_confidence:
+            return False, "asr_confidence_too_high"
+
         if original_score is None:
             if self.require_original_score:
                 return False, "missing_original_score"
-            if selected_score < self.min_candidate_score:
-                return False, "candidate_score_too_low"
             return True, "accepted_same_reading_context"
 
         if selected_score <= original_score + self.score_margin:
             return False, "candidate_not_better_than_original"
+
+        if original_score > 0 and selected_score / original_score < self.min_score_ratio:
+            return False, "candidate_score_ratio_too_low"
 
         return True, "accepted_same_reading_context"
 
@@ -1116,10 +1145,15 @@ def _compatible_part_of_speech(
 
 
 def _compatible_script_change(original: str, candidate: str) -> bool:
-    if _has_kanji(original) and not _has_kanji(candidate):
-        return False
+    return _script_profile(original) == _script_profile(candidate)
 
-    return True
+
+def _script_profile(value: str) -> tuple[bool, bool, bool]:
+    return (
+        _has_kanji(value),
+        any("ぁ" <= character <= "ゖ" for character in value),
+        any("ァ" <= character <= "ヺ" for character in value),
+    )
 
 
 def _pos(part_of_speech: tuple[str, ...], index: int) -> str:

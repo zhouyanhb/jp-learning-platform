@@ -8,7 +8,7 @@ project:
 repository:
   branch: master
   working_tree: clean
-  remote_status: ahead_of_origin_by_2_commits
+  remote_status: ahead_of_origin_by_3_commits
   runnable: true
 
 architecture:
@@ -43,6 +43,8 @@ architecture:
       homophone correction and preserves aligned word metadata.
     - Inflectional learning units use Sudachi dictionary, part-of-speech, and
       conjugation metadata rather than sentence-specific replacement tables.
+    - Homophone replacement requires low ASR confidence, absolute and relative
+      contextual evidence, and a stable Japanese script profile.
 
 roadmap:
   completed:
@@ -68,6 +70,7 @@ roadmap:
     - Maintenance Cross-segment Dependent Continuation Merge
     - Maintenance Japanese Learning Word Normalization
     - Maintenance Japanese Inflectional Learning Units
+    - Maintenance Conservative Homophone Acceptance
 
   current: null
 
@@ -75,11 +78,11 @@ roadmap:
 
 latest_commit:
   hash: created_by_this_commit
-  message: "fix(words): merge Japanese inflectional units"
+  message: "fix(homophones): require conservative evidence"
 
 tests:
-  total: 227
-  passed: 227
+  total: 231
+  passed: 231
   failed: 0
 
 checks:

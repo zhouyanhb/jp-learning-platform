@@ -143,3 +143,8 @@ while preserving timing, confidence, and speaker metadata.
 
 Merge inflectional auxiliaries and sahen verb constructions into complete
 learning units using Sudachi morphology without sentence-specific replacements.
+
+- [x] Maintenance Conservative Homophone Acceptance
+
+Require independent ASR and contextual evidence before applying a same-reading
+replacement so the resolver fails closed when semantic evidence is ambiguous.

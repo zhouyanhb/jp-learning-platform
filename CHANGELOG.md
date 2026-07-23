@@ -41,6 +41,10 @@ All notable changes to this project are documented in this file.
 
 ### Fixed
 
+- Made homophone correction fail closed unless ASR confidence, absolute model
+  probability, contextual score ratio, reading, word class, and script profile
+  independently support the replacement.
+
 - Made the package entrypoint report release status and version output when run
   directly.
 - Passed pyannote diarization tokens with `use_auth_token` first while keeping
