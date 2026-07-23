@@ -8,7 +8,7 @@ project:
 repository:
   branch: master
   working_tree: clean
-  remote_status: ahead_of_origin_by_10_commits
+  remote_status: ahead_of_origin_by_2_commits
   runnable: true
 
 architecture:
@@ -41,6 +41,8 @@ architecture:
       continuations before subtitle construction.
     - Optional learning-word normalization uses Sudachi morphology after
       homophone correction and preserves aligned word metadata.
+    - Inflectional learning units use Sudachi dictionary, part-of-speech, and
+      conjugation metadata rather than sentence-specific replacement tables.
 
 roadmap:
   completed:
@@ -65,6 +67,7 @@ roadmap:
     - Maintenance Sentence-initial Discourse Marker Punctuation
     - Maintenance Cross-segment Dependent Continuation Merge
     - Maintenance Japanese Learning Word Normalization
+    - Maintenance Japanese Inflectional Learning Units
 
   current: null
 
@@ -72,11 +75,11 @@ roadmap:
 
 latest_commit:
   hash: created_by_this_commit
-  message: "feat(words): normalize Japanese learning units"
+  message: "fix(words): merge Japanese inflectional units"
 
 tests:
-  total: 222
-  passed: 222
+  total: 227
+  passed: 227
   failed: 0
 
 checks:

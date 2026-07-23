@@ -8,6 +8,8 @@ All notable changes to this project are documented in this file.
 
 - Added optional Sudachi-backed learning-word normalization that repairs ASR
   fragments while preserving word timing, confidence, and speaker metadata.
+- Extended learning-word normalization to join inflectional auxiliaries and
+  sahen verb constructions through Sudachi morphology.
 
 - Added grammar-aware merging for contiguous cross-segment Japanese dependent
   continuations while preserving punctuation, speaker, and timing boundaries.

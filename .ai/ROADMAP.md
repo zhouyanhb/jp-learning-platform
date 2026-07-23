@@ -138,3 +138,8 @@ with a Japanese dependent continuation and timing is contiguous.
 
 Normalize aligned Japanese token fragments into learning-oriented word units
 while preserving timing, confidence, and speaker metadata.
+
+- [x] Maintenance Japanese Inflectional Learning Units
+
+Merge inflectional auxiliaries and sahen verb constructions into complete
+learning units using Sudachi morphology without sentence-specific replacements.

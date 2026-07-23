@@ -18,8 +18,21 @@ class _Analyzer:
             "メールでも": (("メール", "名詞", "普通名詞"), ("で", "助詞", "格助詞"), ("も", "助詞", "係助詞")),
             "いつでも": (("いつ", "代名詞", "*"), ("で", "助詞", "格助詞"), ("も", "助詞", "係助詞")),
             "学生": (("学生", "名詞", "普通名詞"),),
+            "聞こえない": (("聞こえ", "動詞", "一般"), ("ない", "助動詞", "*")),
+            "散歩しましょう": (("散歩", "名詞", "サ変可能"), ("し", "動詞", "非自立可能"), ("ましょう", "助動詞", "*")),
+            "行きました": (("行き", "動詞", "一般"), ("まし", "助動詞", "*"), ("た", "助動詞", "*")),
+            "高くない": (("高く", "形容詞", "一般"), ("ない", "形容詞", "非自立可能")),
+            "問題がない": (("問題", "名詞", "普通名詞"), ("が", "助詞", "格助詞"), ("ない", "形容詞", "非自立可能")),
         }
-        return tuple(JapaneseMorpheme(surface, (major, minor)) for surface, major, minor in fixtures[text])
+        return tuple(
+            JapaneseMorpheme(
+                surface,
+                (major, minor, detail),
+                dictionary_form="する" if surface == "し" else surface,
+            )
+            for surface, major, detail in fixtures[text]
+            for minor in (detail if major != "名詞" else "普通名詞",)
+        )
 
 
 def _normalize(text: str, token_texts: tuple[str, ...]) -> tuple[Word, ...]:
@@ -44,6 +57,11 @@ def _normalize(text: str, token_texts: tuple[str, ...]) -> tuple[Word, ...]:
         ("メールでも", ("メールでも",), ("メール", "でも")),
         ("いつでも", ("いつでも",), ("いつ", "でも")),
         ("学生", ("学", "生"), ("学生",)),
+        ("聞こえない", ("聞こえ", "ない"), ("聞こえない",)),
+        ("散歩しましょう", ("散歩", "しましょう"), ("散歩しましょう",)),
+        ("行きました", ("行き", "まし", "た"), ("行きました",)),
+        ("高くない", ("高く", "ない"), ("高くない",)),
+        ("問題がない", ("問題", "が", "ない"), ("問題", "が", "ない")),
     ],
 )
 def test_normalizes_learning_units_without_sentence_specific_replacements(

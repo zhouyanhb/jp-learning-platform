@@ -20,6 +20,10 @@ class WordNormalizerDependencyError(RuntimeError):
 class JapaneseMorpheme:
     surface: str
     part_of_speech: tuple[str, ...]
+    dictionary_form: str = ""
+    normalized_form: str = ""
+    conjugation_type: str = ""
+    conjugation_form: str = ""
 
 
 class JapaneseMorphologicalAnalyzer(Protocol):
@@ -39,7 +43,14 @@ class SudachiMorphologicalAnalyzer:
 
     def analyze(self, text: str) -> tuple[JapaneseMorpheme, ...]:
         return tuple(
-            JapaneseMorpheme(item.surface(), tuple(item.part_of_speech()))
+            JapaneseMorpheme(
+                surface=item.surface(),
+                part_of_speech=tuple(item.part_of_speech()),
+                dictionary_form=item.dictionary_form(),
+                normalized_form=item.normalized_form(),
+                conjugation_type=item.part_of_speech()[4],
+                conjugation_form=item.part_of_speech()[5],
+            )
             for item in self._tokenizer.tokenize(text, self._mode)
             if item.surface().strip()
         )
@@ -97,15 +108,30 @@ class JapaneseLearningWordNormalizer:
             start, end = cursor, cursor + len(item.surface)
             cursor = end
             # でも is one functional learning unit, independently of its host word.
-            if item.surface == "も" and raw and raw[-1].text == "で" and raw[-1].pos[0] == "助詞":
+            if self._continues_compound_particle(item, raw):
                 previous = raw.pop()
                 raw.append(_LearningUnit("でも", previous.start, end, item.part_of_speech))
+            # サ変可能名詞＋「する」の活用を一つの主要動詞にする。
+            elif self._continues_sahen_verb(item, raw):
+                previous = raw.pop()
+                raw.append(
+                    _LearningUnit(
+                        previous.text + item.surface,
+                        previous.start,
+                        end,
+                        item.part_of_speech,
+                    )
+                )
             # 接続助詞の「て/で」は直前の活用語に付ける（聞いて、話して）。
-            elif item.surface in {"て", "で"} and len(item.part_of_speech) > 1 and item.part_of_speech[1] == "接続助詞" and raw and raw[-1].pos[0] in {"動詞", "形容詞"}:
+            elif self._continues_te_form(item, raw):
                 previous = raw.pop()
                 raw.append(_LearningUnit(previous.text + item.surface, previous.start, end, previous.pos))
-            # 非自立動詞と助動詞は補助表現としてまとめる（い＋ます）。
-            elif item.part_of_speech[0] == "助動詞" and raw and len(raw[-1].pos) > 1 and raw[-1].pos[0] == "動詞" and raw[-1].pos[1] == "非自立可能":
+            # 活用助動詞を主要動詞・形容詞または補助動詞自身に付ける。
+            elif self._continues_inflection(item, raw):
+                previous = raw.pop()
+                raw.append(_LearningUnit(previous.text + item.surface, previous.start, end, previous.pos))
+            # 「高く＋ない」のような非自立形容詞は直前の形容詞に付ける。
+            elif self._continues_adjective_inflection(item, raw):
                 previous = raw.pop()
                 raw.append(_LearningUnit(previous.text + item.surface, previous.start, end, previous.pos))
             elif item.part_of_speech[0] == "補助記号" and raw:
@@ -114,6 +140,69 @@ class JapaneseLearningWordNormalizer:
             else:
                 raw.append(_LearningUnit(item.surface, start, end, item.part_of_speech))
         return tuple(raw)
+
+    @staticmethod
+    def _continues_compound_particle(
+        item: JapaneseMorpheme,
+        units: list[_LearningUnit],
+    ) -> bool:
+        return (
+            item.surface == "も"
+            and bool(units)
+            and units[-1].text == "で"
+            and units[-1].pos[0] == "助詞"
+        )
+
+    @staticmethod
+    def _continues_sahen_verb(
+        item: JapaneseMorpheme,
+        units: list[_LearningUnit],
+    ) -> bool:
+        return (
+            bool(units)
+            and item.part_of_speech[0] == "動詞"
+            and item.dictionary_form == "する"
+            and len(units[-1].pos) > 2
+            and units[-1].pos[0] == "名詞"
+            and units[-1].pos[2] == "サ変可能"
+        )
+
+    @staticmethod
+    def _continues_te_form(
+        item: JapaneseMorpheme,
+        units: list[_LearningUnit],
+    ) -> bool:
+        return (
+            item.surface in {"て", "で"}
+            and len(item.part_of_speech) > 1
+            and item.part_of_speech[1] == "接続助詞"
+            and bool(units)
+            and units[-1].pos[0] in {"動詞", "形容詞"}
+        )
+
+    @staticmethod
+    def _continues_inflection(
+        item: JapaneseMorpheme,
+        units: list[_LearningUnit],
+    ) -> bool:
+        return (
+            item.part_of_speech[0] == "助動詞"
+            and bool(units)
+            and units[-1].pos[0] in {"動詞", "形容詞", "形状詞"}
+        )
+
+    @staticmethod
+    def _continues_adjective_inflection(
+        item: JapaneseMorpheme,
+        units: list[_LearningUnit],
+    ) -> bool:
+        return (
+            bool(units)
+            and item.part_of_speech[0] == "形容詞"
+            and len(item.part_of_speech) > 1
+            and item.part_of_speech[1] == "非自立可能"
+            and units[-1].pos[0] == "形容詞"
+        )
 
     def _make_word(self, unit: _LearningUnit, sentence: Sentence, total_chars: int) -> Word:
         source_words = sentence.words

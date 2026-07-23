@@ -169,6 +169,12 @@ Word-aware subtitle builder adapter implementation lives in:
 src/jp_learning_platform/infrastructure/word_subtitle_builder.py
 ```
 
+Japanese learning-word normalization adapter implementation lives in:
+
+```
+src/jp_learning_platform/infrastructure/japanese_word_normalizer.py
+```
+
 SRT subtitle writer adapter implementation lives in:
 
 ```

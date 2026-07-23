@@ -1646,3 +1646,51 @@ created by this commit
 ```
 feat(words): normalize Japanese learning units
 ```
+
+---
+
+# Session 033
+
+Date
+
+2026-07-23
+
+Roadmap
+
+Maintenance Japanese Inflectional Learning Units
+
+Summary
+
+Extended learning-word grouping with Sudachi inflection and sahen metadata.
+
+Changes
+
+- Joined negative, polite, past, passive, causative, and adjective inflections.
+- Joined sahen-capable nouns with inflections whose dictionary form is `する`.
+- Kept te-form auxiliary verbs as separate learning units.
+- Avoided merging standalone predicates and noun copulas.
+- Preserved timing, confidence, and speaker metadata through existing mapping.
+
+Documentation
+
+- .ai/ARCHITECTURE.md
+- docs/japanese-learning-word-normalization.md
+- CHANGELOG.md
+
+Tests
+
+- test_japanese_word_normalizer.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (227 passed)
+
+Commit
+
+created by this commit
+
+```
+fix(words): merge Japanese inflectional units
+```
