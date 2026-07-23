@@ -309,11 +309,11 @@ def test_subtitle_pipeline_runner_records_progress_and_stage_artifacts(
         "01_whisper.json",
         "02_align.json",
         "03_repair.json",
-        "06_build.json",
-        "07_merge.json",
-        "08_readability.json",
-        "09_validate.json",
-        "10_write.json",
+        "07_build.json",
+        "08_merge.json",
+        "09_readability.json",
+        "10_validate.json",
+        "11_write.json",
     )
     for artifact_name in expected_artifacts:
         assert (artifact_directory / artifact_name).exists()

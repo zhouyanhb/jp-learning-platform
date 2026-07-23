@@ -50,6 +50,12 @@ from jp_learning_platform.infrastructure.japanese_sentence_boundary_resolver imp
     DEFAULT_SENTENCE_BOUNDARY_TERMINAL_MARKS,
     JapaneseSentenceBoundaryResolver,
 )
+from jp_learning_platform.infrastructure.japanese_word_normalizer import (
+    JapaneseLearningWordNormalizer,
+    JapaneseMorpheme,
+    SudachiMorphologicalAnalyzer,
+    WordNormalizerDependencyError,
+)
 from jp_learning_platform.infrastructure.listening_json_writer import (
     DEFAULT_LISTENING_JSON_EXTENSION,
     LISTENING_JSON_SCHEMA_VERSION,
@@ -135,6 +141,10 @@ __all__ = [
     "AudioFormat",
     "AudioLoader",
     "AudioLoaderError",
+    "JapaneseLearningWordNormalizer",
+    "JapaneseMorpheme",
+    "SudachiMorphologicalAnalyzer",
+    "WordNormalizerDependencyError",
     "BertHomophoneResolver",
     "BertMaskedLanguageHomophoneCandidateGenerator",
     "ConservativeSubtitleMerger",

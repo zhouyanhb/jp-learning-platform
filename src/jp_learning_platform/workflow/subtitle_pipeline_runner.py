@@ -35,6 +35,10 @@ from jp_learning_platform.workflow.sentence_boundary_stage import (
     SentenceBoundaryResolutionStage,
     SentenceBoundaryResolver,
 )
+from jp_learning_platform.workflow.word_normalization_stage import (
+    WordNormalizationStage,
+    WordNormalizer,
+)
 from jp_learning_platform.workflow.runtime import (
     ExecutionEngine,
     Stage,
@@ -214,6 +218,7 @@ class SubtitlePipelineRunner:
     aligner: WhisperXAligner | None = None
     repairer: QwenRepairer | None = None
     homophone_resolver: HomophoneResolver | None = None
+    word_normalizer: WordNormalizer | None = None
     sentence_boundary_resolver: SentenceBoundaryResolver | None = None
     merger: SubtitleMerger | None = None
     optimizer: ReadabilityOptimizer | None = None
@@ -311,6 +316,9 @@ class SubtitlePipelineRunner:
 
         if self.homophone_resolver is not None:
             stages.append(HomophoneResolutionStage(self.homophone_resolver))
+
+        if self.word_normalizer is not None:
+            stages.append(WordNormalizationStage(self.word_normalizer))
 
         if self.sentence_boundary_resolver is not None:
             stages.append(

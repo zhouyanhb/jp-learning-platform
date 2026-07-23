@@ -28,6 +28,10 @@ homophone = [
   "fugashi>=1.3",
   "unidic-lite>=1.0"
 ]
+word-normalization = [
+  "sudachipy>=0.6",
+  "sudachidict-core>=2024.1"
+]
 diarization = [
   "pyannote.audio>=3.1"
 ]

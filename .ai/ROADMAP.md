@@ -133,3 +133,8 @@ changing subtitle boundaries or timing.
 
 Merge adjacent same-speaker sentence fragments when the next segment begins
 with a Japanese dependent continuation and timing is contiguous.
+
+- [x] Maintenance Japanese Learning Word Normalization
+
+Normalize aligned Japanese token fragments into learning-oriented word units
+while preserving timing, confidence, and speaker metadata.

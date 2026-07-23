@@ -1597,3 +1597,52 @@ created by this commit
 ```
 fix(sentences): merge dependent continuations
 ```
+
+---
+
+# Session 032
+
+Date
+
+2026-07-23
+
+Roadmap
+
+Maintenance Japanese Learning Word Normalization
+
+Summary
+
+Added morphology-based learning-word normalization after homophone correction.
+
+Changes
+
+- Joined connective verb forms such as `聞いて` and `話して`.
+- Grouped auxiliary expressions such as `います`.
+- Separated `でも` from nouns and pronouns while retaining compound nouns.
+- Preserved or interpolated timing, confidence, and speaker metadata.
+- Added an opt-in CLI flag and automatic activation with homophone resolution.
+
+Documentation
+
+- docs/japanese-learning-word-normalization.md
+- CHANGELOG.md
+
+Tests
+
+- test_japanese_word_normalizer.py
+- test_pipeline_progress_artifacts.py
+- test_subtitle_pipeline_runner.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (222 passed)
+
+Commit
+
+created by this commit
+
+```
+feat(words): normalize Japanese learning units
+```

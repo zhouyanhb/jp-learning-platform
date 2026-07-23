@@ -34,6 +34,7 @@ from jp_learning_platform.infrastructure import (
     FasterWhisperDependencyError,
     FasterWhisperTranscriber,
     HomophoneResolverDependencyError,
+    JapaneseLearningWordNormalizer,
     JapaneseSentenceBoundaryResolver,
     LlamaCppQwenRepairer,
     ListeningJsonWriter,
@@ -45,6 +46,7 @@ from jp_learning_platform.infrastructure import (
     StageArtifactStore,
     WhisperXAlignerAdapter,
     WordSubtitleBuilder,
+    WordNormalizerDependencyError,
 )
 from jp_learning_platform.workflow import (
     DuplicateSubtitleOutputError,
@@ -58,6 +60,7 @@ _PIPELINE_STAGES = (
     "WhisperX Alignment",
     "Qwen Repair",
     "Homophone Resolution (optional)",
+    "Learning Word Normalization (optional)",
     "Sentence Boundary Resolution",
     "Subtitle Builder",
     "Subtitle Merger",
@@ -154,6 +157,11 @@ def build_parser() -> ArgumentParser:
         ),
     )
     transcribe_parser.add_argument(
+        "--enable-word-normalization",
+        action="store_true",
+        help="Normalize aligned Japanese tokens into learning words with Sudachi.",
+    )
+    transcribe_parser.add_argument(
         "--homophone-model-id",
         default=DEFAULT_HOMOPHONE_MODEL_ID,
         help=(
@@ -214,6 +222,7 @@ def _run_transcribe(args: Namespace, output: TextIO, error_output: TextIO) -> in
         aligner=_build_aligner(args),
         repairer=_build_repairer(args),
         homophone_resolver=_build_homophone_resolver(args),
+        word_normalizer=_build_word_normalizer(args),
         sentence_boundary_resolver=JapaneseSentenceBoundaryResolver(),
         merger=ConservativeSubtitleMerger(),
         optimizer=LocalReadabilityOptimizer(),
@@ -236,6 +245,7 @@ def _run_transcribe(args: Namespace, output: TextIO, error_output: TextIO) -> in
         DuplicateSubtitleOutputError,
         FasterWhisperDependencyError,
         HomophoneResolverDependencyError,
+        WordNormalizerDependencyError,
         RuntimeError,
         SubtitlePipelineInputError,
         SubtitlePipelineRunnerError,
@@ -298,6 +308,12 @@ def _build_homophone_resolver(args: Namespace) -> BertHomophoneResolver | None:
         top_k=args.homophone_top_k,
         score_margin=args.homophone_score_margin,
     )
+
+
+def _build_word_normalizer(args: Namespace) -> JapaneseLearningWordNormalizer | None:
+    if not (args.enable_word_normalization or args.enable_homophone_resolver):
+        return None
+    return JapaneseLearningWordNormalizer()
 
 
 def _run_command(args: Namespace, output: TextIO, error_output: TextIO) -> int:

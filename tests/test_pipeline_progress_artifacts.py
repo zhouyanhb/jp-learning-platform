@@ -82,9 +82,10 @@ def test_stage_artifact_store_uses_ordered_stage_filenames(tmp_path: Path) -> No
     )
     assert (
         store.stage_path(source_path, "sentence-boundary-resolution").name
-        == "05_sentence_boundary_resolution.json"
+        == "06_sentence_boundary_resolution.json"
     )
-    assert store.stage_path(source_path, "subtitle-writer").name == "10_write.json"
+    assert store.stage_path(source_path, "word-normalization").name == "05_word_normalization.json"
+    assert store.stage_path(source_path, "subtitle-writer").name == "11_write.json"
 
 
 def test_console_progress_reporter_formats_stage_progress() -> None:
