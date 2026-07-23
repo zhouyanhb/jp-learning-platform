@@ -33,6 +33,8 @@ architecture:
       configuration objects.
     - pyannote.audio speaker diarization is an optional infrastructure wrapper
       around the WhisperX alignment contract.
+    - Homophone resolution analyzes every sentence with Sudachi, then limits
+      full contextual candidate scoring to three risk-ranked targets.
 
 roadmap:
   completed:
@@ -53,6 +55,7 @@ roadmap:
     - Commit0015
     - Commit0016
     - Commit0017
+    - Maintenance Homophone Candidate Prefiltering and Benchmark
 
   current: null
 
@@ -60,11 +63,11 @@ roadmap:
 
 latest_commit:
   hash: created_by_this_commit
-  message: fix(diarization): pass pyannote token as use_auth_token
+  message: "perf(homophones): prefilter contextual candidates"
 
 tests:
-  total: 182
-  passed: 182
+  total: 212
+  passed: 212
   failed: 0
 
 checks:
@@ -200,6 +203,7 @@ infrastructure:
       - QwenRepairConfig
       - QwenRepairSafetyConfig
       - SubtitleMergeConfig
+      - HomophonePrefilterConfig
       - ReadabilityConfig
   tool_registry:
     implemented:

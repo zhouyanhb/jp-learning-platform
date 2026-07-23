@@ -80,6 +80,25 @@ class FakeCandidateGenerator:
         return self.scores.get(replacement_text)
 
 
+@dataclass(slots=True)
+class PrefilterCandidateGenerator(FakeCandidateGenerator):
+    original_scores: dict[str, float | None] = field(default_factory=dict)
+    vocabulary_ranks: dict[str, float] = field(default_factory=dict)
+
+    def lexical_candidates_for(self, target: HomophoneTarget) -> tuple[str, ...]:
+        return tuple(candidate.text for candidate in self.candidates.get(target.text, ()))
+
+    def original_scores_for(
+        self,
+        sentence_text: str,
+        targets: tuple[HomophoneTarget, ...],
+    ) -> tuple[float | None, ...]:
+        return tuple(self.original_scores.get(target.text) for target in targets)
+
+    def vocabulary_rank_for(self, text: str) -> float:
+        return self.vocabulary_ranks.get(text, 0.0)
+
+
 def _request(segment: Segment) -> HomophoneResolutionRequest:
     return HomophoneResolutionRequest(
         source_path=Path("lesson.mp3"),
@@ -267,3 +286,59 @@ def test_homophone_resolver_rejects_kana_only_replacement_for_kanji_word() -> No
 
     assert result.segments[0].text == "手を挙げてください"
     assert result.decisions[0].reason == "no_same_reading_candidate"
+
+
+def test_homophone_resolver_scores_at_most_three_suspicious_targets_per_sentence(
+) -> None:
+    surfaces = ("甲乙", "丙丁", "戊己", "庚辛")
+    candidates = ("甲乙候", "丙丁候", "戊己候", "庚辛候")
+    readings = ("こうおつ", "へいてい", "ぼき", "こうしん")
+    analyzer = FakeAnalyzer(
+        tokens={
+            "".join(surfaces): tuple(
+                (surface, reading, _GENERAL_NOUN_POS)
+                for surface, reading in zip(surfaces, readings, strict=True)
+            )
+        },
+        single_tokens={
+            candidate: (reading, _GENERAL_NOUN_POS)
+            for candidate, reading in zip(candidates, readings, strict=True)
+        },
+    )
+    generator = PrefilterCandidateGenerator(
+        candidates={
+            surface: (HomophoneLanguageModelCandidate(candidate, 0.8),)
+            for surface, candidate in zip(surfaces, candidates, strict=True)
+        },
+        scores={candidate: 0.8 for candidate in candidates},
+        original_scores=dict(zip(surfaces, (0.9, 0.1, 0.2, 0.3), strict=True)),
+        vocabulary_ranks=dict(zip(surfaces, (0.1, 0.2, 0.3, 0.4), strict=True)),
+    )
+    words = tuple(
+        Word(
+            text=surface,
+            time_range=TimeRange(index, index + 0.5),
+            confidence=0.9,
+        )
+        for index, surface in enumerate(surfaces)
+    )
+    sentence = Sentence(
+        text="".join(surfaces),
+        time_range=TimeRange(0.0, 4.0),
+        words=words,
+    )
+    segment = Segment(
+        position=0,
+        text=sentence.text,
+        time_range=sentence.time_range,
+        sentences=(sentence,),
+    )
+
+    result = BertHomophoneResolver(
+        candidate_generator=generator,
+        analyzer=analyzer,
+        max_targets_per_sentence=3,
+    ).resolve(_request(segment))
+
+    assert tuple(target.text for target in generator.seen_targets) == surfaces[1:]
+    assert len(result.decisions) == 3

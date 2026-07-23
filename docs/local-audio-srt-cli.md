@@ -1,5 +1,8 @@
 # Local Audio Transcribe CLI
 
+Homophone candidate prefilter behavior and measured before/after runtime are
+documented in `docs/homophone-prefilter-benchmark.md`.
+
 The local audio transcribe CLI generates structured intensive-listening JSON
 from a single audio file or a folder of audio files. SRT output is an optional
 export.

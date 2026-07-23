@@ -7,6 +7,9 @@ from typing import Any, Protocol
 import unicodedata
 
 from jp_learning_platform.domain import Segment, Sentence, TimeRange, Word
+from jp_learning_platform.infrastructure.pipeline_config import (
+    DEFAULT_HOMOPHONE_PREFILTER_CONFIG,
+)
 from jp_learning_platform.workflow.homophone_stage import (
     HomophoneCandidateScore,
     HomophoneResolution,
@@ -21,6 +24,9 @@ DEFAULT_HOMOPHONE_MIN_CANDIDATE_SCORE = 0.001
 DEFAULT_HOMOPHONE_MIN_TOKEN_CHARS = 2
 DEFAULT_HOMOPHONE_MAX_CANDIDATE_PIECES = 3
 DEFAULT_HOMOPHONE_MAX_LEXICAL_CANDIDATES = 64
+DEFAULT_HOMOPHONE_MAX_TARGETS_PER_SENTENCE = (
+    DEFAULT_HOMOPHONE_PREFILTER_CONFIG.max_targets_per_sentence
+)
 _DEFAULT_SUDACHI_SPLIT_MODE = "C"
 _CONTENT_POS = {"名詞", "動詞", "形容詞", "副詞"}
 _SKIPPED_SURFACES = {"する", "した", "して", "ある", "いる", "ます", "です"}
@@ -90,6 +96,26 @@ class HomophoneCandidateGenerator(Protocol):
         """Score a concrete replacement in the same masked context."""
 
 
+class HomophonePrefilterCandidateGenerator(HomophoneCandidateGenerator, Protocol):
+    """Optional efficient target-prefilter capabilities."""
+
+    def lexical_candidates_for(
+        self,
+        target: HomophoneTarget,
+    ) -> tuple[str, ...]:
+        """Return same-reading vocabulary candidates without model inference."""
+
+    def original_scores_for(
+        self,
+        sentence_text: str,
+        targets: tuple[HomophoneTarget, ...],
+    ) -> tuple[float | None, ...]:
+        """Score original targets in one contextual model batch."""
+
+    def vocabulary_rank_for(self, text: str) -> float:
+        """Return a normalized tokenizer vocabulary-rank frequency proxy."""
+
+
 @dataclass(frozen=True, slots=True)
 class _AnalyzedMorpheme:
     surface: str
@@ -111,6 +137,16 @@ class _AcceptedChange:
 class _VocabularyPiece:
     surface: str
     reading: str
+
+
+@dataclass(frozen=True, slots=True)
+class _PrefilteredTarget:
+    morpheme: _AnalyzedMorpheme
+    target: HomophoneTarget
+    lexical_candidate_count: int
+    asr_confidence: float | None
+    original_score: float | None
+    vocabulary_rank: float
 
 
 @dataclass(slots=True)
@@ -300,6 +336,85 @@ class BertMaskedLanguageHomophoneCandidateGenerator:
             log_probability = log_probability + torch.log(probability)
 
         return float(torch.exp(log_probability / len(token_ids)).item())
+
+    def lexical_candidates_for(
+        self,
+        target: HomophoneTarget,
+    ) -> tuple[str, ...]:
+        """Return same-reading candidates without a masked-model forward pass."""
+        return self._same_reading_vocabulary_candidates(target)
+
+    def original_scores_for(
+        self,
+        sentence_text: str,
+        targets: tuple[HomophoneTarget, ...],
+    ) -> tuple[float | None, ...]:
+        """Compute contextual original-token probabilities in one model batch."""
+        if not targets:
+            return ()
+
+        tokenizer, model, torch = self._load_model()
+        mask_token = tokenizer.mask_token
+        if not mask_token:
+            raise HomophoneResolverDependencyError()
+
+        masked_texts: list[str] = []
+        original_token_ids: list[tuple[int, ...]] = []
+        for target in targets:
+            token_ids = tuple(
+                tokenizer.encode(target.text, add_special_tokens=False)
+            )
+            original_token_ids.append(token_ids)
+            masks = "".join(mask_token for _ in token_ids)
+            masked_texts.append(
+                f"{sentence_text[:target.start]}{masks}{sentence_text[target.end:]}"
+            )
+
+        inputs = tokenizer(masked_texts, return_tensors="pt", padding=True)
+        if self.device != "cpu":
+            inputs = {key: value.to(self.device) for key, value in inputs.items()}
+
+        model.eval()
+        with torch.no_grad():
+            logits = model(**inputs).logits
+
+        scores: list[float | None] = []
+        for row_index, token_ids in enumerate(original_token_ids):
+            if not token_ids:
+                scores.append(None)
+                continue
+            mask_positions = (
+                inputs["input_ids"][row_index] == tokenizer.mask_token_id
+            ).nonzero(as_tuple=False)
+            if len(mask_positions) != len(token_ids):
+                scores.append(None)
+                continue
+
+            log_probability = torch.tensor(0.0, device=logits.device)
+            for position, token_id in zip(
+                mask_positions,
+                token_ids,
+                strict=True,
+            ):
+                token_logits = logits[row_index, int(position.item())]
+                probability = torch.softmax(token_logits, dim=-1)[token_id]
+                log_probability = log_probability + torch.log(
+                    probability.clamp_min(1e-12)
+                )
+            scores.append(
+                float(torch.exp(log_probability / len(token_ids)).item())
+            )
+
+        return tuple(scores)
+
+    def vocabulary_rank_for(self, text: str) -> float:
+        """Use normalized token ids as a stable vocabulary-frequency proxy."""
+        tokenizer, _, _ = self._load_model()
+        token_ids = tokenizer.encode(text, add_special_tokens=False)
+        vocabulary_size = max(len(tokenizer.get_vocab()), 1)
+        if not token_ids:
+            return 1.0
+        return min(sum(token_ids) / len(token_ids) / vocabulary_size, 1.0)
 
     def _masked_logits(
         self,
@@ -500,6 +615,7 @@ class BertHomophoneResolver:
     score_margin: float = DEFAULT_HOMOPHONE_SCORE_MARGIN
     min_candidate_score: float = DEFAULT_HOMOPHONE_MIN_CANDIDATE_SCORE
     min_token_chars: int = DEFAULT_HOMOPHONE_MIN_TOKEN_CHARS
+    max_targets_per_sentence: int = DEFAULT_HOMOPHONE_MAX_TARGETS_PER_SENTENCE
     require_original_score: bool = True
 
     def __post_init__(self) -> None:
@@ -521,6 +637,13 @@ class BertHomophoneResolver:
             raise TypeError("min_token_chars must be an integer.")
         if self.min_token_chars < 1:
             raise ValueError("min_token_chars must be positive.")
+        if isinstance(self.max_targets_per_sentence, bool) or not isinstance(
+            self.max_targets_per_sentence,
+            int,
+        ):
+            raise TypeError("max_targets_per_sentence must be an integer.")
+        if self.max_targets_per_sentence < 1:
+            raise ValueError("max_targets_per_sentence must be positive.")
 
     def resolve(self, request: HomophoneResolutionRequest) -> HomophoneResolution:
         if not isinstance(request, HomophoneResolutionRequest):
@@ -591,14 +714,24 @@ class BertHomophoneResolver:
     ) -> tuple[Sentence, tuple[HomophoneResolutionDecision, ...]]:
         assert self.analyzer is not None
         morphemes = self.analyzer.analyze(sentence.text)
+        selected_targets, original_scores = self._prefilter_targets(
+            sentence,
+            morphemes,
+        )
         decisions: list[HomophoneResolutionDecision] = []
         changes: list[_AcceptedChange] = []
-        for morpheme in morphemes:
+        for morpheme in selected_targets:
             decision = self._decision_for_target(
                 segment_position=segment_position,
                 sentence_index=sentence_index,
                 sentence_text=sentence.text,
                 morpheme=morpheme,
+                prefetched_original_score=original_scores.get(
+                    (morpheme.start, morpheme.end)
+                ),
+                has_prefetched_original_score=(
+                    (morpheme.start, morpheme.end) in original_scores
+                ),
             )
             if decision is None:
                 continue
@@ -629,6 +762,98 @@ class BertHomophoneResolver:
             tuple(decisions),
         )
 
+    def _prefilter_targets(
+        self,
+        sentence: Sentence,
+        morphemes: tuple[_AnalyzedMorpheme, ...],
+    ) -> tuple[tuple[_AnalyzedMorpheme, ...], dict[tuple[int, int], float | None]]:
+        eligible = tuple(
+            morpheme for morpheme in morphemes if self._should_consider(morpheme)
+        )
+        assert self.candidate_generator is not None
+        lexical_lookup = getattr(
+            self.candidate_generator,
+            "lexical_candidates_for",
+            None,
+        )
+        batch_score = getattr(
+            self.candidate_generator,
+            "original_scores_for",
+            None,
+        )
+        vocabulary_rank = getattr(
+            self.candidate_generator,
+            "vocabulary_rank_for",
+            None,
+        )
+        if not callable(lexical_lookup):
+            return eligible[: self.max_targets_per_sentence], {}
+
+        targets: list[HomophoneTarget] = []
+        candidate_counts: list[int] = []
+        filtered_morphemes: list[_AnalyzedMorpheme] = []
+        for morpheme in eligible:
+            target = HomophoneTarget(
+                text=morpheme.surface,
+                reading=morpheme.reading,
+                part_of_speech=morpheme.part_of_speech,
+                start=morpheme.start,
+                end=morpheme.end,
+            )
+            candidates = tuple(lexical_lookup(target))
+            if not candidates:
+                continue
+            targets.append(target)
+            candidate_counts.append(len(candidates))
+            filtered_morphemes.append(morpheme)
+
+        if not targets:
+            return (), {}
+
+        if callable(batch_score):
+            scores = tuple(batch_score(sentence.text, tuple(targets)))
+        else:
+            scores = (None,) * len(targets)
+        if len(scores) != len(targets):
+            raise RuntimeError("homophone prefilter score count mismatch.")
+
+        ranked: list[_PrefilteredTarget] = []
+        for morpheme, target, count, original_score in zip(
+            filtered_morphemes,
+            targets,
+            candidate_counts,
+            scores,
+            strict=True,
+        ):
+            rank = (
+                float(vocabulary_rank(target.text))
+                if callable(vocabulary_rank)
+                else 0.0
+            )
+            ranked.append(
+                _PrefilteredTarget(
+                    morpheme=morpheme,
+                    target=target,
+                    lexical_candidate_count=count,
+                    asr_confidence=_surface_confidence(
+                        sentence.words,
+                        target.text,
+                    ),
+                    original_score=original_score,
+                    vocabulary_rank=rank,
+                )
+            )
+
+        ranked.sort(key=_prefilter_sort_key)
+        selected = tuple(ranked[: self.max_targets_per_sentence])
+        return (
+            tuple(item.morpheme for item in selected),
+            {
+                (item.morpheme.start, item.morpheme.end): item.original_score
+                for item in selected
+            },
+        )
+
     def _decision_for_target(
         self,
         *,
@@ -636,6 +861,8 @@ class BertHomophoneResolver:
         sentence_index: int,
         sentence_text: str,
         morpheme: _AnalyzedMorpheme,
+        prefetched_original_score: float | None = None,
+        has_prefetched_original_score: bool = False,
     ) -> HomophoneResolutionDecision | None:
         if not self._should_consider(morpheme):
             return None
@@ -679,11 +906,13 @@ class BertHomophoneResolver:
                 )
             )
 
-        original_score = self.candidate_generator.score_for(
-            sentence_text,
-            target,
-            morpheme.surface,
-        )
+        original_score = prefetched_original_score
+        if not has_prefetched_original_score:
+            original_score = self.candidate_generator.score_for(
+                sentence_text,
+                target,
+                morpheme.surface,
+            )
         if not scored_candidates:
             return HomophoneResolutionDecision(
                 segment_position=segment_position,
@@ -765,6 +994,42 @@ def _apply_text_changes(
     for change in sorted(changes, key=lambda item: item.start, reverse=True):
         updated = f"{updated[:change.start]}{change.selected_text}{updated[change.end:]}"
     return updated
+
+
+def _prefilter_sort_key(
+    target: _PrefilteredTarget,
+) -> tuple[float, float, float, int, int]:
+    context_probability = (
+        target.original_score if target.original_score is not None else 1.0
+    )
+    asr_confidence = (
+        target.asr_confidence if target.asr_confidence is not None else 1.0
+    )
+    return (
+        context_probability,
+        asr_confidence,
+        -target.vocabulary_rank,
+        -target.lexical_candidate_count,
+        target.morpheme.start,
+    )
+
+
+def _surface_confidence(
+    words: tuple[Word, ...],
+    surface: str,
+) -> float | None:
+    for start_index in range(len(words)):
+        combined = ""
+        confidences: list[float] = []
+        for word in words[start_index:]:
+            combined += unicodedata.normalize("NFKC", word.text).strip()
+            if word.confidence is not None:
+                confidences.append(word.confidence)
+            if combined == surface:
+                return min(confidences) if confidences else None
+            if not surface.startswith(combined):
+                break
+    return None
 
 
 def _apply_word_changes(
@@ -907,11 +1172,13 @@ __all__ = [
     "DEFAULT_HOMOPHONE_MIN_TOKEN_CHARS",
     "DEFAULT_HOMOPHONE_MAX_CANDIDATE_PIECES",
     "DEFAULT_HOMOPHONE_MAX_LEXICAL_CANDIDATES",
+    "DEFAULT_HOMOPHONE_MAX_TARGETS_PER_SENTENCE",
     "DEFAULT_HOMOPHONE_MODEL_ID",
     "DEFAULT_HOMOPHONE_SCORE_MARGIN",
     "DEFAULT_HOMOPHONE_TOP_K",
     "HomophoneCandidateGenerator",
     "HomophoneLanguageModelCandidate",
+    "HomophonePrefilterCandidateGenerator",
     "HomophoneResolverDependencyError",
     "HomophoneTarget",
     "SudachiReadingAnalyzer",

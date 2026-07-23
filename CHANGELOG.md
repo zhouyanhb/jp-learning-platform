@@ -6,6 +6,9 @@ All notable changes to this project are documented in this file.
 
 ### Added
 
+- Added risk-based homophone target prefiltering and a reproducible runtime
+  benchmark for contextual correction performance.
+
 - Added local audio transcription CLI support for single audio files and
   folders with `output/` as the default output directory.
 - Added CLI options for faster-whisper model size, device, and compute type.

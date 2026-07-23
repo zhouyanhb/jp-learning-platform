@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from jp_learning_platform.infrastructure import (
     DEFAULT_PYANNOTE_DIARIZATION_CONFIG,
+    DEFAULT_HOMOPHONE_PREFILTER_CONFIG,
     DEFAULT_QWEN_REPAIR_CONFIG,
     DEFAULT_QWEN_REPAIR_SAFETY_CONFIG,
     DEFAULT_READABILITY_CONFIG,
@@ -30,6 +31,7 @@ def test_pipeline_config_centralizes_asr_defaults() -> None:
 
 
 def test_pipeline_config_centralizes_quality_defaults() -> None:
+    assert DEFAULT_HOMOPHONE_PREFILTER_CONFIG.max_targets_per_sentence == 3
     assert DEFAULT_WHISPERX_ALIGNMENT_CONFIG.language_code == "ja"
     assert (
         DEFAULT_PYANNOTE_DIARIZATION_CONFIG.model_name

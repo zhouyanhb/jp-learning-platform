@@ -60,6 +60,13 @@ class QwenRepairSafetyConfig:
 
 
 @dataclass(frozen=True, slots=True)
+class HomophonePrefilterConfig:
+    """Default risk-based homophone target prefilter settings."""
+
+    max_targets_per_sentence: int = 3
+
+
+@dataclass(frozen=True, slots=True)
 class SubtitleMergeConfig:
     """Default conservative subtitle merge settings."""
 
@@ -105,6 +112,7 @@ DEFAULT_WHISPERX_ALIGNMENT_CONFIG = WhisperXAlignmentConfig()
 DEFAULT_PYANNOTE_DIARIZATION_CONFIG = PyannoteDiarizationConfig()
 DEFAULT_QWEN_REPAIR_CONFIG = QwenRepairConfig()
 DEFAULT_QWEN_REPAIR_SAFETY_CONFIG = QwenRepairSafetyConfig()
+DEFAULT_HOMOPHONE_PREFILTER_CONFIG = HomophonePrefilterConfig()
 DEFAULT_SUBTITLE_MERGE_CONFIG = SubtitleMergeConfig()
 DEFAULT_SENTENCE_BOUNDARY_CONFIG = SentenceBoundaryConfig()
 DEFAULT_READABILITY_CONFIG = ReadabilityConfig()
@@ -112,6 +120,7 @@ DEFAULT_READABILITY_CONFIG = ReadabilityConfig()
 
 __all__ = [
     "DEFAULT_PYANNOTE_DIARIZATION_CONFIG",
+    "DEFAULT_HOMOPHONE_PREFILTER_CONFIG",
     "DEFAULT_QWEN_REPAIR_CONFIG",
     "DEFAULT_QWEN_REPAIR_SAFETY_CONFIG",
     "DEFAULT_READABILITY_CONFIG",
@@ -120,6 +129,7 @@ __all__ = [
     "DEFAULT_WHISPER_TRANSCRIPTION_CONFIG",
     "DEFAULT_WHISPERX_ALIGNMENT_CONFIG",
     "PyannoteDiarizationConfig",
+    "HomophonePrefilterConfig",
     "QwenRepairConfig",
     "QwenRepairSafetyConfig",
     "ReadabilityConfig",

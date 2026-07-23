@@ -1436,3 +1436,63 @@ created by this commit
 ```
 fix(diarization): pass pyannote token as use_auth_token
 ```
+
+---
+
+# Session 029
+
+Date
+
+2026-07-23
+
+Roadmap
+
+Maintenance Homophone Candidate Prefiltering and Benchmark
+
+Summary
+
+Reduced contextual homophone scoring work by risk-ranking same-reading targets
+and limiting full candidate evaluation to three suspicious words per sentence.
+
+Changes
+
+- Kept Sudachi analysis enabled for every sentence.
+- Filtered targets without same-reading lexical candidates.
+- Added batched original-token contextual probability scoring.
+- Ranked targets using contextual probability, ASR confidence, tokenizer
+  vocabulary-rank frequency proxy, and lexical candidate count.
+- Limited full contextual candidate scoring to three targets per sentence.
+- Added end-to-end pipeline timing output and a reproducible benchmark report.
+
+Benchmark
+
+- homophone-resolution: 16.8859 s to 9.2291 s (45.35% reduction)
+- pipeline total: 131.33 s to 118.60 s (9.69% reduction)
+- contextual decisions: 189 to 81
+- accepted corrections: 6 before and 6 after
+
+Documentation
+
+- docs/homophone-prefilter-benchmark.md
+- docs/local-audio-srt-cli.md
+- CHANGELOG.md
+
+Tests
+
+- test_homophone_resolver.py
+- test_pipeline_config.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (212 passed)
+- before/after local audio benchmark ✔
+
+Commit
+
+created by this commit
+
+```
+perf(homophones): prefilter contextual candidates
+```

@@ -113,3 +113,13 @@ Execution Engine
 ## Phase 6 Release
 
 - [x] Commit0017 Release Version 1.0
+
+---
+
+## Maintenance
+
+- [x] Maintenance Homophone Candidate Prefiltering and Benchmark
+
+Limit contextual language-model scoring to a small number of suspicious
+same-reading targets per sentence and record a reproducible before/after
+runtime comparison.
