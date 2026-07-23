@@ -76,7 +76,15 @@ def test_stage_artifact_store_uses_ordered_stage_filenames(tmp_path: Path) -> No
     assert store.stage_path(source_path, "whisper").name == "01_whisper.json"
     assert store.stage_path(source_path, "whisperx-alignment").name == "02_align.json"
     assert store.stage_path(source_path, "qwen-repair").name == "03_repair.json"
-    assert store.stage_path(source_path, "subtitle-writer").name == "08_write.json"
+    assert (
+        store.stage_path(source_path, "homophone-resolution").name
+        == "04_homophone_resolution.json"
+    )
+    assert (
+        store.stage_path(source_path, "sentence-boundary-resolution").name
+        == "05_sentence_boundary_resolution.json"
+    )
+    assert store.stage_path(source_path, "subtitle-writer").name == "10_write.json"
 
 
 def test_console_progress_reporter_formats_stage_progress() -> None:
@@ -99,4 +107,25 @@ def test_console_progress_reporter_formats_stage_progress() -> None:
     assert output.getvalue() == (
         "[1/3] lesson.mp3 whisper done 1.25s -> "
         "output/.work/run/lesson/01_whisper.json\n"
+    )
+
+
+def test_console_progress_reporter_formats_pipeline_total() -> None:
+    output = StringIO()
+    reporter = ConsoleProgressReporter(output=output)
+
+    reporter.report(
+        PipelineProgressEvent(
+            source_path=Path("lesson.mp3"),
+            output_path=Path("output/lesson.srt"),
+            file_index=1,
+            file_total=1,
+            stage_name="pipeline-total",
+            status=PipelineProgressStatus.SUCCEEDED,
+            elapsed_seconds=125.678,
+        )
+    )
+
+    assert output.getvalue() == (
+        "[1/1] lesson.mp3 pipeline-total done 125.68s\n"
     )

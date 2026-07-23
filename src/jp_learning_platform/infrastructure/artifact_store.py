@@ -19,11 +19,13 @@ STAGE_ARTIFACT_FILENAMES: Mapping[str, str] = {
     "whisper": "01_whisper.json",
     "whisperx-alignment": "02_align.json",
     "qwen-repair": "03_repair.json",
-    "subtitle-builder": "04_build.json",
-    "subtitle-merger": "05_merge.json",
-    "readability-optimizer": "06_readability.json",
-    "subtitle-validator": "07_validate.json",
-    "subtitle-writer": "08_write.json",
+    "homophone-resolution": "04_homophone_resolution.json",
+    "sentence-boundary-resolution": "05_sentence_boundary_resolution.json",
+    "subtitle-builder": "06_build.json",
+    "subtitle-merger": "07_merge.json",
+    "readability-optimizer": "08_readability.json",
+    "subtitle-validator": "09_validate.json",
+    "subtitle-writer": "10_write.json",
 }
 
 _SAFE_FRAGMENT_PATTERN = re.compile(r"[^A-Za-z0-9_.-]+")

@@ -20,15 +20,21 @@ from jp_learning_platform.infrastructure import (
     CompositeSubtitleWriter,
     ConservativeSubtitleMerger,
     ConsoleProgressReporter,
+    DEFAULT_HOMOPHONE_MODEL_ID,
+    DEFAULT_HOMOPHONE_SCORE_MARGIN,
+    DEFAULT_HOMOPHONE_TOP_K,
     DEFAULT_LISTENING_JSON_EXTENSION,
     DEFAULT_WHISPER_COMPUTE_TYPE,
     DEFAULT_WHISPER_DEVICE,
     DEFAULT_WHISPER_MODEL_SIZE,
     DEFAULT_WHISPERX_LANGUAGE,
+    BertHomophoneResolver,
     DiarizingWhisperXAligner,
     DomainSubtitleValidator,
     FasterWhisperDependencyError,
     FasterWhisperTranscriber,
+    HomophoneResolverDependencyError,
+    JapaneseSentenceBoundaryResolver,
     LlamaCppQwenRepairer,
     ListeningJsonWriter,
     LocalReadabilityOptimizer,
@@ -51,6 +57,8 @@ _PIPELINE_STAGES = (
     "Whisper",
     "WhisperX Alignment",
     "Qwen Repair",
+    "Homophone Resolution (optional)",
+    "Sentence Boundary Resolution",
     "Subtitle Builder",
     "Subtitle Merger",
     "Readability Optimizer",
@@ -137,6 +145,41 @@ def build_parser() -> ArgumentParser:
         type=Path,
         help="Local Qwen GGUF model path for transcript repair.",
     )
+    transcribe_parser.add_argument(
+        "--enable-homophone-resolver",
+        action="store_true",
+        help=(
+            "Enable constrained same-reading semantic word correction with "
+            "Sudachi and a Japanese masked language model. Disabled by default."
+        ),
+    )
+    transcribe_parser.add_argument(
+        "--homophone-model-id",
+        default=DEFAULT_HOMOPHONE_MODEL_ID,
+        help=(
+            "Masked language model id for homophone resolution. "
+            f"Defaults to {DEFAULT_HOMOPHONE_MODEL_ID}."
+        ),
+    )
+    transcribe_parser.add_argument(
+        "--homophone-top-k",
+        default=DEFAULT_HOMOPHONE_TOP_K,
+        type=int,
+        help=(
+            "Number of language-model candidates to inspect for each token. "
+            f"Defaults to {DEFAULT_HOMOPHONE_TOP_K}."
+        ),
+    )
+    transcribe_parser.add_argument(
+        "--homophone-score-margin",
+        default=DEFAULT_HOMOPHONE_SCORE_MARGIN,
+        type=float,
+        help=(
+            "Required score advantage over the original token before accepting "
+            "a same-reading candidate. "
+            f"Defaults to {DEFAULT_HOMOPHONE_SCORE_MARGIN}."
+        ),
+    )
 
     return parser
 
@@ -170,6 +213,8 @@ def _run_transcribe(args: Namespace, output: TextIO, error_output: TextIO) -> in
         output_extension=DEFAULT_LISTENING_JSON_EXTENSION,
         aligner=_build_aligner(args),
         repairer=_build_repairer(args),
+        homophone_resolver=_build_homophone_resolver(args),
+        sentence_boundary_resolver=JapaneseSentenceBoundaryResolver(),
         merger=ConservativeSubtitleMerger(),
         optimizer=LocalReadabilityOptimizer(),
         validator=DomainSubtitleValidator(),
@@ -190,6 +235,7 @@ def _run_transcribe(args: Namespace, output: TextIO, error_output: TextIO) -> in
         AudioLoaderError,
         DuplicateSubtitleOutputError,
         FasterWhisperDependencyError,
+        HomophoneResolverDependencyError,
         RuntimeError,
         SubtitlePipelineInputError,
         SubtitlePipelineRunnerError,
@@ -240,6 +286,18 @@ def _build_repairer(args: Namespace) -> PassthroughQwenRepairer | LlamaCppQwenRe
         return LlamaCppQwenRepairer(model_path=args.qwen_model_path)
 
     return PassthroughQwenRepairer()
+
+
+def _build_homophone_resolver(args: Namespace) -> BertHomophoneResolver | None:
+    if not args.enable_homophone_resolver:
+        return None
+
+    return BertHomophoneResolver(
+        model_id=args.homophone_model_id,
+        device=args.device,
+        top_k=args.homophone_top_k,
+        score_margin=args.homophone_score_margin,
+    )
 
 
 def _run_command(args: Namespace, output: TextIO, error_output: TextIO) -> int:

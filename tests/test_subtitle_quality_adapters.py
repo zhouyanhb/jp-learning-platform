@@ -118,6 +118,28 @@ def test_conservative_subtitle_merger_does_not_merge_different_speakers() -> Non
     )
 
 
+def test_conservative_subtitle_merger_keeps_sentence_final_cues_separate() -> None:
+    subtitles = (
+        _subtitle(1, "手を挙げてください", 60.49, 63.99),
+        _subtitle(2, "いつでもいいです", 63.99, 66.18),
+    )
+
+    result = ConservativeSubtitleMerger().merge(
+        SubtitleMergeRequest(
+            source_path=Path("audio.mp3"),
+            working_directory=Path("work"),
+            run_id="run-001",
+            segments=(_segment(),),
+            subtitles=subtitles,
+        )
+    )
+
+    assert tuple(subtitle.text for subtitle in result.subtitles) == (
+        "手を挙げてください",
+        "いつでもいいです",
+    )
+
+
 def test_conservative_subtitle_merger_preserves_speaker_when_merging() -> None:
     subtitles = (
         _subtitle(1, "日本語", 0.0, 0.5, speaker_id="speaker-1"),
@@ -153,6 +175,22 @@ def test_local_readability_optimizer_normalizes_punctuation() -> None:
 
     assert result.subtitles[0].text == "日本語です。"
     assert result.subtitles[0].speaker_id == "speaker-1"
+
+
+def test_local_readability_optimizer_removes_spaces_between_japanese_words() -> None:
+    subtitle = _subtitle(1, "最も 良いものを一つ", 0.0, 1.0)
+
+    result = LocalReadabilityOptimizer().optimize(
+        ReadabilityOptimizationRequest(
+            source_path=Path("audio.mp3"),
+            working_directory=Path("work"),
+            run_id="run-001",
+            segments=(_segment(),),
+            subtitles=(subtitle,),
+        )
+    )
+
+    assert result.subtitles[0].text == "最も良いものを一つ"
 
 
 def test_domain_subtitle_validator_accepts_valid_subtitles() -> None:

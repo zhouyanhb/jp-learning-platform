@@ -13,6 +13,7 @@ from jp_learning_platform.domain import (
 )
 from jp_learning_platform.infrastructure.pipeline_config import (
     DEFAULT_READABILITY_CONFIG,
+    DEFAULT_SENTENCE_BOUNDARY_CONFIG,
     DEFAULT_SUBTITLE_MERGE_CONFIG,
 )
 from jp_learning_platform.workflow.readability_optimizer_stage import (
@@ -31,6 +32,9 @@ from jp_learning_platform.workflow.subtitle_validator_stage import (
 DEFAULT_MERGE_GAP_SECONDS = DEFAULT_SUBTITLE_MERGE_CONFIG.max_gap_seconds
 DEFAULT_MERGE_MAX_CHARS = DEFAULT_SUBTITLE_MERGE_CONFIG.max_chars
 JAPANESE_TERMINAL_MARKS = DEFAULT_SUBTITLE_MERGE_CONFIG.terminal_marks
+JAPANESE_SENTENCE_FINAL_SUFFIXES = (
+    DEFAULT_SENTENCE_BOUNDARY_CONFIG.sentence_final_suffixes
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -73,6 +77,7 @@ class ConservativeSubtitleMerger:
             0 <= gap <= self.max_gap_seconds
             and len(combined_text) <= self.max_chars
             and not current.text.endswith(JAPANESE_TERMINAL_MARKS)
+            and not current.text.endswith(JAPANESE_SENTENCE_FINAL_SUFFIXES)
             and not _speaker_boundary(current, nxt)
         )
 
@@ -122,6 +127,12 @@ class LocalReadabilityOptimizer:
         normalized = normalized.replace(".", period)
         normalized = normalized.replace("．", period)
         normalized = re.sub(r"\s+", " ", normalized)
+        normalized = re.sub(
+            r"(?<=[\u3040-\u30ff\u3400-\u9fff]) "
+            r"(?=[\u3040-\u30ff\u3400-\u9fff])",
+            "",
+            normalized,
+        )
         normalized = re.sub(rf"{re.escape(period)}{{2,}}", period, normalized)
         normalized = re.sub(rf"{re.escape(comma)}{{2,}}", comma, normalized)
         normalized = re.sub(r"？{2,}", "？", normalized)

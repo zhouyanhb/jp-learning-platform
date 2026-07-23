@@ -69,6 +69,30 @@ class SubtitleMergeConfig:
 
 
 @dataclass(frozen=True, slots=True)
+class SentenceBoundaryConfig:
+    """Default pause-aware Japanese sentence boundary settings."""
+
+    min_pause_seconds: float = 0.5
+    terminal_marks: tuple[str, ...] = ("。", "？", "！")
+    sentence_final_suffixes: tuple[str, ...] = (
+        "ください",
+        "下さい",
+        "くださいね",
+        "下さいね",
+        "ます",
+        "ました",
+        "ません",
+        "ませんか",
+        "ましょう",
+        "です",
+        "でした",
+        "でしょう",
+        "だ",
+        "だった",
+    )
+
+
+@dataclass(frozen=True, slots=True)
 class ReadabilityConfig:
     """Default Japanese subtitle readability normalization settings."""
 
@@ -82,6 +106,7 @@ DEFAULT_PYANNOTE_DIARIZATION_CONFIG = PyannoteDiarizationConfig()
 DEFAULT_QWEN_REPAIR_CONFIG = QwenRepairConfig()
 DEFAULT_QWEN_REPAIR_SAFETY_CONFIG = QwenRepairSafetyConfig()
 DEFAULT_SUBTITLE_MERGE_CONFIG = SubtitleMergeConfig()
+DEFAULT_SENTENCE_BOUNDARY_CONFIG = SentenceBoundaryConfig()
 DEFAULT_READABILITY_CONFIG = ReadabilityConfig()
 
 
@@ -90,6 +115,7 @@ __all__ = [
     "DEFAULT_QWEN_REPAIR_CONFIG",
     "DEFAULT_QWEN_REPAIR_SAFETY_CONFIG",
     "DEFAULT_READABILITY_CONFIG",
+    "DEFAULT_SENTENCE_BOUNDARY_CONFIG",
     "DEFAULT_SUBTITLE_MERGE_CONFIG",
     "DEFAULT_WHISPER_TRANSCRIPTION_CONFIG",
     "DEFAULT_WHISPERX_ALIGNMENT_CONFIG",
@@ -97,6 +123,7 @@ __all__ = [
     "QwenRepairConfig",
     "QwenRepairSafetyConfig",
     "ReadabilityConfig",
+    "SentenceBoundaryConfig",
     "SubtitleMergeConfig",
     "WhisperTranscriptionConfig",
     "WhisperXAlignmentConfig",

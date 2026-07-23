@@ -22,10 +22,18 @@ from jp_learning_platform.workflow.progress import (
     StageArtifactRecord,
     StageArtifactRecorder,
 )
+from jp_learning_platform.workflow.homophone_stage import (
+    HomophoneResolutionStage,
+    HomophoneResolver,
+)
 from jp_learning_platform.workflow.qwen_repair_stage import QwenRepairStage, QwenRepairer
 from jp_learning_platform.workflow.readability_optimizer_stage import (
     ReadabilityOptimizer,
     ReadabilityOptimizerStage,
+)
+from jp_learning_platform.workflow.sentence_boundary_stage import (
+    SentenceBoundaryResolutionStage,
+    SentenceBoundaryResolver,
 )
 from jp_learning_platform.workflow.runtime import (
     ExecutionEngine,
@@ -157,6 +165,7 @@ class _PipelineRunProgress:
             status=PipelineProgressStatus.SUCCEEDED,
             context=event.context,
             elapsed_seconds=event.elapsed_seconds,
+            data=event.data,
         )
 
     def stage_failed(self, event: StageExecutionEvent) -> None:
@@ -166,6 +175,31 @@ class _PipelineRunProgress:
             context=event.context,
             elapsed_seconds=event.elapsed_seconds,
             message=event.error_message,
+        )
+
+    def total_finished(
+        self,
+        *,
+        elapsed_seconds: float,
+        succeeded: bool,
+        message: str = "",
+    ) -> None:
+        """Report end-to-end time without creating a stage artifact."""
+        self.reporter.report(
+            PipelineProgressEvent(
+                source_path=self.source_path,
+                output_path=self.output_path,
+                file_index=self.file_index,
+                file_total=self.file_total,
+                stage_name="pipeline-total",
+                status=(
+                    PipelineProgressStatus.SUCCEEDED
+                    if succeeded
+                    else PipelineProgressStatus.FAILED
+                ),
+                elapsed_seconds=elapsed_seconds,
+                message=message,
+            )
         )
 
 
@@ -179,6 +213,8 @@ class SubtitlePipelineRunner:
     writer: SubtitleWriter
     aligner: WhisperXAligner | None = None
     repairer: QwenRepairer | None = None
+    homophone_resolver: HomophoneResolver | None = None
+    sentence_boundary_resolver: SentenceBoundaryResolver | None = None
     merger: SubtitleMerger | None = None
     optimizer: ReadabilityOptimizer | None = None
     validator: SubtitleValidator | None = None
@@ -214,6 +250,7 @@ class SubtitlePipelineRunner:
             zip(audio_paths, output_paths, strict=True),
             start=1,
         ):
+            file_started_at = monotonic()
             context = PipelineContext(
                 run_id=f"transcribe-{source_path.stem}",
                 document=Document(source_path=source_path),
@@ -230,12 +267,25 @@ class SubtitlePipelineRunner:
                 reporter=self.progress_reporter,
                 artifact_recorder=self.artifact_recorder,
             )
-            self._load_audio(source_path, context, progress)
-            workflow = Workflow(
-                name="audio-to-subtitle-output",
-                pipeline=create_pipeline("audio-to-subtitle-output", self._stages()),
+            try:
+                self._load_audio(source_path, context, progress)
+                workflow = Workflow(
+                    name="audio-to-subtitle-output",
+                    pipeline=create_pipeline("audio-to-subtitle-output", self._stages()),
+                )
+                self.engine.execute(workflow, context, observer=progress)
+            except Exception as error:
+                progress.total_finished(
+                    elapsed_seconds=monotonic() - file_started_at,
+                    succeeded=False,
+                    message=str(error),
+                )
+                raise
+
+            progress.total_finished(
+                elapsed_seconds=monotonic() - file_started_at,
+                succeeded=True,
             )
-            self.engine.execute(workflow, context, observer=progress)
             items.append(
                 SubtitlePipelineItemResult(
                     source_path=source_path,
@@ -258,6 +308,14 @@ class SubtitlePipelineRunner:
 
         if self.repairer is not None:
             stages.append(QwenRepairStage(self.repairer))
+
+        if self.homophone_resolver is not None:
+            stages.append(HomophoneResolutionStage(self.homophone_resolver))
+
+        if self.sentence_boundary_resolver is not None:
+            stages.append(
+                SentenceBoundaryResolutionStage(self.sentence_boundary_resolver)
+            )
 
         stages.append(SubtitleBuilderStage(self.builder))
 

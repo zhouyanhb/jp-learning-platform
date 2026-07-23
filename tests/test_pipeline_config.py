@@ -5,6 +5,7 @@ from jp_learning_platform.infrastructure import (
     DEFAULT_QWEN_REPAIR_CONFIG,
     DEFAULT_QWEN_REPAIR_SAFETY_CONFIG,
     DEFAULT_READABILITY_CONFIG,
+    DEFAULT_SENTENCE_BOUNDARY_CONFIG,
     DEFAULT_SUBTITLE_MERGE_CONFIG,
     DEFAULT_WHISPER_TRANSCRIPTION_CONFIG,
     DEFAULT_WHISPERX_ALIGNMENT_CONFIG,
@@ -43,6 +44,10 @@ def test_pipeline_config_centralizes_quality_defaults() -> None:
     assert DEFAULT_QWEN_REPAIR_CONFIG.repeat_penalty == 1.1
     assert DEFAULT_QWEN_REPAIR_SAFETY_CONFIG.max_length_delta_ratio == 0.2
     assert DEFAULT_QWEN_REPAIR_SAFETY_CONFIG.max_content_change_ratio == 0.2
+    assert DEFAULT_SENTENCE_BOUNDARY_CONFIG.min_pause_seconds == 0.5
+    assert DEFAULT_SENTENCE_BOUNDARY_CONFIG.terminal_marks == ("。", "？", "！")
+    assert "ください" in DEFAULT_SENTENCE_BOUNDARY_CONFIG.sentence_final_suffixes
+    assert "ましょう" in DEFAULT_SENTENCE_BOUNDARY_CONFIG.sentence_final_suffixes
     assert DEFAULT_SUBTITLE_MERGE_CONFIG.max_gap_seconds == 0.35
     assert DEFAULT_SUBTITLE_MERGE_CONFIG.max_chars == 42
     assert DEFAULT_SUBTITLE_MERGE_CONFIG.terminal_marks == ("。", "？", "！")

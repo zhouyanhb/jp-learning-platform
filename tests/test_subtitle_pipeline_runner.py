@@ -28,6 +28,9 @@ from jp_learning_platform.infrastructure import (
 )
 from jp_learning_platform.workflow import (
     DuplicateSubtitleOutputError,
+    HomophoneResolution,
+    HomophoneResolutionDecision,
+    HomophoneResolutionRequest,
     PipelineProgressEvent,
     QwenRepair,
     QwenRepairRequest,
@@ -93,6 +96,32 @@ class RecordingRepairer:
         return QwenRepair(
             source_path=request.source_path,
             segments=request.segments,
+        )
+
+
+@dataclass(slots=True)
+class RecordingHomophoneResolver:
+    requests: list[HomophoneResolutionRequest]
+
+    def resolve(
+        self,
+        request: HomophoneResolutionRequest,
+    ) -> HomophoneResolution:
+        self.requests.append(request)
+        return HomophoneResolution(
+            source_path=request.source_path,
+            segments=request.segments,
+            decisions=(
+                HomophoneResolutionDecision(
+                    segment_position=0,
+                    sentence_index=0,
+                    original_text="日本語",
+                    selected_text="日本語",
+                    reading="にほんご",
+                    accepted=False,
+                    reason="no_same_reading_candidate",
+                ),
+            ),
         )
 
 
@@ -211,6 +240,7 @@ def test_subtitle_pipeline_runner_can_execute_quality_stages(
     transcriber = FakeTranscriber(requests=[])
     aligner = RecordingAligner(requests=[])
     repairer = RecordingRepairer(requests=[])
+    homophone_resolver = RecordingHomophoneResolver(requests=[])
     merger = RecordingMerger(requests=[])
     optimizer = RecordingOptimizer(requests=[])
     validator = RecordingValidator(requests=[])
@@ -219,6 +249,7 @@ def test_subtitle_pipeline_runner_can_execute_quality_stages(
         transcriber=transcriber,
         aligner=aligner,
         repairer=repairer,
+        homophone_resolver=homophone_resolver,
         builder=WordSubtitleBuilder(),
         merger=merger,
         optimizer=optimizer,
@@ -236,6 +267,7 @@ def test_subtitle_pipeline_runner_can_execute_quality_stages(
     assert result.output_paths == (output_directory / "lesson.srt",)
     assert len(aligner.requests) == 1
     assert len(repairer.requests) == 1
+    assert len(homophone_resolver.requests) == 1
     assert len(merger.requests) == 1
     assert len(optimizer.requests) == 1
     assert len(validator.requests) == 1
@@ -277,11 +309,11 @@ def test_subtitle_pipeline_runner_records_progress_and_stage_artifacts(
         "01_whisper.json",
         "02_align.json",
         "03_repair.json",
-        "04_build.json",
-        "05_merge.json",
-        "06_readability.json",
-        "07_validate.json",
-        "08_write.json",
+        "06_build.json",
+        "07_merge.json",
+        "08_readability.json",
+        "09_validate.json",
+        "10_write.json",
     )
     for artifact_name in expected_artifacts:
         assert (artifact_directory / artifact_name).exists()
@@ -302,7 +334,10 @@ def test_subtitle_pipeline_runner_records_progress_and_stage_artifacts(
         "readability-optimizer",
         "subtitle-validator",
         "subtitle-writer",
+        "pipeline-total",
     ]
+    assert reporter.events[-1].elapsed_seconds is not None
+    assert reporter.events[-1].status.value == "succeeded"
     assert all(event.file_index == 1 for event in reporter.events)
     assert all(event.file_total == 1 for event in reporter.events)
 

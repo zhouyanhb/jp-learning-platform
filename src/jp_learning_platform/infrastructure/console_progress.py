@@ -32,6 +32,13 @@ def _format_event(event: PipelineProgressEvent) -> str:
         f"{event.source_path.name} {event.stage_name}"
     )
 
+    if event.stage_name == "pipeline-total":
+        elapsed = event.elapsed_seconds or 0.0
+        if event.status is PipelineProgressStatus.SUCCEEDED:
+            return f"{prefix} done {elapsed:.2f}s"
+        message = f": {event.message}" if event.message else ""
+        return f"{prefix} failed {elapsed:.2f}s{message}"
+
     if event.status is PipelineProgressStatus.STARTED:
         return f"{prefix} started"
 
