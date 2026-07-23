@@ -46,6 +46,8 @@ All notable changes to this project are documented in this file.
   independently support the replacement.
 - Added conflict-safe document consistency propagation from strict homophone
   confirmations to matching high-confidence occurrences.
+- Extended confirmed propagation to locally better candidates rejected only by
+  the strict contextual score-ratio gate.
 
 - Made the package entrypoint report release status and version output when run
   directly.

@@ -48,15 +48,23 @@ strict acceptance gate above. If those accepted decisions establish exactly
 one replacement for an original surface, the second pass may propagate that
 mapping to occurrences rejected only because ASR confidence was high.
 
+Propagation also covers occurrences rejected only by the strict `20x` score
+ratio. In that case the locally scored candidate must still be above the
+minimum absolute score and strictly better than the local original. This lets
+the confirmed `懲戒 → 聴解` mapping repair the final announcement, whose local
+candidate is about `2.35x` the original, without admitting candidates that are
+locally worse.
+
 A propagated occurrence must already contain the same candidate in its local
 scored candidates, and that candidate must still exceed the configured minimum
 score and beat the local original score. Conflicting strict mappings disable
 propagation for that surface. Exact target spans are recorded so all accepted
 changes are reapplied from original sentence offsets without cascading edits.
 
-For run `20260723_220113_806036`, the strict title correction confirms
-`懲戒 → 聴解`; the same unambiguous mapping then repairs the start and end
-announcements while the unrelated rejected candidates remain unchanged.
+Replaying decisions from run `20260724_070959_640324` with this policy uses the
+strict title correction to confirm `懲戒 → 聴解`; the same unambiguous mapping
+then repairs both announcements while unrelated rejected candidates remain
+unchanged.
 
 ## Reproducible benchmark
 

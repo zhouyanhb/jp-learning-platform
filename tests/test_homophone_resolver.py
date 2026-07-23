@@ -271,6 +271,53 @@ def test_document_confirmation_rejects_conflicting_mappings() -> None:
     assert "回答" not in confirmed
 
 
+def test_document_confirmation_propagates_when_only_ratio_gate_failed() -> None:
+    resolver = _resolver(())
+    decision = HomophoneResolutionDecision(
+        segment_position=356,
+        sentence_index=0,
+        original_text="懲戒",
+        selected_text="懲戒",
+        reading="ちょうかい",
+        accepted=False,
+        reason="candidate_score_ratio_too_low",
+        original_score=0.000274,
+        selected_score=0.000644,
+        candidates=(HomophoneCandidateScore("聴解", "ちょうかい", 0.000644),),
+        target_start=3,
+        target_end=5,
+    )
+
+    propagated = resolver._propagate_decision(decision, {"懲戒": "聴解"})
+
+    assert propagated.accepted
+    assert propagated.selected_text == "聴解"
+    assert propagated.reason == "accepted_document_consistency"
+
+
+def test_document_confirmation_keeps_candidate_below_original() -> None:
+    resolver = _resolver(())
+    decision = HomophoneResolutionDecision(
+        segment_position=356,
+        sentence_index=0,
+        original_text="懲戒",
+        selected_text="懲戒",
+        reading="ちょうかい",
+        accepted=False,
+        reason="candidate_score_ratio_too_low",
+        original_score=0.0007,
+        selected_score=0.0006,
+        candidates=(HomophoneCandidateScore("聴解", "ちょうかい", 0.0006),),
+        target_start=3,
+        target_end=5,
+    )
+
+    propagated = resolver._propagate_decision(decision, {"懲戒": "聴解"})
+
+    assert not propagated.accepted
+    assert propagated.selected_text == "懲戒"
+
+
 def test_homophone_resolver_rejects_different_reading_candidate() -> None:
     resolver = _resolver(
         (HomophoneLanguageModelCandidate(text="試験", score=0.9),),

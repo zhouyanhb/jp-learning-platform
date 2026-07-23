@@ -153,3 +153,8 @@ replacement so the resolver fails closed when semantic evidence is ambiguous.
 
 Propagate an unambiguous strictly confirmed same-reading correction to matching
 high-confidence occurrences within the same document.
+
+- [x] Maintenance Weak-ratio Homophone Propagation
+
+Allow an unambiguous document-confirmed correction to propagate when the local
+candidate beats the original but only the strict score-ratio gate failed.

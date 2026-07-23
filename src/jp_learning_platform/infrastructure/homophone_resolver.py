@@ -32,6 +32,10 @@ DEFAULT_HOMOPHONE_MAX_TARGETS_PER_SENTENCE = (
 _DEFAULT_SUDACHI_SPLIT_MODE = "C"
 _CONTENT_POS = {"名詞", "動詞", "形容詞", "副詞"}
 _SKIPPED_SURFACES = {"する", "した", "して", "ある", "いる", "ます", "です"}
+_DOCUMENT_PROPAGATION_REASONS = {
+    "asr_confidence_too_high",
+    "candidate_score_ratio_too_low",
+}
 
 
 class HomophoneResolverDependencyError(RuntimeError):
@@ -693,7 +697,10 @@ class BertHomophoneResolver:
         confirmed: dict[str, str],
     ) -> HomophoneResolutionDecision:
         selected_text = confirmed.get(decision.original_text)
-        if selected_text is None or decision.reason != "asr_confidence_too_high":
+        if (
+            selected_text is None
+            or decision.reason not in _DOCUMENT_PROPAGATION_REASONS
+        ):
             return decision
         selected = next(
             (

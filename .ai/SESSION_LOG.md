@@ -1791,3 +1791,50 @@ created by this commit
 ```
 fix(homophones): propagate confirmed corrections
 ```
+
+---
+
+# Session 036
+
+Date
+
+2026-07-24
+
+Roadmap
+
+Maintenance Weak-ratio Homophone Propagation
+
+Summary
+
+Extended document-confirmed propagation to score-ratio-only rejections.
+
+Changes
+
+- Admitted `candidate_score_ratio_too_low` to consistency propagation.
+- Kept the absolute candidate-score and local-advantage safeguards.
+- Preserved every other conservative rejection category.
+- Covered the final `これで聴解試験を終わります` announcement.
+- Added a negative regression where the candidate is locally worse.
+
+Documentation
+
+- docs/homophone-prefilter-benchmark.md
+- CHANGELOG.md
+
+Tests
+
+- test_homophone_resolver.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (235 passed)
+
+Commit
+
+created by this commit
+
+```
+fix(homophones): propagate locally better corrections
+```
