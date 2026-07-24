@@ -249,12 +249,14 @@ def test_diarizing_whisperx_aligner_wraps_base_alignment(tmp_path: Path) -> None
         segments=(_mixed_speaker_segment(),),
     )
 
-    result = DiarizingWhisperXAligner(
+    aligner = DiarizingWhisperXAligner(
         base_aligner=base_aligner,
         diarizer=_diarizer(diarization),
-    ).align(request)
+    )
+    result = aligner.align(request)
 
     assert base_aligner.requests == [request]
+    assert aligner.requires_normalized_audio is True
     assert tuple(segment.speaker_id for segment in result.segments) == (
         "SPEAKER_00",
         "SPEAKER_01",

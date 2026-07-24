@@ -79,6 +79,7 @@ class FakeTranscriber:
 @dataclass(slots=True)
 class RecordingAligner:
     requests: list[WhisperXAlignmentRequest]
+    requires_normalized_audio: bool = False
 
     def align(self, request: WhisperXAlignmentRequest) -> WhisperXAlignment:
         self.requests.append(request)
@@ -185,6 +186,20 @@ class RecordingAudioNormalizer:
     ) -> Path:
         self.requests.append(source_path)
         return source_path
+
+
+@dataclass(slots=True)
+class FailingAudioNormalizer:
+    requests: list[Path]
+
+    def normalize(
+        self,
+        source_path: Path,
+        cache_directory: Path,
+        audio_digest: str,
+    ) -> Path:
+        self.requests.append(source_path)
+        raise RuntimeError("normalization failed")
 
 
 def _write_audio(path: Path) -> None:
@@ -323,11 +338,13 @@ def test_runner_reuses_complete_result_for_identical_audio_and_configuration(
     )
 
     assert len(transcriber.requests) == 1
-    assert normalizer.requests == [first_audio]
+    assert normalizer.requests == []
     assert result.output_paths == (output_directory / "second.srt",)
     assert result.output_paths[0].exists()
     assert any(event.message == "complete-result-hit" for event in reporter.events)
-    assert sum(event.stage_name == "audio-normalization" for event in reporter.events) == 2
+    assert not any(
+        event.stage_name == "audio-normalization" for event in reporter.events
+    )
 
 
 def test_runner_reuses_stage_prefix_when_later_configuration_changes(
@@ -363,8 +380,51 @@ def test_runner_reuses_stage_prefix_when_later_configuration_changes(
     )
 
     assert len(transcriber.requests) == 1
-    assert normalizer.requests == [audio_path]
+    assert normalizer.requests == []
     assert len(optimizer.requests) == 1
+
+
+def test_runner_normalizes_only_before_explicit_exact_sample_consumer(
+    tmp_path: Path,
+) -> None:
+    audio_path = tmp_path / "lesson.mp3"
+    output_directory = tmp_path / "output"
+    _write_audio(audio_path)
+    transcriber = FakeTranscriber(requests=[])
+    aligner = RecordingAligner(requests=[], requires_normalized_audio=True)
+    cache = LocalPipelineContextCache(output_directory / ".cache")
+    failing_normalizer = FailingAudioNormalizer(requests=[])
+    request = SubtitlePipelineRequest(
+        input_path=audio_path,
+        output_directory=output_directory,
+    )
+
+    with pytest.raises(RuntimeError, match="normalization failed"):
+        SubtitlePipelineRunner(
+            audio_loader=AudioLoader(),
+            transcriber=transcriber,
+            aligner=aligner,
+            builder=WordSubtitleBuilder(),
+            writer=SrtSubtitleWriter(output_directory=output_directory),
+            cache=cache,
+            audio_normalizer=failing_normalizer,
+        ).run(request)
+
+    successful_normalizer = RecordingAudioNormalizer(requests=[])
+    SubtitlePipelineRunner(
+        audio_loader=AudioLoader(),
+        transcriber=transcriber,
+        aligner=aligner,
+        builder=WordSubtitleBuilder(),
+        writer=SrtSubtitleWriter(output_directory=output_directory),
+        cache=cache,
+        audio_normalizer=successful_normalizer,
+    ).run(request)
+
+    assert len(transcriber.requests) == 1
+    assert failing_normalizer.requests == [audio_path]
+    assert successful_normalizer.requests == [audio_path]
+    assert len(aligner.requests) == 1
 
 
 def test_subtitle_pipeline_runner_records_progress_and_stage_artifacts(

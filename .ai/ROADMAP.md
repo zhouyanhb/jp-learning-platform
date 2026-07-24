@@ -163,3 +163,8 @@ candidate beats the original but only the strict score-ratio gate failed.
 
 Deduplicate identical audio work by complete configuration, reuse compatible
 stage contexts, and normalize unsupported media once through an atomic cache.
+
+- [x] Maintenance Demand-driven Audio Normalization
+
+Preserve compatible source audio for consumers that can decode it directly,
+and normalize only before a stage that explicitly requires deterministic PCM.

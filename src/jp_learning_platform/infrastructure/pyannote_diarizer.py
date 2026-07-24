@@ -142,6 +142,11 @@ class DiarizingWhisperXAligner:
     base_aligner: WhisperXAligner
     diarizer: PyannoteSpeakerDiarizer
 
+    @property
+    def requires_normalized_audio(self) -> bool:
+        """Pyannote/TorchCodec requires deterministic sample-addressable PCM."""
+        return True
+
     def __post_init__(self) -> None:
         if not callable(getattr(self.base_aligner, "align", None)):
             raise TypeError("base_aligner must define a callable align method.")

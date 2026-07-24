@@ -44,8 +44,9 @@ def _subtitle(
 
 def test_passthrough_whisperx_aligner_keeps_segments() -> None:
     segment = _segment()
+    aligner = PassthroughWhisperXAligner()
 
-    result = PassthroughWhisperXAligner().align(
+    result = aligner.align(
         WhisperXAlignmentRequest(
             source_path=Path("audio.mp3"),
             working_directory=Path("work"),
@@ -55,6 +56,7 @@ def test_passthrough_whisperx_aligner_keeps_segments() -> None:
     )
 
     assert result.segments == (segment,)
+    assert aligner.requires_normalized_audio is False
 
 
 def test_passthrough_qwen_repairer_keeps_segments() -> None:

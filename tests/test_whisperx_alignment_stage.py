@@ -227,6 +227,8 @@ def test_whisperx_alignment_is_immutable() -> None:
 def test_whisperx_adapter_maps_external_speaker_labels() -> None:
     adapter = WhisperXAlignerAdapter(device="cpu")
 
+    assert adapter.requires_normalized_audio is False
+
     segments = adapter._to_domain_segments(
         (
             {

@@ -362,8 +362,9 @@ class SubtitlePipelineRunner:
         processing_stages = stages[:-1]
         writer_stage = stages[-1]
         fingerprints = _cumulative_stage_fingerprints(
-            f"{self.cache_namespace}:{json.dumps(_stable_configuration(self.audio_normalizer), sort_keys=True)}",
+            self.cache_namespace,
             processing_stages,
+            audio_normalizer=self.audio_normalizer,
         )
         pipeline_fingerprint = fingerprints[-1]
 
@@ -402,25 +403,30 @@ class SubtitlePipelineRunner:
             )
             if needs_audio:
                 self._load_audio(source_path, context, progress)
-                processing_path = source_path
-                if self.audio_normalizer is not None:
+
+            normalized = False
+            for stage_index, stage in enumerate(
+                remaining_stages,
+                start=next_stage_index,
+            ):
+                if (
+                    not normalized
+                    and self.audio_normalizer is not None
+                    and _stage_requires_normalized_audio(stage)
+                ):
                     processing_path = self._normalize_audio(
                         source_path=source_path,
                         audio_digest=audio_digest,
                         context=context,
                         progress=progress,
                     )
-                context = _rebind_context(
-                    context,
-                    source_path=processing_path,
-                    working_directory=context.working_directory,
-                    run_id=context.run_id,
-                )
-
-            for stage_index, stage in enumerate(
-                remaining_stages,
-                start=next_stage_index,
-            ):
+                    context = _rebind_context(
+                        context,
+                        source_path=processing_path,
+                        working_directory=context.working_directory,
+                        run_id=context.run_id,
+                    )
+                    normalized = True
                 context = self._execute_stages((stage,), context, progress)
                 self.cache.save_context(
                     audio_digest,
@@ -610,12 +616,20 @@ __all__ = [
 def _cumulative_stage_fingerprints(
     namespace: str,
     stages: tuple[Stage, ...],
+    *,
+    audio_normalizer: AudioNormalizer | None,
 ) -> tuple[str, ...]:
     cumulative: list[str] = []
     previous = sha256(namespace.encode("utf-8")).hexdigest()
     for stage in stages:
+        stage_configuration = _stable_configuration(stage)
+        if _stage_requires_normalized_audio(stage):
+            stage_configuration = {
+                "stage": stage_configuration,
+                "audio_normalizer": _stable_configuration(audio_normalizer),
+            }
         payload = json.dumps(
-            _stable_configuration(stage),
+            stage_configuration,
             ensure_ascii=True,
             sort_keys=True,
             separators=(",", ":"),
@@ -623,6 +637,13 @@ def _cumulative_stage_fingerprints(
         previous = sha256(f"{previous}:{payload}".encode("utf-8")).hexdigest()
         cumulative.append(previous)
     return tuple(cumulative)
+
+
+def _stage_requires_normalized_audio(stage: Stage) -> bool:
+    consumer = getattr(stage, "aligner", None)
+    if consumer is None:
+        consumer = getattr(stage, "transcriber", None)
+    return bool(getattr(consumer, "requires_normalized_audio", False))
 
 
 def _stable_configuration(value: object) -> object:

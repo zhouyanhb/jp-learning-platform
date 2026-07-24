@@ -44,15 +44,20 @@ order:
 2. Wait for an already-running identical task, then read the result it created.
 3. Resume after the latest compatible cached stage when only later processing
    changed.
-4. Reuse the deterministic normalized PCM WAV when model stages still need
-   audio.
+4. Reuse the deterministic normalized PCM WAV when an exact-sample consumer
+   still needs audio.
 5. Normalize and run the remaining stages only when no compatible entry exists.
 
 The writer always materializes an output for the current input filename, but a
 complete cache hit does not call the audio loader, FFmpeg, Whisper, or later
-analysis stages. FFmpeg conversion produces mono 16 kHz PCM only when the input
-is not already compatible. Both context and audio writes are atomic, and failed
-stages are not recorded as successful cache entries.
+analysis stages. Whisper, pass-through alignment, and standard WhisperX retain
+the original source because they can decode supported compressed audio
+directly. FFmpeg conversion to mono 16 kHz PCM is deferred until an adapter
+explicitly requires deterministic sample addressing, currently pyannote
+diarization. Whisper completes and is cached before that conversion, so a
+conversion or diarization retry does not repeat transcription. Both context and
+audio writes are atomic, and failed stages are not recorded as successful cache
+entries.
 
 Use a cold run for benchmarking or troubleshooting when needed:
 

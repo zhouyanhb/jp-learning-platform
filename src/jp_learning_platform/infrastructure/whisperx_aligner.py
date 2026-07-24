@@ -31,6 +31,11 @@ class WhisperXDependencyError(RuntimeError):
 class PassthroughWhisperXAligner:
     """Keep existing segment timings while still running the alignment stage."""
 
+    @property
+    def requires_normalized_audio(self) -> bool:
+        """The pass-through adapter never decodes the source audio."""
+        return False
+
     def align(self, request: WhisperXAlignmentRequest) -> WhisperXAlignment:
         if not isinstance(request, WhisperXAlignmentRequest):
             raise TypeError("request must be a WhisperXAlignmentRequest.")
@@ -49,6 +54,11 @@ class WhisperXAlignerAdapter:
     language_code: str = DEFAULT_WHISPERX_LANGUAGE
     _align_model: Any | None = field(default=None, init=False, repr=False)
     _metadata: Any | None = field(default=None, init=False, repr=False)
+
+    @property
+    def requires_normalized_audio(self) -> bool:
+        """WhisperX performs its own supported-media decoding."""
+        return False
 
     def align(self, request: WhisperXAlignmentRequest) -> WhisperXAlignment:
         if not isinstance(request, WhisperXAlignmentRequest):

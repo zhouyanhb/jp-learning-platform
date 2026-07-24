@@ -8,7 +8,7 @@ project:
 repository:
   branch: master
   working_tree: clean
-  remote_status: ahead_of_origin_by_6_commits
+  remote_status: ahead_of_origin_by_7_commits
   runnable: true
 
 architecture:
@@ -53,6 +53,9 @@ architecture:
       configuration/implementation fingerprints, with process-safe locking.
     - Incompatible audio is normalized atomically to reusable mono 16 kHz PCM
       only when an uncached audio-model stage requires it.
+    - Audio adapters declare whether they require deterministic PCM; ordinary
+      Whisper and WhisperX retain compressed source audio while pyannote
+      normalization is deferred until after cached transcription.
 
 roadmap:
   completed:
@@ -82,6 +85,7 @@ roadmap:
     - Maintenance Document-consistent Homophone Propagation
     - Maintenance Weak-ratio Homophone Propagation
     - Maintenance Content-addressed Pipeline Cache and Audio Normalization
+    - Maintenance Demand-driven Audio Normalization
 
   current: null
 
@@ -89,11 +93,11 @@ roadmap:
 
 latest_commit:
   hash: created_by_this_commit
-  message: "feat(cache): reuse pipeline work by audio content"
+  message: "fix(audio): defer normalization until required"
 
 tests:
-  total: 240
-  passed: 240
+  total: 241
+  passed: 241
   failed: 0
 
 checks:

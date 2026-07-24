@@ -1890,3 +1890,54 @@ created by this commit
 ```
 feat(cache): reuse pipeline work by audio content
 ```
+
+---
+
+# Session 038
+
+Date
+
+2026-07-24
+
+Roadmap
+
+Maintenance Demand-driven Audio Normalization
+
+Summary
+
+Deferred PCM conversion until an exact-sample audio consumer requires it.
+
+Changes
+
+- Declared audio normalization requirements on alignment adapters.
+- Kept original MP3 input for Whisper, pass-through alignment, and standard WhisperX.
+- Normalized immediately before pyannote diarization instead of before Whisper.
+- Cached successful Whisper output before normalization or diarization can fail.
+- Scoped normalizer configuration invalidation to stages that consume normalized audio.
+- Preserved normalization and cache timing visibility.
+
+Documentation
+
+- docs/local-audio-srt-cli.md
+- CHANGELOG.md
+
+Tests
+
+- test_subtitle_pipeline_runner.py
+- test_subtitle_quality_adapters.py
+- test_whisperx_alignment_stage.py
+- test_pyannote_diarizer.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (241 passed)
+
+Commit
+
+created by this commit
+
+```
+fix(audio): defer normalization until required
+```
