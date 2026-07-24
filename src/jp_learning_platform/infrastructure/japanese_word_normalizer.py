@@ -11,6 +11,8 @@ from jp_learning_platform.workflow.word_normalization_stage import (
     WordNormalizationRequest,
 )
 
+DEFAULT_LOCAL_REANALYSIS_MAX_MORPHEMES = 3
+
 
 class WordNormalizerDependencyError(RuntimeError):
     pass
@@ -139,7 +141,65 @@ class JapaneseLearningWordNormalizer:
                 raw.append(_LearningUnit(previous.text + item.surface, previous.start, end, previous.pos))
             else:
                 raw.append(_LearningUnit(item.surface, start, end, item.part_of_speech))
-        return tuple(raw)
+        return self._merge_reanalyzed_nominals(raw)
+
+    def _merge_reanalyzed_nominals(
+        self,
+        units: list[_LearningUnit],
+    ) -> tuple[_LearningUnit, ...]:
+        merged: list[_LearningUnit] = []
+        index = 0
+        while index < len(units):
+            selected: _LearningUnit | None = None
+            selected_size = 1
+            maximum_size = min(
+                DEFAULT_LOCAL_REANALYSIS_MAX_MORPHEMES,
+                len(units) - index,
+            )
+            for size in range(maximum_size, 1, -1):
+                candidates = units[index : index + size]
+                if not all(self._is_nominal_unit(item) for item in candidates):
+                    continue
+                combined_text = "".join(item.text for item in candidates)
+                analysis = self._analyzer.analyze(combined_text)
+                if not self._is_complete_noun(combined_text, analysis):
+                    continue
+                selected = _LearningUnit(
+                    text=combined_text,
+                    start=candidates[0].start,
+                    end=candidates[-1].end,
+                    pos=analysis[0].part_of_speech,
+                )
+                selected_size = size
+                break
+
+            merged.append(selected or units[index])
+            index += selected_size
+        return tuple(merged)
+
+    @staticmethod
+    def _is_nominal_unit(unit: _LearningUnit) -> bool:
+        if not unit.pos:
+            return False
+        if unit.pos[0] == "名詞":
+            return True
+        return (
+            unit.pos[0] == "接尾辞"
+            and len(unit.pos) > 1
+            and unit.pos[1] == "名詞的"
+        )
+
+    @staticmethod
+    def _is_complete_noun(
+        combined_text: str,
+        analysis: tuple[JapaneseMorpheme, ...],
+    ) -> bool:
+        return (
+            len(analysis) == 1
+            and analysis[0].surface == combined_text
+            and bool(analysis[0].part_of_speech)
+            and analysis[0].part_of_speech[0] == "名詞"
+        )
 
     @staticmethod
     def _continues_compound_particle(

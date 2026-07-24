@@ -1990,3 +1990,52 @@ created by this commit
 ```
 fix(audio): normalize diarization cold runs
 ```
+
+---
+
+# Session 040
+
+Date
+
+2026-07-24
+
+Roadmap
+
+Maintenance Local Nominal Reanalysis
+
+Summary
+
+Restored complete noun units through bounded local Sudachi reanalysis.
+
+Changes
+
+- Detected contiguous noun and nominal-suffix morphology.
+- Reanalyzed windows of up to three morphemes with longest-match priority.
+- Merged only windows independently recognized as one complete noun.
+- Preserved joined timing, minimum confidence, and common speaker metadata.
+- Added implementation digests for non-dataclass adapter cache invalidation.
+- Verified `回答 / 用紙` against the cached full-length listening run.
+
+Documentation
+
+- docs/japanese-learning-word-normalization.md
+- CHANGELOG.md
+
+Tests
+
+- test_japanese_word_normalizer.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (244 passed)
+- cached full-audio regression (1.23 seconds) ✔
+
+Commit
+
+created by this commit
+
+```
+fix(words): merge locally recognized nouns
+```

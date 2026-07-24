@@ -173,3 +173,8 @@ and normalize only before a stage that explicitly requires deterministic PCM.
 
 Keep required media compatibility conversion active when cache reuse is
 disabled, while preserving cold-run timing and stage ordering.
+
+- [x] Maintenance Local Nominal Reanalysis
+
+Reanalyze short contiguous nominal morphology windows and merge only those
+that Sudachi independently recognizes as one complete noun.

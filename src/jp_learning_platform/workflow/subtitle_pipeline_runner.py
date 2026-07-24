@@ -727,7 +727,10 @@ def _stable_configuration(value: object) -> object:
                 continue
             configuration[item.name] = _stable_configuration(field_value)
         return configuration
-    return {"type": f"{type(value).__module__}.{type(value).__qualname__}"}
+    return {
+        "type": f"{type(value).__module__}.{type(value).__qualname__}",
+        "implementation": _implementation_digest(type(value)),
+    }
 
 
 def _implementation_digest(value_type: type[object]) -> str | None:

@@ -23,6 +23,9 @@ class _Analyzer:
             "行きました": (("行き", "動詞", "一般"), ("まし", "助動詞", "*"), ("た", "助動詞", "*")),
             "高くない": (("高く", "形容詞", "一般"), ("ない", "形容詞", "非自立可能")),
             "問題がない": (("問題", "名詞", "普通名詞"), ("が", "助詞", "格助詞"), ("ない", "形容詞", "非自立可能")),
+            "回答用紙": (("回答", "名詞", "サ変可能"), ("用", "接尾辞", "名詞的"), ("紙", "接尾辞", "名詞的")),
+            "回答用": (("回答", "名詞", "サ変可能"), ("用", "接尾辞", "名詞的")),
+            "用紙": (("用紙", "名詞", "普通名詞"),),
         }
         return tuple(
             JapaneseMorpheme(
@@ -62,6 +65,7 @@ def _normalize(text: str, token_texts: tuple[str, ...]) -> tuple[Word, ...]:
         ("行きました", ("行き", "まし", "た"), ("行きました",)),
         ("高くない", ("高く", "ない"), ("高くない",)),
         ("問題がない", ("問題", "が", "ない"), ("問題", "が", "ない")),
+        ("回答用紙", ("回", "答", "用", "紙"), ("回答", "用紙")),
     ],
 )
 def test_normalizes_learning_units_without_sentence_specific_replacements(
@@ -78,3 +82,27 @@ def test_interpolates_boundaries_when_one_asr_token_is_split() -> None:
     words = _normalize("話しています", ("話しています",))
     assert words[0].time_range.end_seconds == pytest.approx(0.5)
     assert words[1].time_range.start_seconds == pytest.approx(0.5)
+
+
+def test_local_nominal_reanalysis_preserves_merged_word_metadata() -> None:
+    text = "回答用紙"
+    words = (
+        Word("回答", TimeRange(170.602, 171.103), 0.999, "SPEAKER_05"),
+        Word("用", TimeRange(171.103, 171.344), 0.999, "SPEAKER_05"),
+        Word("紙", TimeRange(171.344, 171.504), 0.998, "SPEAKER_05"),
+    )
+    sentence = Sentence(text, TimeRange(170.602, 171.504), words, "SPEAKER_05")
+    segment = Segment(0, text, sentence.time_range, (sentence,), "SPEAKER_05")
+
+    result = JapaneseLearningWordNormalizer(_Analyzer()).normalize(
+        WordNormalizationRequest(Path("audio.mp3"), (segment,))
+    )
+
+    normalized = result.segments[0].sentences[0].words
+    assert tuple(word.text for word in normalized) == ("回答", "用紙")
+    assert normalized[1] == Word(
+        "用紙",
+        TimeRange(171.103, 171.504),
+        0.998,
+        "SPEAKER_05",
+    )

@@ -12,6 +12,15 @@ together (`います`), and `でも` is separated from its host (`メール / �
 `いつ / でも`). Sudachi SplitMode C keeps compound nouns such as `学生` and
 `授業` together.
 
+Some compounds are split only because they appear after another noun. For
+example, Sudachi may analyze `回答用紙` as `回答 / 用 / 紙` even though it
+recognizes standalone `用紙` as one noun. The normalizer therefore reanalyzes
+contiguous noun and nominal-suffix windows of two or three morphemes, longest
+first. It merges a window only when standalone Sudachi analysis returns one
+complete noun with the same surface. This restores `回答 / 用紙` without a
+word list or sentence-specific replacement and leaves combinations that remain
+multi-morpheme unchanged.
+
 Inflectional auxiliaries remain attached to their verb or adjective, including
 negative, polite, past, passive, causative, and volitional forms. Examples
 include `聞こえない`, `行きました`, and `高くない`. A noun marked by

@@ -15,6 +15,8 @@ All notable changes to this project are documented in this file.
   fragments while preserving word timing, confidence, and speaker metadata.
 - Extended learning-word normalization to join inflectional auxiliaries and
   sahen verb constructions through Sudachi morphology.
+- Added longest-first local Sudachi reanalysis for short nominal windows so
+  independently recognized nouns are restored without lexical hardcoding.
 
 - Added grammar-aware merging for contiguous cross-segment Japanese dependent
   continuations while preserving punctuation, speaker, and timing boundaries.

@@ -8,7 +8,7 @@ project:
 repository:
   branch: master
   working_tree: clean
-  remote_status: ahead_of_origin_by_8_commits
+  remote_status: ahead_of_origin_by_9_commits
   runnable: true
 
 architecture:
@@ -58,6 +58,8 @@ architecture:
       normalization is deferred until after cached transcription.
     - Disabling cache reuse does not disable required media compatibility;
       cold pyannote runs still normalize after Whisper and report the duration.
+    - Learning-word normalization locally reanalyzes short nominal windows and
+      merges only standalone single-noun results recognized by Sudachi.
 
 roadmap:
   completed:
@@ -89,6 +91,7 @@ roadmap:
     - Maintenance Content-addressed Pipeline Cache and Audio Normalization
     - Maintenance Demand-driven Audio Normalization
     - Maintenance Cold-run Audio Compatibility
+    - Maintenance Local Nominal Reanalysis
 
   current: null
 
@@ -96,11 +99,11 @@ roadmap:
 
 latest_commit:
   hash: created_by_this_commit
-  message: "fix(audio): normalize diarization cold runs"
+  message: "fix(words): merge locally recognized nouns"
 
 tests:
-  total: 242
-  passed: 242
+  total: 244
+  passed: 244
   failed: 0
 
 checks:
