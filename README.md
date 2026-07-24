@@ -50,6 +50,7 @@ python -m jp_learning_platform transcribe audio.mp3 --model-size small --device 
 python -m jp_learning_platform transcribe audio.mp3 --enable-whisperx
 python -m jp_learning_platform transcribe audio.mp3 --enable-diarization
 python -m jp_learning_platform transcribe audio.mp3 --qwen-model-path models/qwen.gguf
+python -m jp_learning_platform transcribe audio.mp3 --no-cache
 ```
 
 The entrypoint reports the Version 1.0 subtitle pipeline status. External SDK
@@ -66,6 +67,11 @@ During transcription, the command reports the current file and pipeline stage
 to stderr. Per-stage JSON artifacts are saved under
 `output/.work/<run-name>/<audio-name>/`, while final listening JSON remains at
 `output/<audio-name>.json`.
+
+Successful work is cached by audio content, complete analysis configuration,
+and stage implementation under `output/.cache/`. Identical reruns reuse the
+complete result without decoding or normalizing the audio again. Use
+`--no-cache` for an intentionally cold run.
 
 ## Checks
 

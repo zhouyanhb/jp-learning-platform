@@ -8,7 +8,7 @@ project:
 repository:
   branch: master
   working_tree: clean
-  remote_status: ahead_of_origin_by_5_commits
+  remote_status: ahead_of_origin_by_6_commits
   runnable: true
 
 architecture:
@@ -49,6 +49,10 @@ architecture:
       document when each target retains local contextual support.
     - Document-confirmed homophones may bypass only the strict ratio or ASR
       confidence gate when the local candidate still beats the original.
+    - Pipeline reuse is keyed by audio content and cumulative stage
+      configuration/implementation fingerprints, with process-safe locking.
+    - Incompatible audio is normalized atomically to reusable mono 16 kHz PCM
+      only when an uncached audio-model stage requires it.
 
 roadmap:
   completed:
@@ -77,6 +81,7 @@ roadmap:
     - Maintenance Conservative Homophone Acceptance
     - Maintenance Document-consistent Homophone Propagation
     - Maintenance Weak-ratio Homophone Propagation
+    - Maintenance Content-addressed Pipeline Cache and Audio Normalization
 
   current: null
 
@@ -84,11 +89,11 @@ roadmap:
 
 latest_commit:
   hash: created_by_this_commit
-  message: "fix(homophones): propagate locally better corrections"
+  message: "feat(cache): reuse pipeline work by audio content"
 
 tests:
-  total: 235
-  passed: 235
+  total: 240
+  passed: 240
   failed: 0
 
 checks:
@@ -248,6 +253,12 @@ infrastructure:
       - AudioFileNotFoundError
       - UnsupportedAudioFormatError
       - EmptyAudioFileError
+  pipeline_cache:
+    implemented:
+      - LocalPipelineContextCache
+      - FFmpegAudioNormalizer
+      - PipelineCacheError
+      - AudioNormalizationError
   transcription:
     implemented:
       - FasterWhisperTranscriber
@@ -316,7 +327,6 @@ repository_health:
 
 current_task:
   name: null
-
   deliverables: []
 
 next_commit:

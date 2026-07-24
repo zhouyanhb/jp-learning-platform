@@ -22,6 +22,7 @@ from jp_learning_platform.infrastructure import (
     AudioLoader,
     CompositeSubtitleWriter,
     ListeningJsonWriter,
+    LocalPipelineContextCache,
     SrtSubtitleWriter,
     StageArtifactStore,
     WordSubtitleBuilder,
@@ -172,6 +173,20 @@ class RecordingProgressReporter:
         self.events.append(event)
 
 
+@dataclass(slots=True)
+class RecordingAudioNormalizer:
+    requests: list[Path]
+
+    def normalize(
+        self,
+        source_path: Path,
+        cache_directory: Path,
+        audio_digest: str,
+    ) -> Path:
+        self.requests.append(source_path)
+        return source_path
+
+
 def _write_audio(path: Path) -> None:
     path.write_bytes(b"audio")
 
@@ -271,6 +286,85 @@ def test_subtitle_pipeline_runner_can_execute_quality_stages(
     assert len(merger.requests) == 1
     assert len(optimizer.requests) == 1
     assert len(validator.requests) == 1
+
+
+def test_runner_reuses_complete_result_for_identical_audio_and_configuration(
+    tmp_path: Path,
+) -> None:
+    first_audio = tmp_path / "first.mp3"
+    second_audio = tmp_path / "second.mp3"
+    output_directory = tmp_path / "output"
+    _write_audio(first_audio)
+    _write_audio(second_audio)
+    transcriber = FakeTranscriber(requests=[])
+    normalizer = RecordingAudioNormalizer(requests=[])
+    reporter = RecordingProgressReporter(events=[])
+    runner = SubtitlePipelineRunner(
+        audio_loader=AudioLoader(),
+        transcriber=transcriber,
+        builder=WordSubtitleBuilder(),
+        writer=SrtSubtitleWriter(output_directory=output_directory),
+        cache=LocalPipelineContextCache(output_directory / ".cache"),
+        audio_normalizer=normalizer,
+        progress_reporter=reporter,
+    )
+
+    runner.run(
+        SubtitlePipelineRequest(
+            input_path=first_audio,
+            output_directory=output_directory,
+        )
+    )
+    result = runner.run(
+        SubtitlePipelineRequest(
+            input_path=second_audio,
+            output_directory=output_directory,
+        )
+    )
+
+    assert len(transcriber.requests) == 1
+    assert normalizer.requests == [first_audio]
+    assert result.output_paths == (output_directory / "second.srt",)
+    assert result.output_paths[0].exists()
+    assert any(event.message == "complete-result-hit" for event in reporter.events)
+    assert sum(event.stage_name == "audio-normalization" for event in reporter.events) == 2
+
+
+def test_runner_reuses_stage_prefix_when_later_configuration_changes(
+    tmp_path: Path,
+) -> None:
+    audio_path = tmp_path / "lesson.mp3"
+    output_directory = tmp_path / "output"
+    _write_audio(audio_path)
+    transcriber = FakeTranscriber(requests=[])
+    normalizer = RecordingAudioNormalizer(requests=[])
+    cache = LocalPipelineContextCache(output_directory / ".cache")
+    base_arguments = {
+        "audio_loader": AudioLoader(),
+        "transcriber": transcriber,
+        "builder": WordSubtitleBuilder(),
+        "writer": SrtSubtitleWriter(output_directory=output_directory),
+        "cache": cache,
+        "audio_normalizer": normalizer,
+    }
+    SubtitlePipelineRunner(**base_arguments).run(
+        SubtitlePipelineRequest(
+            input_path=audio_path,
+            output_directory=output_directory,
+        )
+    )
+    optimizer = RecordingOptimizer(requests=[])
+
+    SubtitlePipelineRunner(**base_arguments, optimizer=optimizer).run(
+        SubtitlePipelineRequest(
+            input_path=audio_path,
+            output_directory=output_directory,
+        )
+    )
+
+    assert len(transcriber.requests) == 1
+    assert normalizer.requests == [audio_path]
+    assert len(optimizer.requests) == 1
 
 
 def test_subtitle_pipeline_runner_records_progress_and_stage_artifacts(

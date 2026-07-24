@@ -1838,3 +1838,55 @@ created by this commit
 ```
 fix(homophones): propagate locally better corrections
 ```
+
+---
+
+# Session 037
+
+Date
+
+2026-07-24
+
+Roadmap
+
+Maintenance Content-addressed Pipeline Cache and Audio Normalization
+
+Summary
+
+Added layered content-addressed reuse before automatic audio normalization.
+
+Changes
+
+- Reused complete results for identical audio content and processing fingerprints.
+- Serialized immutable contexts after each successful stage for compatible-prefix reuse.
+- Coordinated concurrent identical work through process-safe file locks.
+- Normalized incompatible media atomically to cached mono 16 kHz PCM WAV.
+- Preserved the current source filename when materializing cached final output.
+- Included effective configuration and implementation source in cache invalidation.
+- Reported cache lookup, normalization, every processing stage, and total duration.
+- Added a cold-run `--no-cache` option and documented service authorization boundaries.
+
+Documentation
+
+- README.md
+- docs/local-audio-srt-cli.md
+- CHANGELOG.md
+
+Tests
+
+- test_pipeline_cache.py
+- test_subtitle_pipeline_runner.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (240 passed)
+
+Commit
+
+created by this commit
+
+```
+feat(cache): reuse pipeline work by audio content
+```

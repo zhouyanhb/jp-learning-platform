@@ -158,3 +158,8 @@ high-confidence occurrences within the same document.
 
 Allow an unambiguous document-confirmed correction to propagate when the local
 candidate beats the original but only the strict score-ratio gate failed.
+
+- [x] Maintenance Content-addressed Pipeline Cache and Audio Normalization
+
+Deduplicate identical audio work by complete configuration, reuse compatible
+stage contexts, and normalize unsupported media once through an atomic cache.

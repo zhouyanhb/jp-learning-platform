@@ -33,11 +33,13 @@ from jp_learning_platform.infrastructure import (
     DomainSubtitleValidator,
     FasterWhisperDependencyError,
     FasterWhisperTranscriber,
+    FFmpegAudioNormalizer,
     HomophoneResolverDependencyError,
     JapaneseLearningWordNormalizer,
     JapaneseSentenceBoundaryResolver,
     LlamaCppQwenRepairer,
     ListeningJsonWriter,
+    LocalPipelineContextCache,
     LocalReadabilityOptimizer,
     PassthroughQwenRepairer,
     PassthroughWhisperXAligner,
@@ -108,6 +110,11 @@ def build_parser() -> ArgumentParser:
         "--export-srt",
         action="store_true",
         help="Also export SRT subtitles beside the structured JSON output.",
+    )
+    transcribe_parser.add_argument(
+        "--no-cache",
+        action="store_true",
+        help="Disable content-addressed result, stage, and normalized-audio reuse.",
     )
     transcribe_parser.add_argument(
         "--model-size",
@@ -231,6 +238,13 @@ def _run_transcribe(args: Namespace, output: TextIO, error_output: TextIO) -> in
         artifact_recorder=StageArtifactStore(
             root_directory=args.output_dir / ".work",
         ),
+        cache=(
+            None
+            if args.no_cache
+            else LocalPipelineContextCache(args.output_dir / ".cache")
+        ),
+        audio_normalizer=None if args.no_cache else FFmpegAudioNormalizer(),
+        cache_namespace=f"jp-learning-platform-{__version__}",
     )
 
     try:

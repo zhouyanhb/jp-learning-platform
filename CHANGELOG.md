@@ -6,6 +6,11 @@ All notable changes to this project are documented in this file.
 
 ### Added
 
+- Added content-addressed complete-result and stage caches, process-safe
+  duplicate-task coordination, and reusable FFmpeg PCM audio normalization.
+- Added explicit cache, audio normalization, per-stage, and end-to-end timing
+  output for comparing cold and reused pipeline runs.
+
 - Added optional Sudachi-backed learning-word normalization that repairs ASR
   fragments while preserving word timing, confidence, and speaker metadata.
 - Extended learning-word normalization to join inflectional auxiliaries and

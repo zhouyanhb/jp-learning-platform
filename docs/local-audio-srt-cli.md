@@ -33,6 +33,44 @@ python -m jp_learning_platform transcribe audio.mp3 --export-srt
 The command reports per-file stage progress while it runs. Progress is written
 to stderr so stdout can continue to list the final generated JSON paths.
 
+## Content-addressed Reuse and Audio Normalization
+
+Caching is enabled by default under `<output-dir>/.cache`. A run identifies the
+audio by SHA-256 content rather than its filename, and identifies processing by
+the effective stage configuration and implementation. Reuse follows this
+order:
+
+1. Return the complete cached analysis for identical content and configuration.
+2. Wait for an already-running identical task, then read the result it created.
+3. Resume after the latest compatible cached stage when only later processing
+   changed.
+4. Reuse the deterministic normalized PCM WAV when model stages still need
+   audio.
+5. Normalize and run the remaining stages only when no compatible entry exists.
+
+The writer always materializes an output for the current input filename, but a
+complete cache hit does not call the audio loader, FFmpeg, Whisper, or later
+analysis stages. FFmpeg conversion produces mono 16 kHz PCM only when the input
+is not already compatible. Both context and audio writes are atomic, and failed
+stages are not recorded as successful cache entries.
+
+Use a cold run for benchmarking or troubleshooting when needed:
+
+```bash
+python -m jp_learning_platform transcribe audio.mp3 --no-cache
+```
+
+Progress includes separate `pipeline-cache`, `audio-loader`,
+`audio-normalization`, individual model/quality stage, and `pipeline-total`
+durations. This makes cached and uncached runs directly comparable.
+
+For a multi-user service, place cache lookup behind the same authorization and
+tenant boundary as the uploaded audio and generated result. Content identity
+may safely deduplicate computation only when service policy permits it; a hash
+match by itself is not authorization to expose another user's result. Cache
+retention and capacity cleanup are deployment responsibilities for the local
+`<output-dir>/.cache` directory.
+
 ASR model settings can be supplied from the CLI:
 
 ```bash
@@ -170,15 +208,20 @@ The final structured JSON remains at `output/<audio-name>.json`. When
 
 ```text
 output/.work/<run-name>/<audio-name>/manifest.json
+output/.work/<run-name>/<audio-name>/00_pipeline_cache.json
 output/.work/<run-name>/<audio-name>/00_audio_load.json
+output/.work/<run-name>/<audio-name>/00_audio_normalization.json
 output/.work/<run-name>/<audio-name>/01_whisper.json
 output/.work/<run-name>/<audio-name>/02_align.json
 output/.work/<run-name>/<audio-name>/03_repair.json
-output/.work/<run-name>/<audio-name>/04_build.json
-output/.work/<run-name>/<audio-name>/05_merge.json
-output/.work/<run-name>/<audio-name>/06_readability.json
-output/.work/<run-name>/<audio-name>/07_validate.json
-output/.work/<run-name>/<audio-name>/08_write.json
+output/.work/<run-name>/<audio-name>/04_homophone_resolution.json
+output/.work/<run-name>/<audio-name>/05_word_normalization.json
+output/.work/<run-name>/<audio-name>/06_sentence_boundary_resolution.json
+output/.work/<run-name>/<audio-name>/07_build.json
+output/.work/<run-name>/<audio-name>/08_merge.json
+output/.work/<run-name>/<audio-name>/09_readability.json
+output/.work/<run-name>/<audio-name>/10_validate.json
+output/.work/<run-name>/<audio-name>/11_write.json
 ```
 
 Artifacts contain the source path, output path, file index, stage status,

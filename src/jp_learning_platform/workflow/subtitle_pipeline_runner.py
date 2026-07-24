@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, fields, is_dataclass
+from enum import Enum
+from hashlib import sha256
+import inspect
+import json
 from pathlib import Path
 from time import monotonic
 from typing import Protocol
@@ -76,6 +80,38 @@ class AudioLoader(Protocol):
 
     def load(self, source_path: Path) -> object:
         """Validate and load a local audio source."""
+
+
+class PipelineContextCache(Protocol):
+    """Content-addressed cache required by the runner."""
+
+    def audio_digest(self, source_path: Path) -> str: ...
+
+    def load_context(
+        self, audio_digest: str, stage_fingerprint: str
+    ) -> PipelineContext | None: ...
+
+    def save_context(
+        self,
+        audio_digest: str,
+        stage_fingerprint: str,
+        context: PipelineContext,
+    ) -> Path: ...
+
+    def work_lock(self, audio_digest: str, pipeline_fingerprint: str) -> object: ...
+
+    def normalized_audio_directory(self, audio_digest: str) -> Path: ...
+
+
+class AudioNormalizer(Protocol):
+    """Normalize uploaded media for audio-model stages."""
+
+    def normalize(
+        self,
+        source_path: Path,
+        cache_directory: Path,
+        audio_digest: str,
+    ) -> Path: ...
 
 
 class SubtitlePipelineRunnerError(RuntimeError):
@@ -227,6 +263,9 @@ class SubtitlePipelineRunner:
     engine: ExecutionEngine = ExecutionEngine()
     progress_reporter: ProgressReporter = NoOpProgressReporter()
     artifact_recorder: StageArtifactRecorder | None = None
+    cache: PipelineContextCache | None = None
+    audio_normalizer: AudioNormalizer | None = None
+    cache_namespace: str = "subtitle-pipeline-v1"
     output_extension: str = DEFAULT_SUBTITLE_OUTPUT_EXTENSION
 
     def __post_init__(self) -> None:
@@ -273,12 +312,15 @@ class SubtitlePipelineRunner:
                 artifact_recorder=self.artifact_recorder,
             )
             try:
-                self._load_audio(source_path, context, progress)
-                workflow = Workflow(
-                    name="audio-to-subtitle-output",
-                    pipeline=create_pipeline("audio-to-subtitle-output", self._stages()),
-                )
-                self.engine.execute(workflow, context, observer=progress)
+                if self.cache is None:
+                    self._load_audio(source_path, context, progress)
+                    self._execute_stages(self._stages(), context, progress)
+                else:
+                    self._execute_cached(
+                        source_path=source_path,
+                        context=context,
+                        progress=progress,
+                    )
             except Exception as error:
                 progress.total_finished(
                     elapsed_seconds=monotonic() - file_started_at,
@@ -299,6 +341,170 @@ class SubtitlePipelineRunner:
             )
 
         return SubtitlePipelineResult(items=tuple(items))
+
+    def _execute_cached(
+        self,
+        *,
+        source_path: Path,
+        context: PipelineContext,
+        progress: _PipelineRunProgress,
+    ) -> None:
+        assert self.cache is not None
+        cache_stage_name = "pipeline-cache"
+        progress.emit(
+            stage_name=cache_stage_name,
+            status=PipelineProgressStatus.STARTED,
+            context=context,
+        )
+        cache_started_at = monotonic()
+        audio_digest = self.cache.audio_digest(source_path)
+        stages = self._stages()
+        processing_stages = stages[:-1]
+        writer_stage = stages[-1]
+        fingerprints = _cumulative_stage_fingerprints(
+            f"{self.cache_namespace}:{json.dumps(_stable_configuration(self.audio_normalizer), sort_keys=True)}",
+            processing_stages,
+        )
+        pipeline_fingerprint = fingerprints[-1]
+
+        with self.cache.work_lock(audio_digest, pipeline_fingerprint):
+            cached_index, cached_context = self._longest_cached_context(
+                audio_digest,
+                fingerprints,
+            )
+            cache_message = (
+                "complete-result-hit"
+                if cached_index == len(processing_stages) - 1
+                else "stage-prefix-hit"
+                if cached_context is not None
+                else "miss"
+            )
+            progress.emit(
+                stage_name=cache_stage_name,
+                status=PipelineProgressStatus.SUCCEEDED,
+                context=cached_context or context,
+                elapsed_seconds=monotonic() - cache_started_at,
+                message=cache_message,
+            )
+            if cached_context is not None:
+                context = _rebind_context(
+                    cached_context,
+                    source_path=source_path,
+                    working_directory=context.working_directory,
+                    run_id=context.run_id,
+                )
+
+            next_stage_index = cached_index + 1
+            remaining_stages = processing_stages[next_stage_index:]
+            needs_audio = any(
+                isinstance(stage, WhisperStage | WhisperXAlignmentStage)
+                for stage in remaining_stages
+            )
+            if needs_audio:
+                self._load_audio(source_path, context, progress)
+                processing_path = source_path
+                if self.audio_normalizer is not None:
+                    processing_path = self._normalize_audio(
+                        source_path=source_path,
+                        audio_digest=audio_digest,
+                        context=context,
+                        progress=progress,
+                    )
+                context = _rebind_context(
+                    context,
+                    source_path=processing_path,
+                    working_directory=context.working_directory,
+                    run_id=context.run_id,
+                )
+
+            for stage_index, stage in enumerate(
+                remaining_stages,
+                start=next_stage_index,
+            ):
+                context = self._execute_stages((stage,), context, progress)
+                self.cache.save_context(
+                    audio_digest,
+                    fingerprints[stage_index],
+                    context,
+                )
+
+            context = _rebind_context(
+                context,
+                source_path=source_path,
+                working_directory=context.working_directory,
+                run_id=context.run_id,
+            )
+            self._execute_stages((writer_stage,), context, progress)
+
+    def _normalize_audio(
+        self,
+        *,
+        source_path: Path,
+        audio_digest: str,
+        context: PipelineContext,
+        progress: _PipelineRunProgress,
+    ) -> Path:
+        assert self.cache is not None
+        assert self.audio_normalizer is not None
+        stage_name = "audio-normalization"
+        progress.emit(
+            stage_name=stage_name,
+            status=PipelineProgressStatus.STARTED,
+            context=context,
+        )
+        started_at = monotonic()
+        try:
+            normalized_path = self.audio_normalizer.normalize(
+                source_path,
+                self.cache.normalized_audio_directory(audio_digest),
+                audio_digest,
+            )
+        except Exception as error:
+            progress.emit(
+                stage_name=stage_name,
+                status=PipelineProgressStatus.FAILED,
+                context=context,
+                elapsed_seconds=monotonic() - started_at,
+                message=str(error),
+            )
+            raise
+        progress.emit(
+            stage_name=stage_name,
+            status=PipelineProgressStatus.SUCCEEDED,
+            context=context,
+            elapsed_seconds=monotonic() - started_at,
+            message=(
+                "source-compatible"
+                if normalized_path == source_path
+                else "normalized-cache-ready"
+            ),
+        )
+        return normalized_path
+
+    def _longest_cached_context(
+        self,
+        audio_digest: str,
+        fingerprints: tuple[str, ...],
+    ) -> tuple[int, PipelineContext | None]:
+        assert self.cache is not None
+        for index in range(len(fingerprints) - 1, -1, -1):
+            context = self.cache.load_context(audio_digest, fingerprints[index])
+            if context is not None:
+                return index, context
+        return -1, None
+
+    def _execute_stages(
+        self,
+        stages: tuple[Stage, ...],
+        context: PipelineContext,
+        progress: _PipelineRunProgress,
+    ) -> PipelineContext:
+        workflow = Workflow(
+            name="audio-to-subtitle-output",
+            pipeline=create_pipeline("audio-to-subtitle-output", stages),
+        )
+        results = self.engine.execute(workflow, context, observer=progress)
+        return results[-1].context
 
     def output_path_for(self, source_path: Path, output_directory: Path) -> Path:
         return Path(output_directory) / (
@@ -391,9 +597,82 @@ class SubtitlePipelineRunner:
 
 
 __all__ = [
+    "AudioNormalizer",
     "AudioLoader",
     "DEFAULT_SUBTITLE_OUTPUT_EXTENSION",
     "DuplicateSubtitleOutputError",
+    "PipelineContextCache",
     "SubtitlePipelineRunner",
     "SubtitlePipelineRunnerError",
 ]
+
+
+def _cumulative_stage_fingerprints(
+    namespace: str,
+    stages: tuple[Stage, ...],
+) -> tuple[str, ...]:
+    cumulative: list[str] = []
+    previous = sha256(namespace.encode("utf-8")).hexdigest()
+    for stage in stages:
+        payload = json.dumps(
+            _stable_configuration(stage),
+            ensure_ascii=True,
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+        previous = sha256(f"{previous}:{payload}".encode("utf-8")).hexdigest()
+        cumulative.append(previous)
+    return tuple(cumulative)
+
+
+def _stable_configuration(value: object) -> object:
+    if value is None or isinstance(value, str | int | float | bool):
+        return value
+    if isinstance(value, Path):
+        return str(value)
+    if isinstance(value, Enum):
+        return value.value
+    if isinstance(value, tuple):
+        return [_stable_configuration(item) for item in value]
+    if isinstance(value, list | dict | set):
+        return {"type": type(value).__name__}
+    if is_dataclass(value):
+        configuration: dict[str, object] = {
+            "type": f"{type(value).__module__}.{type(value).__qualname__}",
+            "implementation": _implementation_digest(type(value)),
+        }
+        for item in fields(value):
+            if item.name.startswith("_") or "token" in item.name.lower():
+                continue
+            field_value = getattr(value, item.name)
+            if isinstance(field_value, list | dict | set):
+                continue
+            configuration[item.name] = _stable_configuration(field_value)
+        return configuration
+    return {"type": f"{type(value).__module__}.{type(value).__qualname__}"}
+
+
+def _implementation_digest(value_type: type[object]) -> str | None:
+    try:
+        source = inspect.getsource(value_type)
+    except (OSError, TypeError):
+        return None
+    return sha256(source.encode("utf-8")).hexdigest()
+
+
+def _rebind_context(
+    context: PipelineContext,
+    *,
+    source_path: Path,
+    working_directory: Path,
+    run_id: str,
+) -> PipelineContext:
+    return PipelineContext(
+        run_id=run_id,
+        working_directory=working_directory,
+        document=Document(
+            source_path=source_path,
+            segments=context.document.segments,
+            subtitles=context.document.subtitles,
+        ),
+    )

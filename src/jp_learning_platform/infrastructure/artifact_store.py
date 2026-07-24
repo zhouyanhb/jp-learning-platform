@@ -15,7 +15,9 @@ from jp_learning_platform.workflow.progress import (
 )
 
 STAGE_ARTIFACT_FILENAMES: Mapping[str, str] = {
+    "pipeline-cache": "00_pipeline_cache.json",
     "audio-loader": "00_audio_load.json",
+    "audio-normalization": "00_audio_normalization.json",
     "whisper": "01_whisper.json",
     "whisperx-alignment": "02_align.json",
     "qwen-repair": "03_repair.json",
