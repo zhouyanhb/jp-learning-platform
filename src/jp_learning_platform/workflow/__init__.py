@@ -17,6 +17,7 @@ from jp_learning_platform.workflow.progress import (
     ProgressReporter,
     StageArtifactRecord,
     StageArtifactRecorder,
+    StagePhaseTiming,
 )
 from jp_learning_platform.workflow.subtitle_pipeline_runner import (
     DEFAULT_SUBTITLE_OUTPUT_EXTENSION,
@@ -206,6 +207,7 @@ __all__ = [
     "Stage",
     "StageArtifactRecord",
     "StageArtifactRecorder",
+    "StagePhaseTiming",
     "StageExecutionEvent",
     "StageExecutionObserver",
     "StageResult",

@@ -13,6 +13,9 @@ from jp_learning_platform.infrastructure import (
     SpeakerTurn,
 )
 from jp_learning_platform.infrastructure.pyannote_diarizer import (
+    PYANNOTE_DIARIZATION_PHASE,
+    SPEAKER_ASSIGNMENT_PHASE,
+    WHISPERX_FORCED_ALIGNMENT_PHASE,
     _load_pyannote_pipeline,
 )
 from jp_learning_platform.workflow import (
@@ -227,7 +230,10 @@ def test_pyannote_speaker_diarizer_assigns_and_splits_speaker_runs(
     ) == ("SPEAKER_00", "SPEAKER_01")
 
 
-def test_diarizing_whisperx_aligner_wraps_base_alignment(tmp_path: Path) -> None:
+def test_diarizing_whisperx_aligner_wraps_base_alignment(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     source_path = tmp_path / "audio.mp3"
     base_aligner = FakeAligner(
         alignment=WhisperXAlignment(
@@ -248,6 +254,11 @@ def test_diarizing_whisperx_aligner_wraps_base_alignment(tmp_path: Path) -> None
         run_id="run-001",
         segments=(_mixed_speaker_segment(),),
     )
+    clock_values = iter((1.0, 3.0, 4.0, 9.0, 10.0, 10.25))
+    monkeypatch.setattr(
+        "jp_learning_platform.infrastructure.pyannote_diarizer.monotonic",
+        lambda: next(clock_values),
+    )
 
     aligner = DiarizingWhisperXAligner(
         base_aligner=base_aligner,
@@ -260,6 +271,14 @@ def test_diarizing_whisperx_aligner_wraps_base_alignment(tmp_path: Path) -> None
     assert tuple(segment.speaker_id for segment in result.segments) == (
         "SPEAKER_00",
         "SPEAKER_01",
+    )
+    assert tuple(
+        (timing.phase_name, timing.elapsed_seconds)
+        for timing in result.phase_timings
+    ) == (
+        (WHISPERX_FORCED_ALIGNMENT_PHASE, 2.0),
+        (PYANNOTE_DIARIZATION_PHASE, 5.0),
+        (SPEAKER_ASSIGNMENT_PHASE, 0.25),
     )
 
 

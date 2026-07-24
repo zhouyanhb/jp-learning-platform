@@ -33,6 +33,7 @@ from jp_learning_platform.workflow import (
     HomophoneResolutionDecision,
     HomophoneResolutionRequest,
     PipelineProgressEvent,
+    StagePhaseTiming,
     QwenRepair,
     QwenRepairRequest,
     ReadabilityOptimization,
@@ -80,12 +81,14 @@ class FakeTranscriber:
 class RecordingAligner:
     requests: list[WhisperXAlignmentRequest]
     requires_normalized_audio: bool = False
+    phase_timings: tuple[StagePhaseTiming, ...] = ()
 
     def align(self, request: WhisperXAlignmentRequest) -> WhisperXAlignment:
         self.requests.append(request)
         return WhisperXAlignment(
             source_path=request.source_path,
             segments=request.segments,
+            phase_timings=self.phase_timings,
         )
 
 
@@ -535,6 +538,51 @@ def test_subtitle_pipeline_runner_records_progress_and_stage_artifacts(
     assert reporter.events[-1].status.value == "succeeded"
     assert all(event.file_index == 1 for event in reporter.events)
     assert all(event.file_total == 1 for event in reporter.events)
+
+
+def test_runner_reports_alignment_phase_timings(tmp_path: Path) -> None:
+    audio_path = tmp_path / "lesson.mp3"
+    output_directory = tmp_path / "output"
+    _write_audio(audio_path)
+    reporter = RecordingProgressReporter(events=[])
+    artifact_store = StageArtifactStore(
+        root_directory=output_directory / ".work",
+        run_name="phase-timing",
+    )
+    phase_timings = (
+        StagePhaseTiming("whisperx-forced-alignment", 2.0),
+        StagePhaseTiming("pyannote-diarization", 5.0),
+        StagePhaseTiming("speaker-assignment", 0.25),
+    )
+    runner = SubtitlePipelineRunner(
+        audio_loader=AudioLoader(),
+        transcriber=FakeTranscriber(requests=[]),
+        aligner=RecordingAligner(requests=[], phase_timings=phase_timings),
+        builder=WordSubtitleBuilder(),
+        writer=SrtSubtitleWriter(output_directory=output_directory),
+        progress_reporter=reporter,
+        artifact_recorder=artifact_store,
+    )
+
+    runner.run(
+        SubtitlePipelineRequest(
+            input_path=audio_path,
+            output_directory=output_directory,
+        )
+    )
+
+    succeeded = {
+        event.stage_name: event.elapsed_seconds
+        for event in reporter.events
+        if event.status.value == "succeeded"
+    }
+    assert succeeded["whisperx-forced-alignment"] == 2.0
+    assert succeeded["pyannote-diarization"] == 5.0
+    assert succeeded["speaker-assignment"] == 0.25
+    artifact_directory = artifact_store.audio_directory(audio_path)
+    assert (artifact_directory / "02a_forced_alignment.json").exists()
+    assert (artifact_directory / "02b_pyannote_diarization.json").exists()
+    assert (artifact_directory / "02c_speaker_assignment.json").exists()
 
 
 def test_subtitle_pipeline_runner_generates_srt_for_audio_folder(

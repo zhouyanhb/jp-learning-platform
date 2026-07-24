@@ -9,6 +9,7 @@ from typing import Protocol, TypeVar
 
 from jp_learning_platform.domain import Document, PipelineContext, Segment
 from jp_learning_platform.workflow.runtime import StageResult
+from jp_learning_platform.workflow.progress import StagePhaseTiming
 
 WHISPERX_ALIGNMENT_STAGE_NAME = "whisperx-alignment"
 
@@ -73,6 +74,7 @@ class WhisperXAlignment:
 
     source_path: Path
     segments: tuple[Segment, ...]
+    phase_timings: tuple[StagePhaseTiming, ...] = ()
 
     def __post_init__(self) -> None:
         segments = _tuple_of_type(self.segments, Segment, "segments")
@@ -81,6 +83,15 @@ class WhisperXAlignment:
 
         object.__setattr__(self, "source_path", Path(self.source_path))
         object.__setattr__(self, "segments", segments)
+        object.__setattr__(
+            self,
+            "phase_timings",
+            _tuple_of_type(
+                self.phase_timings,
+                StagePhaseTiming,
+                "phase_timings",
+            ),
+        )
 
 
 class WhisperXAligner(Protocol):
@@ -160,7 +171,11 @@ class WhisperXAlignmentStage:
             working_directory=context.working_directory,
         )
 
-        return StageResult(stage_name=self.name, context=next_context)
+        return StageResult(
+            stage_name=self.name,
+            context=next_context,
+            data=alignment.phase_timings,
+        )
 
 
 __all__ = [

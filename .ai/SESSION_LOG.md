@@ -2039,3 +2039,53 @@ created by this commit
 ```
 fix(words): merge locally recognized nouns
 ```
+
+---
+
+# Session 041
+
+Date
+
+2026-07-24
+
+Roadmap
+
+Maintenance Alignment Phase Timing
+
+Summary
+
+Split aggregate diarizing alignment time into three measured component phases.
+
+Changes
+
+- Measured WhisperX forced alignment independently.
+- Measured pyannote model inference and turn extraction independently.
+- Measured deterministic speaker overlap assignment independently.
+- Emitted each phase through console progress and a dedicated JSON artifact.
+- Retained aggregate `whisperx-alignment` timing and existing cache semantics.
+- Avoided repeated model calls by carrying immutable phase timing results.
+
+Documentation
+
+- docs/whisperx-alignment-stage.md
+- docs/local-audio-srt-cli.md
+- CHANGELOG.md
+
+Tests
+
+- test_pyannote_diarizer.py
+- test_subtitle_pipeline_runner.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (245 passed)
+
+Commit
+
+created by this commit
+
+```
+feat(timing): report alignment phase durations
+```

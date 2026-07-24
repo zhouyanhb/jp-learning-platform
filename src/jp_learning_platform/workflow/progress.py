@@ -52,6 +52,22 @@ def _normalize_elapsed_seconds(value: float | None) -> float | None:
 
 
 @dataclass(frozen=True, slots=True)
+class StagePhaseTiming:
+    """Measured duration for one named phase inside a workflow stage."""
+
+    phase_name: str
+    elapsed_seconds: float
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "phase_name", _normalize_stage_name(self.phase_name))
+        object.__setattr__(
+            self,
+            "elapsed_seconds",
+            _normalize_elapsed_seconds(self.elapsed_seconds),
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class PipelineProgressEvent:
     """Progress event for one file and one pipeline stage."""
 
@@ -162,4 +178,5 @@ __all__ = [
     "ProgressReporter",
     "StageArtifactRecord",
     "StageArtifactRecorder",
+    "StagePhaseTiming",
 ]

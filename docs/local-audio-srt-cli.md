@@ -223,6 +223,9 @@ output/.work/<run-name>/<audio-name>/00_audio_load.json
 output/.work/<run-name>/<audio-name>/00_audio_normalization.json
 output/.work/<run-name>/<audio-name>/01_whisper.json
 output/.work/<run-name>/<audio-name>/02_align.json
+output/.work/<run-name>/<audio-name>/02a_forced_alignment.json
+output/.work/<run-name>/<audio-name>/02b_pyannote_diarization.json
+output/.work/<run-name>/<audio-name>/02c_speaker_assignment.json
 output/.work/<run-name>/<audio-name>/03_repair.json
 output/.work/<run-name>/<audio-name>/04_homophone_resolution.json
 output/.work/<run-name>/<audio-name>/05_word_normalization.json

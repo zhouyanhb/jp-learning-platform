@@ -25,6 +25,7 @@ from jp_learning_platform.workflow.progress import (
     ProgressReporter,
     StageArtifactRecord,
     StageArtifactRecorder,
+    StagePhaseTiming,
 )
 from jp_learning_platform.workflow.homophone_stage import (
     HomophoneResolutionStage,
@@ -201,6 +202,18 @@ class _PipelineRunProgress:
         )
 
     def stage_succeeded(self, event: StageExecutionEvent) -> None:
+        if isinstance(event.data, tuple) and all(
+            isinstance(item, StagePhaseTiming) for item in event.data
+        ):
+            for phase in event.data:
+                self.emit(
+                    stage_name=phase.phase_name,
+                    status=PipelineProgressStatus.SUCCEEDED,
+                    context=event.context,
+                    elapsed_seconds=phase.elapsed_seconds,
+                    data=phase,
+                    message=f"component-of:{event.stage_name}",
+                )
         self.emit(
             stage_name=event.stage_name,
             status=PipelineProgressStatus.SUCCEEDED,

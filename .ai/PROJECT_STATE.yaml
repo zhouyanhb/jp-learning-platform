@@ -8,7 +8,7 @@ project:
 repository:
   branch: master
   working_tree: clean
-  remote_status: ahead_of_origin_by_9_commits
+  remote_status: ahead_of_origin_by_10_commits
   runnable: true
 
 architecture:
@@ -60,6 +60,8 @@ architecture:
       cold pyannote runs still normalize after Whisper and report the duration.
     - Learning-word normalization locally reanalyzes short nominal windows and
       merges only standalone single-noun results recognized by Sudachi.
+    - Diarizing alignment reports forced alignment, pyannote inference, and
+      deterministic speaker assignment durations beside the aggregate stage.
 
 roadmap:
   completed:
@@ -92,6 +94,7 @@ roadmap:
     - Maintenance Demand-driven Audio Normalization
     - Maintenance Cold-run Audio Compatibility
     - Maintenance Local Nominal Reanalysis
+    - Maintenance Alignment Phase Timing
 
   current: null
 
@@ -99,11 +102,11 @@ roadmap:
 
 latest_commit:
   hash: created_by_this_commit
-  message: "fix(words): merge locally recognized nouns"
+  message: "feat(timing): report alignment phase durations"
 
 tests:
-  total: 244
-  passed: 244
+  total: 245
+  passed: 245
   failed: 0
 
 checks:
@@ -142,6 +145,7 @@ workflow:
       - ProgressReporter
       - StageArtifactRecord
       - StageArtifactRecorder
+      - StagePhaseTiming
       - NoOpProgressReporter
   subtitle_pipeline_runner:
     implemented:

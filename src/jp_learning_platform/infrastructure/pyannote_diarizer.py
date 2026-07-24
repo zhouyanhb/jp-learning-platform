@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 import os
 from pathlib import Path
+from time import monotonic
 from typing import Any
 
 from jp_learning_platform.domain import Segment, Sentence, TimeRange, Word
@@ -16,6 +17,11 @@ from jp_learning_platform.workflow.whisperx_alignment_stage import (
     WhisperXAlignment,
     WhisperXAlignmentRequest,
 )
+from jp_learning_platform.workflow.progress import StagePhaseTiming
+
+WHISPERX_FORCED_ALIGNMENT_PHASE = "whisperx-forced-alignment"
+PYANNOTE_DIARIZATION_PHASE = "pyannote-diarization"
+SPEAKER_ASSIGNMENT_PHASE = "speaker-assignment"
 
 DEFAULT_PYANNOTE_DIARIZATION_MODEL = (
     DEFAULT_PYANNOTE_DIARIZATION_CONFIG.model_name
@@ -86,6 +92,13 @@ class PyannoteSpeakerDiarizer:
         segments: tuple[Segment, ...],
     ) -> tuple[Segment, ...]:
         turns = self.diarize(source_path)
+        return self.assign_speaker_turns(segments, turns)
+
+    def assign_speaker_turns(
+        self,
+        segments: tuple[Segment, ...],
+        turns: tuple[SpeakerTurn, ...],
+    ) -> tuple[Segment, ...]:
         if not turns:
             return segments
 
@@ -155,15 +168,36 @@ class DiarizingWhisperXAligner:
             raise TypeError("diarizer must be a PyannoteSpeakerDiarizer.")
 
     def align(self, request: WhisperXAlignmentRequest) -> WhisperXAlignment:
+        alignment_started_at = monotonic()
         alignment = self.base_aligner.align(request)
+        alignment_elapsed = monotonic() - alignment_started_at
         if not isinstance(alignment, WhisperXAlignment):
             raise TypeError("base_aligner must return a WhisperXAlignment.")
 
+        diarization_started_at = monotonic()
+        turns = self.diarizer.diarize(alignment.source_path)
+        diarization_elapsed = monotonic() - diarization_started_at
+
+        assignment_started_at = monotonic()
+        segments = self.diarizer.assign_speaker_turns(alignment.segments, turns)
+        assignment_elapsed = monotonic() - assignment_started_at
+
         return WhisperXAlignment(
             source_path=alignment.source_path,
-            segments=self.diarizer.assign_speakers(
-                alignment.source_path,
-                alignment.segments,
+            segments=segments,
+            phase_timings=(
+                StagePhaseTiming(
+                    WHISPERX_FORCED_ALIGNMENT_PHASE,
+                    alignment_elapsed,
+                ),
+                StagePhaseTiming(
+                    PYANNOTE_DIARIZATION_PHASE,
+                    diarization_elapsed,
+                ),
+                StagePhaseTiming(
+                    SPEAKER_ASSIGNMENT_PHASE,
+                    assignment_elapsed,
+                ),
             ),
         )
 
@@ -348,4 +382,7 @@ __all__ = [
     "PyannoteDependencyError",
     "PyannoteSpeakerDiarizer",
     "SpeakerTurn",
+    "PYANNOTE_DIARIZATION_PHASE",
+    "SPEAKER_ASSIGNMENT_PHASE",
+    "WHISPERX_FORCED_ALIGNMENT_PHASE",
 ]

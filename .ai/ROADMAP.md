@@ -178,3 +178,8 @@ disabled, while preserving cold-run timing and stage ordering.
 
 Reanalyze short contiguous nominal morphology windows and merge only those
 that Sudachi independently recognizes as one complete noun.
+
+- [x] Maintenance Alignment Phase Timing
+
+Measure and report forced alignment, pyannote diarization, and speaker
+assignment separately while retaining the aggregate alignment duration.

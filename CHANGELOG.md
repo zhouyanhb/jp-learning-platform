@@ -10,6 +10,8 @@ All notable changes to this project are documented in this file.
   duplicate-task coordination, and reusable FFmpeg PCM audio normalization.
 - Added explicit cache, audio normalization, per-stage, and end-to-end timing
   output for comparing cold and reused pipeline runs.
+- Added separate WhisperX forced-alignment, pyannote diarization, and speaker
+  assignment timings while retaining the aggregate alignment duration.
 
 - Added optional Sudachi-backed learning-word normalization that repairs ASR
   fragments while preserving word timing, confidence, and speaker metadata.
