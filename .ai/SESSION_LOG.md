@@ -1941,3 +1941,52 @@ created by this commit
 ```
 fix(audio): defer normalization until required
 ```
+
+---
+
+# Session 039
+
+Date
+
+2026-07-24
+
+Roadmap
+
+Maintenance Cold-run Audio Compatibility
+
+Summary
+
+Kept required pyannote audio conversion active when cache reuse is disabled.
+
+Changes
+
+- Separated compatibility normalization from cross-run cache enablement.
+- Ran cold normalization after Whisper and before exact-sample consumers.
+- Stored cold normalized audio under the run working directory.
+- Preserved source identity before final writing.
+- Reported cold conversion duration through the existing progress stage.
+- Diagnosed the reported failure as the `--no-cache` path disabling normalization.
+
+Documentation
+
+- README.md
+- docs/local-audio-srt-cli.md
+- CHANGELOG.md
+
+Tests
+
+- test_subtitle_pipeline_runner.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (242 passed)
+
+Commit
+
+created by this commit
+
+```
+fix(audio): normalize diarization cold runs
+```

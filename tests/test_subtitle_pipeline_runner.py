@@ -427,6 +427,47 @@ def test_runner_normalizes_only_before_explicit_exact_sample_consumer(
     assert len(aligner.requests) == 1
 
 
+def test_runner_keeps_required_normalization_when_cache_is_disabled(
+    tmp_path: Path,
+) -> None:
+    audio_path = tmp_path / "lesson.mp3"
+    output_directory = tmp_path / "output"
+    _write_audio(audio_path)
+    transcriber = FakeTranscriber(requests=[])
+    aligner = RecordingAligner(requests=[], requires_normalized_audio=True)
+    normalizer = RecordingAudioNormalizer(requests=[])
+    reporter = RecordingProgressReporter(events=[])
+
+    SubtitlePipelineRunner(
+        audio_loader=AudioLoader(),
+        transcriber=transcriber,
+        aligner=aligner,
+        builder=WordSubtitleBuilder(),
+        writer=SrtSubtitleWriter(output_directory=output_directory),
+        cache=None,
+        audio_normalizer=normalizer,
+        progress_reporter=reporter,
+    ).run(
+        SubtitlePipelineRequest(
+            input_path=audio_path,
+            output_directory=output_directory,
+        )
+    )
+
+    succeeded_stages = [
+        event.stage_name
+        for event in reporter.events
+        if event.status.value == "succeeded"
+    ]
+    assert normalizer.requests == [audio_path]
+    assert succeeded_stages.index("whisper") < succeeded_stages.index(
+        "audio-normalization"
+    )
+    assert succeeded_stages.index("audio-normalization") < succeeded_stages.index(
+        "whisperx-alignment"
+    )
+
+
 def test_subtitle_pipeline_runner_records_progress_and_stage_artifacts(
     tmp_path: Path,
 ) -> None:

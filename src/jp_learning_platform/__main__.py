@@ -243,7 +243,7 @@ def _run_transcribe(args: Namespace, output: TextIO, error_output: TextIO) -> in
             if args.no_cache
             else LocalPipelineContextCache(args.output_dir / ".cache")
         ),
-        audio_normalizer=None if args.no_cache else FFmpegAudioNormalizer(),
+        audio_normalizer=FFmpegAudioNormalizer(),
         cache_namespace=f"jp-learning-platform-{__version__}",
     )
 

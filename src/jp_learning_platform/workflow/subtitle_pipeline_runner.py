@@ -73,6 +73,7 @@ from jp_learning_platform.workflow.whisperx_alignment_stage import (
 )
 
 DEFAULT_SUBTITLE_OUTPUT_EXTENSION = ".srt"
+DEFAULT_AUDIO_HASH_CHUNK_BYTES = 1024 * 1024
 
 
 class AudioLoader(Protocol):
@@ -313,8 +314,11 @@ class SubtitlePipelineRunner:
             )
             try:
                 if self.cache is None:
-                    self._load_audio(source_path, context, progress)
-                    self._execute_stages(self._stages(), context, progress)
+                    self._execute_uncached(
+                        source_path=source_path,
+                        context=context,
+                        progress=progress,
+                    )
                 else:
                     self._execute_cached(
                         source_path=source_path,
@@ -341,6 +345,47 @@ class SubtitlePipelineRunner:
             )
 
         return SubtitlePipelineResult(items=tuple(items))
+
+    def _execute_uncached(
+        self,
+        *,
+        source_path: Path,
+        context: PipelineContext,
+        progress: _PipelineRunProgress,
+    ) -> None:
+        self._load_audio(source_path, context, progress)
+        stages = self._stages()
+        processing_stages = stages[:-1]
+        writer_stage = stages[-1]
+        normalized = False
+        for stage in processing_stages:
+            if (
+                not normalized
+                and self.audio_normalizer is not None
+                and _stage_requires_normalized_audio(stage)
+            ):
+                context = _rebind_context(
+                    context,
+                    source_path=self._normalize_audio(
+                        source_path=source_path,
+                        audio_digest=None,
+                        cache_directory=context.working_directory / "audio",
+                        context=context,
+                        progress=progress,
+                    ),
+                    working_directory=context.working_directory,
+                    run_id=context.run_id,
+                )
+                normalized = True
+            context = self._execute_stages((stage,), context, progress)
+
+        context = _rebind_context(
+            context,
+            source_path=source_path,
+            working_directory=context.working_directory,
+            run_id=context.run_id,
+        )
+        self._execute_stages((writer_stage,), context, progress)
 
     def _execute_cached(
         self,
@@ -417,6 +462,9 @@ class SubtitlePipelineRunner:
                     processing_path = self._normalize_audio(
                         source_path=source_path,
                         audio_digest=audio_digest,
+                        cache_directory=self.cache.normalized_audio_directory(
+                            audio_digest
+                        ),
                         context=context,
                         progress=progress,
                     )
@@ -446,11 +494,11 @@ class SubtitlePipelineRunner:
         self,
         *,
         source_path: Path,
-        audio_digest: str,
+        audio_digest: str | None,
+        cache_directory: Path,
         context: PipelineContext,
         progress: _PipelineRunProgress,
     ) -> Path:
-        assert self.cache is not None
         assert self.audio_normalizer is not None
         stage_name = "audio-normalization"
         progress.emit(
@@ -460,10 +508,11 @@ class SubtitlePipelineRunner:
         )
         started_at = monotonic()
         try:
+            digest = audio_digest or _audio_digest(source_path)
             normalized_path = self.audio_normalizer.normalize(
                 source_path,
-                self.cache.normalized_audio_directory(audio_digest),
-                audio_digest,
+                cache_directory,
+                digest,
             )
         except Exception as error:
             progress.emit(
@@ -644,6 +693,14 @@ def _stage_requires_normalized_audio(stage: Stage) -> bool:
     if consumer is None:
         consumer = getattr(stage, "transcriber", None)
     return bool(getattr(consumer, "requires_normalized_audio", False))
+
+
+def _audio_digest(source_path: Path) -> str:
+    digest = sha256()
+    with Path(source_path).open("rb") as source:
+        while chunk := source.read(DEFAULT_AUDIO_HASH_CHUNK_BYTES):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def _stable_configuration(value: object) -> object:

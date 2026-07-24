@@ -8,7 +8,7 @@ project:
 repository:
   branch: master
   working_tree: clean
-  remote_status: ahead_of_origin_by_7_commits
+  remote_status: ahead_of_origin_by_8_commits
   runnable: true
 
 architecture:
@@ -56,6 +56,8 @@ architecture:
     - Audio adapters declare whether they require deterministic PCM; ordinary
       Whisper and WhisperX retain compressed source audio while pyannote
       normalization is deferred until after cached transcription.
+    - Disabling cache reuse does not disable required media compatibility;
+      cold pyannote runs still normalize after Whisper and report the duration.
 
 roadmap:
   completed:
@@ -86,6 +88,7 @@ roadmap:
     - Maintenance Weak-ratio Homophone Propagation
     - Maintenance Content-addressed Pipeline Cache and Audio Normalization
     - Maintenance Demand-driven Audio Normalization
+    - Maintenance Cold-run Audio Compatibility
 
   current: null
 
@@ -93,11 +96,11 @@ roadmap:
 
 latest_commit:
   hash: created_by_this_commit
-  message: "fix(audio): defer normalization until required"
+  message: "fix(audio): normalize diarization cold runs"
 
 tests:
-  total: 241
-  passed: 241
+  total: 242
+  passed: 242
   failed: 0
 
 checks:

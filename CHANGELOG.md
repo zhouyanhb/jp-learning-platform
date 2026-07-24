@@ -49,6 +49,8 @@ All notable changes to this project are documented in this file.
 - Deferred FFmpeg PCM normalization until an exact-sample adapter such as
   pyannote diarization requires it, avoiding conversion for ordinary MP3
   transcription and preserving cached Whisper work on later-stage failure.
+- Kept required pyannote PCM conversion active during `--no-cache` cold runs
+  while continuing to disable cross-run artifact reuse.
 
 - Made homophone correction fail closed unless ASR confidence, absolute model
   probability, contextual score ratio, reading, word class, and script profile

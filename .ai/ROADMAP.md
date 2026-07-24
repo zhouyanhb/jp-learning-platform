@@ -168,3 +168,8 @@ stage contexts, and normalize unsupported media once through an atomic cache.
 
 Preserve compatible source audio for consumers that can decode it directly,
 and normalize only before a stage that explicitly requires deterministic PCM.
+
+- [x] Maintenance Cold-run Audio Compatibility
+
+Keep required media compatibility conversion active when cache reuse is
+disabled, while preserving cold-run timing and stage ordering.

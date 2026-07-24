@@ -72,6 +72,8 @@ Successful work is cached by audio content, complete analysis configuration,
 and stage implementation under `output/.cache/`. Identical reruns reuse the
 complete result without decoding or normalizing the audio again. Use
 `--no-cache` for an intentionally cold run.
+Cold runs still perform required PCM conversion when diarization is enabled;
+the option disables reuse, not audio compatibility handling.
 
 ## Checks
 

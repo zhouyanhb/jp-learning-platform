@@ -65,6 +65,11 @@ Use a cold run for benchmarking or troubleshooting when needed:
 python -m jp_learning_platform transcribe audio.mp3 --no-cache
 ```
 
+`--no-cache` disables cross-run result, stage, and normalized-audio reuse. It
+does not disable compatibility processing: when pyannote diarization is
+enabled, the cold run still converts the source after Whisper and reports the
+`audio-normalization` duration before alignment/diarization begins.
+
 Progress includes separate `pipeline-cache`, `audio-loader`,
 `audio-normalization`, individual model/quality stage, and `pipeline-total`
 durations. This makes cached and uncached runs directly comparable.
