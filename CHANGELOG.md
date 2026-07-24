@@ -6,6 +6,10 @@ All notable changes to this project are documented in this file.
 
 ### Added
 
+- Added alignment-held-silence and standalone-question-particle sentence
+  boundary recovery, connective-clause joining, and maximum-duration subtitle
+  merge protection.
+
 - Added content-addressed complete-result and stage caches, process-safe
   duplicate-task coordination, and reusable FFmpeg PCM audio normalization.
 - Added explicit cache, audio normalization, per-stage, and end-to-end timing

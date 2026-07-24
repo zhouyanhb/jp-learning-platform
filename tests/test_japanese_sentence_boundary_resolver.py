@@ -268,9 +268,9 @@ def test_sentence_boundary_resolver_adds_comma_to_connective_te_at_segment_bound
     first = _segment((_word("それから話を聞いて", 79.14, 82.35),))
     second_sentence = Sentence(
         text="問題用紙の1から4の中から最も良いものを選んでください",
-        time_range=TimeRange(82.35, 89.07),
+        time_range=TimeRange(83.15, 89.07),
         words=(
-            _word("問題用紙の1から4の中から最も良いものを選んでください", 82.35, 89.07),
+            _word("問題用紙の1から4の中から最も良いものを選んでください", 83.15, 89.07),
         ),
     )
     second = Segment(
@@ -288,9 +288,71 @@ def test_sentence_boundary_resolver_adds_comma_to_connective_te_at_segment_bound
 
     result = JapaneseSentenceBoundaryResolver().resolve(request)
 
-    assert len(result.segments) == 2
-    assert result.segments[0].sentences[0].text == "それから話を聞いて、"
-    assert result.segments[0].time_range == TimeRange(79.14, 82.35)
+    assert len(result.segments) == 1
+    assert result.segments[0].sentences[0].text == (
+        "それから話を聞いて、"
+        "問題用紙の1から4の中から最も良いものを選んでください"
+    )
+    assert result.segments[0].time_range == TimeRange(79.14, 89.07)
+
+
+def test_sentence_boundary_resolver_splits_extended_question_particle() -> None:
+    words = (
+        _word("男の社員はこの後まず何をします", 202.131, 202.8),
+        _word("か", 202.8, 208.8),
+        _word("あの", 208.8, 209.0),
+        _word("ちょっと頼みたいことがあるんだけど", 209.0, 209.76),
+    )
+
+    result = JapaneseSentenceBoundaryResolver().resolve(
+        _request(_segment(words))
+    )
+
+    assert tuple(sentence.text for sentence in result.segments[0].sentences) == (
+        "男の社員はこの後まず何をしますか?",
+        "あのちょっと頼みたいことがあるんだけど",
+    )
+    assert result.segments[0].sentences[0].time_range == TimeRange(202.131, 203.3)
+    assert result.decisions[0].reason == "sentence_final_question_particle"
+
+
+def test_sentence_boundary_resolver_splits_alignment_held_silence() -> None:
+    words = (
+        _word("次回", 0.0, 0.4),
+        _word("の", 0.4, 0.5),
+        _word("応募", 0.5, 0.9),
+        _word("方法", 0.9, 13.9),
+        _word("問題", 13.9, 14.4),
+        _word("4", 14.4, 14.6),
+    )
+
+    result = JapaneseSentenceBoundaryResolver().resolve(
+        _request(_segment(words))
+    )
+
+    assert tuple(sentence.text for sentence in result.segments[0].sentences) == (
+        "次回の応募方法",
+        "問題4",
+    )
+    assert result.segments[0].sentences[0].time_range == TimeRange(0.0, 1.9)
+    assert result.decisions[0].reason == "extended_aligned_word"
+
+
+def test_sentence_boundary_resolver_joins_tight_connective_without_comma() -> None:
+    request = SentenceBoundaryResolutionRequest(
+        source_path=Path("input.mp3"),
+        working_directory=Path("work"),
+        run_id="run-001",
+        segments=(
+            _sentence_segment(0, "話して", 0.0, 0.5),
+            _sentence_segment(1, "います", 0.5, 1.0),
+        ),
+    )
+
+    result = JapaneseSentenceBoundaryResolver().resolve(request)
+
+    assert len(result.segments) == 1
+    assert result.segments[0].sentences[0].text == "話しています"
 
 
 def test_sentence_boundary_resolver_merges_contiguous_dependent_continuation() -> None:

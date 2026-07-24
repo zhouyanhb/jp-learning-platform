@@ -2089,3 +2089,56 @@ created by this commit
 ```
 feat(timing): report alignment phase durations
 ```
+
+---
+
+# Session 042
+
+Date
+
+2026-07-24
+
+Roadmap
+
+Maintenance Robust Sentence Boundaries
+
+Summary
+
+Recovered Japanese sentence boundaries that were obscured by forced-alignment
+held silence and protected those boundaries through subtitle merging.
+
+Changes
+
+- Split standalone sentence-final question particles and restored a question mark.
+- Detected abnormally extended aligned words as trailing-silence boundaries.
+- Trimmed only the boundary word's sentence time while preserving source segments.
+- Joined connective te-form clauses with their following main clauses.
+- Prevented subtitle merging across terminal punctuation and excessive duration.
+- Kept all thresholds and grammatical categories in centralized configuration.
+
+Documentation
+
+- docs/japanese-sentence-boundary-resolution.md
+- docs/subtitle-merger-stage.md
+- CHANGELOG.md
+
+Tests
+
+- test_japanese_sentence_boundary_resolver.py
+- test_subtitle_quality_adapters.py
+- test_pipeline_config.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (249 passed)
+- cached full-audio regression (0.80 seconds) ✔
+
+Commit
+
+created by this commit
+
+```
+fix(sentences): recover robust Japanese boundaries
+```

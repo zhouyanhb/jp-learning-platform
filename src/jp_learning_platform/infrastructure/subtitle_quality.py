@@ -31,6 +31,9 @@ from jp_learning_platform.workflow.subtitle_validator_stage import (
 
 DEFAULT_MERGE_GAP_SECONDS = DEFAULT_SUBTITLE_MERGE_CONFIG.max_gap_seconds
 DEFAULT_MERGE_MAX_CHARS = DEFAULT_SUBTITLE_MERGE_CONFIG.max_chars
+DEFAULT_MERGE_MAX_DURATION_SECONDS = (
+    DEFAULT_SUBTITLE_MERGE_CONFIG.max_duration_seconds
+)
 JAPANESE_TERMINAL_MARKS = DEFAULT_SUBTITLE_MERGE_CONFIG.terminal_marks
 JAPANESE_SENTENCE_FINAL_SUFFIXES = (
     DEFAULT_SENTENCE_BOUNDARY_CONFIG.sentence_final_suffixes
@@ -43,6 +46,7 @@ class ConservativeSubtitleMerger:
 
     max_gap_seconds: float = DEFAULT_MERGE_GAP_SECONDS
     max_chars: int = DEFAULT_MERGE_MAX_CHARS
+    max_duration_seconds: float = DEFAULT_MERGE_MAX_DURATION_SECONDS
 
     def merge(self, request: SubtitleMergeRequest) -> SubtitleMerge:
         if not isinstance(request, SubtitleMergeRequest):
@@ -73,9 +77,13 @@ class ConservativeSubtitleMerger:
     def _should_merge(self, current: Subtitle, nxt: Subtitle) -> bool:
         gap = nxt.time_range.start_seconds - current.time_range.end_seconds
         combined_text = current.text + nxt.text
+        combined_duration = (
+            nxt.time_range.end_seconds - current.time_range.start_seconds
+        )
         return (
             0 <= gap <= self.max_gap_seconds
             and len(combined_text) <= self.max_chars
+            and combined_duration <= self.max_duration_seconds
             and not current.text.endswith(JAPANESE_TERMINAL_MARKS)
             and not current.text.endswith(JAPANESE_SENTENCE_FINAL_SUFFIXES)
             and not _speaker_boundary(current, nxt)
@@ -214,6 +222,7 @@ __all__ = [
     "ConservativeSubtitleMerger",
     "DEFAULT_MERGE_GAP_SECONDS",
     "DEFAULT_MERGE_MAX_CHARS",
+    "DEFAULT_MERGE_MAX_DURATION_SECONDS",
     "DomainSubtitleValidator",
     "LocalReadabilityOptimizer",
 ]

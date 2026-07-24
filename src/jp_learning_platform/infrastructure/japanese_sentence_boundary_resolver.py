@@ -48,7 +48,7 @@ class JapaneseSentenceBoundaryResolver:
         segments = _merge_adjacent_sentence_overlaps(request.segments)
         segments = _remove_adjacent_boundary_echoes(segments)
         segments = _merge_adjacent_dependent_continuations(segments)
-        segments = _restore_inter_segment_commas(segments)
+        segments = _merge_adjacent_connective_continuations(segments)
         resolved_segments: list[Segment] = []
         decisions: list[SentenceBoundaryDecision] = []
         for segment in segments:
@@ -149,10 +149,18 @@ class JapaneseSentenceBoundaryResolver:
 
         parts: list[Sentence] = []
         start_index = 0
-        for boundary in boundaries:
+        for boundary, decision in zip(boundaries, decisions, strict=True):
+            words = sentence.words[start_index : boundary + 1]
+            if decision.reason in {
+                "extended_aligned_word",
+                "sentence_final_question_particle",
+            }:
+                words = _trim_extended_boundary_word(words)
+            if decision.reason == "sentence_final_question_particle":
+                words = _append_question_mark(words)
             parts.append(
                 _sentence_from_words(
-                    sentence.words[start_index : boundary + 1],
+                    words,
                     speaker_id=sentence.speaker_id,
                 )
             )
@@ -186,6 +194,20 @@ class JapaneseSentenceBoundaryResolver:
             return None
         if _starts_with_dependent_continuation(right_text):
             return None
+
+        if current_text == "か":
+            return "sentence_final_question_particle"
+
+        if (
+            words[word_index].time_range.duration_seconds
+            >= DEFAULT_SENTENCE_BOUNDARY_CONFIG.extended_word_duration_seconds
+            and (
+                words[word_index].time_range.duration_seconds
+                / max(len(current_text), 1)
+                >= DEFAULT_SENTENCE_BOUNDARY_CONFIG.extended_word_seconds_per_character
+            )
+        ):
+            return "extended_aligned_word"
 
         if right_text[:1].isdigit() and not _looks_sentence_final(
             left_text,
@@ -236,6 +258,47 @@ def _words_text(words: tuple[Word, ...]) -> str:
 
 def _word_text(word: Word) -> str:
     return unicodedata.normalize("NFKC", word.text).strip()
+
+
+def _append_question_mark(words: tuple[Word, ...]) -> tuple[Word, ...]:
+    last = words[-1]
+    if _word_text(last).endswith(("?", "？")):
+        return words
+    return (
+        *words[:-1],
+        Word(
+            text=f"{_word_text(last)}?",
+            time_range=last.time_range,
+            confidence=last.confidence,
+            speaker_id=last.speaker_id,
+        ),
+    )
+
+
+def _trim_extended_boundary_word(words: tuple[Word, ...]) -> tuple[Word, ...]:
+    """Exclude alignment-held trailing silence from a sentence boundary word."""
+    last = words[-1]
+    text = _word_text(last)
+    config = DEFAULT_SENTENCE_BOUNDARY_CONFIG
+    maximum_duration = max(
+        len(text),
+        1,
+    ) * config.max_aligned_word_seconds_per_character
+    if last.time_range.duration_seconds <= maximum_duration:
+        return words
+
+    return (
+        *words[:-1],
+        Word(
+            text=last.text,
+            time_range=TimeRange(
+                last.time_range.start_seconds,
+                last.time_range.start_seconds + maximum_duration,
+            ),
+            confidence=last.confidence,
+            speaker_id=last.speaker_id,
+        ),
+    )
 
 
 def _looks_sentence_final(text: str, suffixes: tuple[str, ...]) -> bool:
@@ -486,40 +549,80 @@ def _merge_adjacent_dependent_continuations(
     )
 
 
+def _merge_adjacent_connective_continuations(
+    segments: tuple[Segment, ...],
+) -> tuple[Segment, ...]:
+    """Join a connective te-form segment to its following main clause."""
+    config = DEFAULT_SENTENCE_BOUNDARY_CONFIG
+    merged: list[Segment] = []
+    for segment in segments:
+        if not merged or not segment.sentences:
+            merged.append(segment)
+            continue
+
+        previous = merged[-1]
+        if not previous.sentences:
+            merged.append(segment)
+            continue
+
+        left = previous.sentences[-1]
+        right = segment.sentences[0]
+        gap_seconds = right.time_range.start_seconds - left.time_range.end_seconds
+        if (
+            gap_seconds < 0
+            or gap_seconds > config.max_connective_continuation_gap_seconds
+            or not _ends_with_connective_te(left.text)
+            or _speaker_boundary(left, right)
+        ):
+            merged.append(segment)
+            continue
+
+        joined_left = (
+            _append_comma(left)
+            if gap_seconds >= config.min_pause_seconds
+            else left
+        )
+        combined = Sentence(
+            text=f"{joined_left.text}{right.text}",
+            time_range=TimeRange(
+                joined_left.time_range.start_seconds,
+                right.time_range.end_seconds,
+            ),
+            words=(*joined_left.words, *right.words),
+            speaker_id=joined_left.speaker_id or right.speaker_id,
+        )
+        sentences = (
+            *previous.sentences[:-1],
+            combined,
+            *segment.sentences[1:],
+        )
+        merged[-1] = Segment(
+            position=previous.position,
+            text="".join(sentence.text for sentence in sentences),
+            time_range=TimeRange(
+                previous.time_range.start_seconds,
+                segment.time_range.end_seconds,
+            ),
+            sentences=sentences,
+            speaker_id=previous.speaker_id or segment.speaker_id,
+        )
+
+    return tuple(
+        Segment(
+            position=position,
+            text=segment.text,
+            time_range=segment.time_range,
+            sentences=segment.sentences,
+            speaker_id=segment.speaker_id,
+        )
+        for position, segment in enumerate(merged)
+    )
+
+
 def _speaker_boundary(left: Sentence, right: Sentence) -> bool:
     if left.speaker_id is None and right.speaker_id is None:
         return False
     return left.speaker_id != right.speaker_id
-
-
-def _restore_inter_segment_commas(
-    segments: tuple[Segment, ...],
-) -> tuple[Segment, ...]:
-    """Mark a connective te-form at an ASR boundary without splitting it."""
-    restored: list[Segment] = []
-    for index, segment in enumerate(segments):
-        if index + 1 >= len(segments) or not segment.sentences:
-            restored.append(segment)
-            continue
-
-        sentence = segment.sentences[-1]
-        if not _ends_with_connective_te(sentence.text):
-            restored.append(segment)
-            continue
-
-        punctuated = _append_comma(sentence)
-        sentences = (*segment.sentences[:-1], punctuated)
-        restored.append(
-            Segment(
-                position=segment.position,
-                text="".join(item.text for item in sentences),
-                time_range=segment.time_range,
-                sentences=sentences,
-                speaker_id=segment.speaker_id,
-            )
-        )
-
-    return tuple(restored)
 
 
 def _ends_with_connective_te(text: str) -> bool:

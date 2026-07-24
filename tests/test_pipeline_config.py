@@ -47,6 +47,11 @@ def test_pipeline_config_centralizes_quality_defaults() -> None:
     assert DEFAULT_QWEN_REPAIR_SAFETY_CONFIG.max_length_delta_ratio == 0.2
     assert DEFAULT_QWEN_REPAIR_SAFETY_CONFIG.max_content_change_ratio == 0.2
     assert DEFAULT_SENTENCE_BOUNDARY_CONFIG.min_pause_seconds == 0.5
+    assert DEFAULT_SENTENCE_BOUNDARY_CONFIG.extended_word_duration_seconds == 3.0
+    assert (
+        DEFAULT_SENTENCE_BOUNDARY_CONFIG.max_aligned_word_seconds_per_character
+        == 0.5
+    )
     assert (
         DEFAULT_SENTENCE_BOUNDARY_CONFIG.max_dependent_continuation_gap_seconds
         == 0.2
@@ -57,7 +62,14 @@ def test_pipeline_config_centralizes_quality_defaults() -> None:
     assert "ましょう" in DEFAULT_SENTENCE_BOUNDARY_CONFIG.sentence_final_suffixes
     assert DEFAULT_SUBTITLE_MERGE_CONFIG.max_gap_seconds == 0.35
     assert DEFAULT_SUBTITLE_MERGE_CONFIG.max_chars == 42
-    assert DEFAULT_SUBTITLE_MERGE_CONFIG.terminal_marks == ("。", "？", "！")
+    assert DEFAULT_SUBTITLE_MERGE_CONFIG.max_duration_seconds == 10.0
+    assert DEFAULT_SUBTITLE_MERGE_CONFIG.terminal_marks == (
+        "。",
+        "？",
+        "！",
+        "?",
+        "!",
+    )
     assert DEFAULT_READABILITY_CONFIG.japanese_comma == "、"
     assert DEFAULT_READABILITY_CONFIG.japanese_period == "。"
     assert "では" in DEFAULT_READABILITY_CONFIG.sentence_initial_discourse_markers

@@ -183,3 +183,9 @@ that Sudachi independently recognizes as one complete noun.
 
 Measure and report forced alignment, pyannote diarization, and speaker
 assignment separately while retaining the aggregate alignment duration.
+
+- [x] Maintenance Robust Sentence Boundaries
+
+Recover sentence boundaries from sentence-final particles and alignment-held
+silence, preserve connective clauses, and prevent subtitle re-merging across
+long semantic boundaries.

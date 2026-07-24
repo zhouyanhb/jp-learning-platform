@@ -95,6 +95,7 @@ roadmap:
     - Maintenance Cold-run Audio Compatibility
     - Maintenance Local Nominal Reanalysis
     - Maintenance Alignment Phase Timing
+    - Maintenance Robust Sentence Boundaries
 
   current: null
 
@@ -102,11 +103,11 @@ roadmap:
 
 latest_commit:
   hash: created_by_this_commit
-  message: "feat(timing): report alignment phase durations"
+  message: "fix(sentences): recover robust Japanese boundaries"
 
 tests:
-  total: 245
-  passed: 245
+  total: 249
+  passed: 249
   failed: 0
 
 checks:

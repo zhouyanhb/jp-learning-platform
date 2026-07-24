@@ -72,7 +72,8 @@ class SubtitleMergeConfig:
 
     max_gap_seconds: float = 0.35
     max_chars: int = 42
-    terminal_marks: tuple[str, ...] = ("。", "？", "！")
+    max_duration_seconds: float = 10.0
+    terminal_marks: tuple[str, ...] = ("。", "？", "！", "?", "!")
 
 
 @dataclass(frozen=True, slots=True)
@@ -81,6 +82,10 @@ class SentenceBoundaryConfig:
 
     min_pause_seconds: float = 0.5
     max_dependent_continuation_gap_seconds: float = 0.2
+    max_connective_continuation_gap_seconds: float = 1.25
+    extended_word_duration_seconds: float = 3.0
+    extended_word_seconds_per_character: float = 1.0
+    max_aligned_word_seconds_per_character: float = 0.5
     terminal_marks: tuple[str, ...] = ("。", "？", "！")
     sentence_final_suffixes: tuple[str, ...] = (
         "ください",

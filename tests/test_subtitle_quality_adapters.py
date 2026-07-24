@@ -142,6 +142,25 @@ def test_conservative_subtitle_merger_keeps_sentence_final_cues_separate() -> No
     )
 
 
+def test_conservative_subtitle_merger_rejects_long_combined_duration() -> None:
+    subtitles = (
+        _subtitle(1, "質問ですか?", 0.0, 8.0),
+        _subtitle(2, "回答です", 8.0, 12.0),
+    )
+
+    result = ConservativeSubtitleMerger().merge(
+        SubtitleMergeRequest(
+            source_path=Path("audio.mp3"),
+            working_directory=Path("work"),
+            run_id="run-001",
+            segments=(_segment(),),
+            subtitles=subtitles,
+        )
+    )
+
+    assert result.subtitles == subtitles
+
+
 def test_conservative_subtitle_merger_preserves_speaker_when_merging() -> None:
     subtitles = (
         _subtitle(1, "日本語", 0.0, 0.5, speaker_id="speaker-1"),
