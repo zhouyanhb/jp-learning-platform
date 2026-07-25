@@ -677,6 +677,41 @@ def test_runner_extracts_and_reuses_video_audio_before_transcription(
     ).exists()
 
 
+def test_runner_reuses_audio_stage_result_across_different_videos(
+    tmp_path: Path,
+) -> None:
+    first_video = tmp_path / "first.mp4"
+    second_video = tmp_path / "second.mkv"
+    first_video.write_bytes(b"first video container")
+    second_video.write_bytes(b"second video container")
+    output_directory = tmp_path / "output"
+    transcriber = FakeTranscriber(requests=[])
+    extractor = ExtractingAudioNormalizer(requests=[])
+    reporter = RecordingProgressReporter(events=[])
+    runner = SubtitlePipelineRunner(
+        audio_loader=AudioLoader(),
+        transcriber=transcriber,
+        builder=WordSubtitleBuilder(),
+        writer=SrtSubtitleWriter(output_directory=output_directory),
+        cache=LocalPipelineContextCache(output_directory / ".cache"),
+        audio_normalizer=extractor,
+        progress_reporter=reporter,
+    )
+
+    first = runner.run(SubtitlePipelineRequest(first_video, output_directory))
+    second = runner.run(SubtitlePipelineRequest(second_video, output_directory))
+
+    assert first.output_paths == (output_directory / "first.srt",)
+    assert second.output_paths == (output_directory / "second.srt",)
+    assert extractor.requests == [first_video, second_video]
+    assert len(transcriber.requests) == 1
+    assert any(
+        event.stage_name == "audio-content-cache"
+        and event.message == "complete-result-hit"
+        for event in reporter.events
+    )
+
+
 def test_audio_input_discovery_rejects_folder_without_audio(tmp_path: Path) -> None:
     (tmp_path / "notes.txt").write_text("skip", encoding="utf-8")
 

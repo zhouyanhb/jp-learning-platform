@@ -69,6 +69,8 @@ architecture:
       compatibility without vocabulary lists.
     - Supported video containers are converted to reusable deterministic PCM
       before audio loading, while outputs retain the original video identity.
+    - Video reuse first resolves the original video identity, then resolves
+      deterministic extracted-audio identity for cross-container stage reuse.
 
 roadmap:
   completed:
@@ -106,6 +108,7 @@ roadmap:
     - Maintenance Evidence-based Question Boundaries
     - Maintenance Structural Learning Word Units
     - Maintenance Video Input Audio Extraction
+    - Maintenance Layered Video and Audio Reuse
 
   current: null
 
@@ -113,11 +116,11 @@ roadmap:
 
 latest_commit:
   hash: created_by_this_commit
-  message: "feat(video): extract cached audio for transcription"
+  message: "fix(cache): reuse extracted video audio stages"
 
 tests:
-  total: 258
-  passed: 258
+  total: 259
+  passed: 259
   failed: 0
 
 checks:

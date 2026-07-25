@@ -204,3 +204,8 @@ auxiliary chains from morphology and character classes without lexical rules.
 
 Discover common local video containers, extract deterministic reusable audio,
 and pass it through the existing subtitle pipeline with cache and timing support.
+
+- [x] Maintenance Layered Video and Audio Reuse
+
+Resolve video-result identity first, then reuse subtitle stages by the
+deterministically extracted audio identity before starting new model work.

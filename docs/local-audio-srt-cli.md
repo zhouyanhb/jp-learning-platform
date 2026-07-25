@@ -47,13 +47,17 @@ audio by SHA-256 content rather than its filename, and identifies processing by
 the effective stage configuration and implementation. Reuse follows this
 order:
 
-1. Return the complete cached analysis for identical content and configuration.
-2. Wait for an already-running identical task, then read the result it created.
-3. Resume after the latest compatible cached stage when only later processing
-   changed.
-4. Reuse video-extracted or normalized deterministic PCM WAV when an audio
-   consumer still needs it.
-5. Normalize and run the remaining stages only when no compatible entry exists.
+1. For video, return the complete result keyed by the original video content.
+2. Wait for an already-running identical video task when necessary.
+3. On a video miss, reuse or create its deterministic extracted PCM WAV.
+4. Hash that PCM and return or resume compatible audio-stage results, including
+   results created from a different video container with the same extracted
+   audio.
+5. Run new model work only after both video-result and extracted-audio reuse
+   miss.
+
+Audio inputs use the same stage-level content cache directly, without the
+video lookup and extraction steps.
 
 The writer always materializes an output for the current input filename, but a
 complete cache hit does not call the audio loader, FFmpeg, Whisper, or later
@@ -80,9 +84,9 @@ enabled, the cold run still converts the source after Whisper and reports the
 `audio-normalization` duration before alignment/diarization begins.
 
 Progress includes separate `pipeline-cache`, `video-audio-extraction`,
-`audio-loader`, `audio-normalization`, individual model/quality stage, and
-`pipeline-total` durations. This makes cached and uncached runs directly
-comparable.
+`audio-content-cache`, `audio-loader`, `audio-normalization`, individual
+model/quality stage, and `pipeline-total` durations. This makes cached and
+uncached runs directly comparable.
 
 For a multi-user service, place cache lookup behind the same authorization and
 tenant boundary as the uploaded audio and generated result. Content identity

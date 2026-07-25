@@ -59,7 +59,9 @@ adapters are supplied through the tool registry and plugin system.
 The `transcribe` command accepts one audio/video file or a folder containing
 supported media and writes structured `.json` files to `output/` by default.
 Video audio is extracted through FFmpeg and cached before the existing audio
-pipeline runs. Use
+pipeline runs. Video results are checked first; after a video miss, the
+deterministically extracted audio is hashed so another video with the same
+audio can reuse existing Whisper and later-stage results. Use
 `--export-srt` when an SRT file should be written beside the JSON output. Use
 `--output-dir` only when a custom output directory is needed.
 Use `--enable-diarization` with a Hugging Face token from `HF_TOKEN` or

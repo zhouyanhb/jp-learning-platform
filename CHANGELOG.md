@@ -57,6 +57,9 @@ All notable changes to this project are documented in this file.
 
 ### Fixed
 
+- Added a second content-cache lookup after video audio extraction so different
+  video containers with identical deterministic audio reuse model-stage work.
+
 - Normalized letter-number identifiers, numeric counters, and katakana nominal
   compounds while rejecting incompatible verb-plus-copula auxiliary chains.
 

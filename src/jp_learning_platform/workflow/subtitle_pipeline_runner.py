@@ -428,6 +428,14 @@ class SubtitlePipelineRunner:
         progress: _PipelineRunProgress,
     ) -> None:
         assert self.cache is not None
+        if self.discovery.is_video(source_path):
+            self._execute_cached_video(
+                source_path=source_path,
+                context=context,
+                progress=progress,
+            )
+            return
+
         cache_stage_name = "pipeline-cache"
         progress.emit(
             stage_name=cache_stage_name,
@@ -443,100 +451,21 @@ class SubtitlePipelineRunner:
             self.cache_namespace,
             processing_stages,
             audio_normalizer=self.audio_normalizer,
-            source_preprocessor=(
-                self.audio_normalizer
-                if self.discovery.is_video(source_path)
-                else None
-            ),
         )
         pipeline_fingerprint = fingerprints[-1]
 
         with self.cache.work_lock(audio_digest, pipeline_fingerprint):
-            cached_index, cached_context = self._longest_cached_context(
-                audio_digest,
-                fingerprints,
+            context = self._resume_cached_processing(
+                cache_digest=audio_digest,
+                fingerprints=fingerprints,
+                processing_stages=processing_stages,
+                processing_source_path=source_path,
+                context=context,
+                progress=progress,
+                cache_stage_name=cache_stage_name,
+                cache_started_at=cache_started_at,
+                normalized=False,
             )
-            cache_message = (
-                "complete-result-hit"
-                if cached_index == len(processing_stages) - 1
-                else "stage-prefix-hit"
-                if cached_context is not None
-                else "miss"
-            )
-            progress.emit(
-                stage_name=cache_stage_name,
-                status=PipelineProgressStatus.SUCCEEDED,
-                context=cached_context or context,
-                elapsed_seconds=monotonic() - cache_started_at,
-                message=cache_message,
-            )
-            if cached_context is not None:
-                context = _rebind_context(
-                    cached_context,
-                    source_path=source_path,
-                    working_directory=context.working_directory,
-                    run_id=context.run_id,
-                )
-
-            next_stage_index = cached_index + 1
-            remaining_stages = processing_stages[next_stage_index:]
-            needs_audio = any(
-                isinstance(stage, WhisperStage | WhisperXAlignmentStage)
-                for stage in remaining_stages
-            )
-            processing_source_path = source_path
-            normalized = False
-            if needs_audio:
-                if self.discovery.is_video(source_path):
-                    processing_source_path = self._extract_video_audio(
-                        source_path=source_path,
-                        audio_digest=audio_digest,
-                        cache_directory=self.cache.normalized_audio_directory(
-                            audio_digest
-                        ),
-                        context=context,
-                        progress=progress,
-                    )
-                    context = _rebind_context(
-                        context,
-                        source_path=processing_source_path,
-                        working_directory=context.working_directory,
-                        run_id=context.run_id,
-                    )
-                    normalized = True
-                self._load_audio(processing_source_path, context, progress)
-
-            for stage_index, stage in enumerate(
-                remaining_stages,
-                start=next_stage_index,
-            ):
-                if (
-                    not normalized
-                    and self.audio_normalizer is not None
-                    and _stage_requires_normalized_audio(stage)
-                ):
-                    processing_path = self._normalize_audio(
-                        source_path=processing_source_path,
-                        audio_digest=audio_digest,
-                        cache_directory=self.cache.normalized_audio_directory(
-                            audio_digest
-                        ),
-                        context=context,
-                        progress=progress,
-                    )
-                    context = _rebind_context(
-                        context,
-                        source_path=processing_path,
-                        working_directory=context.working_directory,
-                        run_id=context.run_id,
-                    )
-                    normalized = True
-                context = self._execute_stages((stage,), context, progress)
-                self.cache.save_context(
-                    audio_digest,
-                    fingerprints[stage_index],
-                    context,
-                )
 
             context = _rebind_context(
                 context,
@@ -545,6 +474,187 @@ class SubtitlePipelineRunner:
                 run_id=context.run_id,
             )
             self._execute_stages((writer_stage,), context, progress)
+
+    def _execute_cached_video(
+        self,
+        *,
+        source_path: Path,
+        context: PipelineContext,
+        progress: _PipelineRunProgress,
+    ) -> None:
+        assert self.cache is not None
+        stages = self._stages()
+        processing_stages = stages[:-1]
+        writer_stage = stages[-1]
+        video_digest = self.cache.audio_digest(source_path)
+        video_fingerprints = _cumulative_stage_fingerprints(
+            self.cache_namespace,
+            processing_stages,
+            audio_normalizer=self.audio_normalizer,
+            source_preprocessor=self.audio_normalizer,
+        )
+        video_pipeline_fingerprint = video_fingerprints[-1]
+        cache_stage_name = "pipeline-cache"
+        progress.emit(
+            stage_name=cache_stage_name,
+            status=PipelineProgressStatus.STARTED,
+            context=context,
+        )
+        cache_started_at = monotonic()
+
+        with self.cache.work_lock(video_digest, video_pipeline_fingerprint):
+            cached_context = self.cache.load_context(
+                video_digest,
+                video_pipeline_fingerprint,
+            )
+            progress.emit(
+                stage_name=cache_stage_name,
+                status=PipelineProgressStatus.SUCCEEDED,
+                context=cached_context or context,
+                elapsed_seconds=monotonic() - cache_started_at,
+                message="complete-result-hit" if cached_context else "miss",
+            )
+            if cached_context is None:
+                extracted_path = self._extract_video_audio(
+                    source_path=source_path,
+                    audio_digest=video_digest,
+                    cache_directory=self.cache.normalized_audio_directory(
+                        video_digest
+                    ),
+                    context=context,
+                    progress=progress,
+                )
+                extracted_digest = self.cache.audio_digest(extracted_path)
+                audio_fingerprints = _cumulative_stage_fingerprints(
+                    self.cache_namespace,
+                    processing_stages,
+                    audio_normalizer=self.audio_normalizer,
+                )
+                audio_cache_stage = "audio-content-cache"
+                progress.emit(
+                    stage_name=audio_cache_stage,
+                    status=PipelineProgressStatus.STARTED,
+                    context=context,
+                )
+                audio_cache_started_at = monotonic()
+                with self.cache.work_lock(
+                    extracted_digest,
+                    audio_fingerprints[-1],
+                ):
+                    context = self._resume_cached_processing(
+                        cache_digest=extracted_digest,
+                        fingerprints=audio_fingerprints,
+                        processing_stages=processing_stages,
+                        processing_source_path=extracted_path,
+                        context=context,
+                        progress=progress,
+                        cache_stage_name=audio_cache_stage,
+                        cache_started_at=audio_cache_started_at,
+                        normalized=True,
+                    )
+                self.cache.save_context(
+                    video_digest,
+                    video_pipeline_fingerprint,
+                    context,
+                )
+            else:
+                context = cached_context
+
+            context = _rebind_context(
+                context,
+                source_path=source_path,
+                working_directory=context.working_directory,
+                run_id=context.run_id,
+            )
+            self._execute_stages((writer_stage,), context, progress)
+
+    def _resume_cached_processing(
+        self,
+        *,
+        cache_digest: str,
+        fingerprints: tuple[str, ...],
+        processing_stages: tuple[Stage, ...],
+        processing_source_path: Path,
+        context: PipelineContext,
+        progress: _PipelineRunProgress,
+        cache_stage_name: str,
+        cache_started_at: float,
+        normalized: bool,
+    ) -> PipelineContext:
+        assert self.cache is not None
+        cached_index, cached_context = self._longest_cached_context(
+            cache_digest,
+            fingerprints,
+        )
+        cache_message = (
+            "complete-result-hit"
+            if cached_index == len(processing_stages) - 1
+            else "stage-prefix-hit"
+            if cached_context is not None
+            else "miss"
+        )
+        progress.emit(
+            stage_name=cache_stage_name,
+            status=PipelineProgressStatus.SUCCEEDED,
+            context=cached_context or context,
+            elapsed_seconds=monotonic() - cache_started_at,
+            message=cache_message,
+        )
+        if cached_context is not None:
+            context = _rebind_context(
+                cached_context,
+                source_path=processing_source_path,
+                working_directory=context.working_directory,
+                run_id=context.run_id,
+            )
+        elif context.document.source_path != processing_source_path:
+            context = _rebind_context(
+                context,
+                source_path=processing_source_path,
+                working_directory=context.working_directory,
+                run_id=context.run_id,
+            )
+
+        next_stage_index = cached_index + 1
+        remaining_stages = processing_stages[next_stage_index:]
+        if any(
+            isinstance(stage, WhisperStage | WhisperXAlignmentStage)
+            for stage in remaining_stages
+        ):
+            self._load_audio(processing_source_path, context, progress)
+
+        for stage_index, stage in enumerate(
+            remaining_stages,
+            start=next_stage_index,
+        ):
+            if (
+                not normalized
+                and self.audio_normalizer is not None
+                and _stage_requires_normalized_audio(stage)
+            ):
+                processing_source_path = self._normalize_audio(
+                    source_path=processing_source_path,
+                    audio_digest=cache_digest,
+                    cache_directory=self.cache.normalized_audio_directory(
+                        cache_digest
+                    ),
+                    context=context,
+                    progress=progress,
+                )
+                context = _rebind_context(
+                    context,
+                    source_path=processing_source_path,
+                    working_directory=context.working_directory,
+                    run_id=context.run_id,
+                )
+                normalized = True
+            context = self._execute_stages((stage,), context, progress)
+            self.cache.save_context(
+                cache_digest,
+                fingerprints[stage_index],
+                context,
+            )
+        return context
 
     def _normalize_audio(
         self,

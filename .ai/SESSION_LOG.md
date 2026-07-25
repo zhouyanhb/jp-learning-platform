@@ -2296,3 +2296,54 @@ created by this commit
 ```
 feat(video): extract cached audio for transcription
 ```
+
+---
+
+# Session 046
+
+Date
+
+2026-07-25
+
+Roadmap
+
+Maintenance Layered Video and Audio Reuse
+
+Summary
+
+Added video-first and extracted-audio-second content reuse before model work.
+
+Changes
+
+- Returned complete results by original video content before extraction.
+- Reused or created deterministic extracted PCM only after a video miss.
+- Hashed extracted PCM independently of its source video container.
+- Reused complete and partial audio-stage contexts across different videos.
+- Coordinated concurrent video and audio work with separate content locks.
+- Saved a completed video alias after successful audio-stage processing.
+- Reported extracted-audio cache decisions through a dedicated stage artifact.
+- Preserved the direct cache fingerprint and behavior for ordinary audio input.
+
+Documentation
+
+- README.md
+- docs/local-audio-srt-cli.md
+- CHANGELOG.md
+
+Tests
+
+- test_subtitle_pipeline_runner.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (259 passed)
+
+Commit
+
+created by this commit
+
+```
+fix(cache): reuse extracted video audio stages
+```
