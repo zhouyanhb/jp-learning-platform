@@ -6,6 +6,9 @@ All notable changes to this project are documented in this file.
 
 ### Added
 
+- Added cached FFmpeg audio extraction for AVI, M4V, MKV, MOV, MP4, and WebM
+  inputs before the existing audio subtitle pipeline.
+
 - Added alignment-held-silence and standalone-question-particle sentence
   boundary recovery, connective-clause joining, and maximum-duration subtitle
   merge protection.

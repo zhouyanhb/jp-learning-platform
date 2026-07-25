@@ -56,8 +56,10 @@ python -m jp_learning_platform transcribe audio.mp3 --no-cache
 The entrypoint reports the Version 1.0 subtitle pipeline status. External SDK
 adapters are supplied through the tool registry and plugin system.
 
-The `transcribe` command accepts either one audio file or a folder containing
-audio files and writes structured `.json` files to `output/` by default. Use
+The `transcribe` command accepts one audio/video file or a folder containing
+supported media and writes structured `.json` files to `output/` by default.
+Video audio is extracted through FFmpeg and cached before the existing audio
+pipeline runs. Use
 `--export-srt` when an SRT file should be written beside the JSON output. Use
 `--output-dir` only when a custom output directory is needed.
 Use `--enable-diarization` with a Hugging Face token from `HF_TOKEN` or

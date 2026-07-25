@@ -17,6 +17,15 @@ SUPPORTED_AUDIO_EXTENSIONS = (
     ".wav",
     ".wave",
 )
+SUPPORTED_VIDEO_EXTENSIONS = (
+    ".avi",
+    ".m4v",
+    ".mkv",
+    ".mov",
+    ".mp4",
+    ".webm",
+)
+SUPPORTED_MEDIA_EXTENSIONS = (*SUPPORTED_AUDIO_EXTENSIONS, *SUPPORTED_VIDEO_EXTENSIONS)
 
 
 def _normalize_path(value: Path, field_name: str) -> Path:
@@ -51,16 +60,16 @@ class InputPathNotFoundError(SubtitlePipelineInputError):
 
 
 class NoAudioInputsFoundError(SubtitlePipelineInputError):
-    """Raised when no supported audio files can be discovered."""
+    """Raised when no supported audio or video files can be discovered."""
 
     def __init__(self, input_path: Path) -> None:
         self.input_path = input_path
-        super().__init__(f"No supported audio files found: {input_path}")
+        super().__init__(f"No supported media files found: {input_path}")
 
 
 @dataclass(frozen=True, slots=True)
 class SubtitlePipelineRequest:
-    """Request to generate subtitle files from an audio file or folder."""
+    """Request to generate subtitle files from a media file or folder."""
 
     input_path: Path
     output_directory: Path = DEFAULT_OUTPUT_DIRECTORY
@@ -76,7 +85,7 @@ class SubtitlePipelineRequest:
 
 @dataclass(frozen=True, slots=True)
 class SubtitlePipelineItemResult:
-    """Result for one processed audio source."""
+    """Result for one processed media source."""
 
     source_path: Path
     output_path: Path
@@ -110,15 +119,21 @@ class SubtitlePipelineResult:
 
 @dataclass(frozen=True, slots=True)
 class AudioInputDiscovery:
-    """Discover supported local audio inputs for a pipeline request."""
+    """Discover supported local audio and video inputs for a pipeline request."""
 
-    supported_extensions: tuple[str, ...] = SUPPORTED_AUDIO_EXTENSIONS
+    supported_extensions: tuple[str, ...] = SUPPORTED_MEDIA_EXTENSIONS
+    video_extensions: tuple[str, ...] = SUPPORTED_VIDEO_EXTENSIONS
 
     def __post_init__(self) -> None:
         object.__setattr__(
             self,
             "supported_extensions",
             _normalize_extensions(self.supported_extensions),
+        )
+        object.__setattr__(
+            self,
+            "video_extensions",
+            _normalize_extensions(self.video_extensions),
         )
 
     def discover(self, input_path: Path) -> tuple[Path, ...]:
@@ -152,6 +167,9 @@ class AudioInputDiscovery:
     def _is_supported_audio(self, path: Path) -> bool:
         return path.suffix.lower() in self.supported_extensions
 
+    def is_video(self, path: Path) -> bool:
+        return Path(path).suffix.lower() in self.video_extensions
+
 
 __all__ = [
     "AudioInputDiscovery",
@@ -159,6 +177,8 @@ __all__ = [
     "InputPathNotFoundError",
     "NoAudioInputsFoundError",
     "SUPPORTED_AUDIO_EXTENSIONS",
+    "SUPPORTED_MEDIA_EXTENSIONS",
+    "SUPPORTED_VIDEO_EXTENSIONS",
     "SubtitlePipelineInputError",
     "SubtitlePipelineItemResult",
     "SubtitlePipelineRequest",

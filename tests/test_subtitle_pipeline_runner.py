@@ -205,6 +205,23 @@ class FailingAudioNormalizer:
         raise RuntimeError("normalization failed")
 
 
+@dataclass(slots=True)
+class ExtractingAudioNormalizer:
+    requests: list[Path]
+
+    def normalize(
+        self,
+        source_path: Path,
+        cache_directory: Path,
+        audio_digest: str,
+    ) -> Path:
+        self.requests.append(source_path)
+        cache_directory.mkdir(parents=True, exist_ok=True)
+        extracted_path = cache_directory / "extracted.wav"
+        extracted_path.write_bytes(b"extracted audio")
+        return extracted_path
+
+
 def _write_audio(path: Path) -> None:
     path.write_bytes(b"audio")
 
@@ -613,11 +630,71 @@ def test_subtitle_pipeline_runner_generates_srt_for_audio_folder(
     ]
 
 
+def test_runner_extracts_and_reuses_video_audio_before_transcription(
+    tmp_path: Path,
+) -> None:
+    video_path = tmp_path / "lesson.mp4"
+    output_directory = tmp_path / "output"
+    video_path.write_bytes(b"video with audio")
+    transcriber = FakeTranscriber(requests=[])
+    extractor = ExtractingAudioNormalizer(requests=[])
+    reporter = RecordingProgressReporter(events=[])
+    artifact_store = StageArtifactStore(root_directory=output_directory / ".work")
+    runner = SubtitlePipelineRunner(
+        audio_loader=AudioLoader(),
+        transcriber=transcriber,
+        builder=WordSubtitleBuilder(),
+        writer=SrtSubtitleWriter(output_directory=output_directory),
+        cache=LocalPipelineContextCache(output_directory / ".cache"),
+        audio_normalizer=extractor,
+        progress_reporter=reporter,
+        artifact_recorder=artifact_store,
+    )
+    request = SubtitlePipelineRequest(video_path, output_directory)
+
+    first = runner.run(request)
+    second = runner.run(request)
+
+    assert first.output_paths == second.output_paths == (
+        output_directory / "lesson.srt",
+    )
+    assert [item.source_path for item in first.items] == [video_path]
+    assert len(transcriber.requests) == 1
+    assert transcriber.requests[0].source_path.suffix == ".wav"
+    assert extractor.requests == [video_path]
+    succeeded = [
+        event.stage_name
+        for event in reporter.events
+        if event.status.value == "succeeded"
+    ]
+    assert succeeded.index("video-audio-extraction") < succeeded.index(
+        "audio-loader"
+    )
+    assert any(event.message == "complete-result-hit" for event in reporter.events)
+    assert (
+        artifact_store.audio_directory(video_path)
+        / "00_video_audio_extraction.json"
+    ).exists()
+
+
 def test_audio_input_discovery_rejects_folder_without_audio(tmp_path: Path) -> None:
     (tmp_path / "notes.txt").write_text("skip", encoding="utf-8")
 
     with pytest.raises(NoAudioInputsFoundError):
         AudioInputDiscovery().discover(tmp_path)
+
+
+def test_audio_input_discovery_accepts_supported_video_containers(
+    tmp_path: Path,
+) -> None:
+    paths = tuple(tmp_path / name for name in ("a.mp4", "b.mkv", "c.webm"))
+    for path in paths:
+        path.write_bytes(b"video")
+
+    discovery = AudioInputDiscovery()
+
+    assert discovery.discover(tmp_path) == paths
+    assert all(discovery.is_video(path) for path in paths)
 
 
 def test_subtitle_pipeline_runner_rejects_duplicate_output_paths(

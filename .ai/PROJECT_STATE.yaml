@@ -67,6 +67,8 @@ architecture:
     - Structural learning units use Unicode character classes and Sudachi
       morphology for identifiers, counters, katakana compounds, and auxiliary
       compatibility without vocabulary lists.
+    - Supported video containers are converted to reusable deterministic PCM
+      before audio loading, while outputs retain the original video identity.
 
 roadmap:
   completed:
@@ -103,6 +105,7 @@ roadmap:
     - Maintenance Robust Sentence Boundaries
     - Maintenance Evidence-based Question Boundaries
     - Maintenance Structural Learning Word Units
+    - Maintenance Video Input Audio Extraction
 
   current: null
 
@@ -110,11 +113,11 @@ roadmap:
 
 latest_commit:
   hash: created_by_this_commit
-  message: "fix(words): normalize structural learning units"
+  message: "feat(video): extract cached audio for transcription"
 
 tests:
-  total: 255
-  passed: 255
+  total: 258
+  passed: 258
   failed: 0
 
 checks:

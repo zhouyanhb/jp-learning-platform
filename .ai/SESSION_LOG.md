@@ -2244,3 +2244,55 @@ created by this commit
 ```
 fix(words): normalize structural learning units
 ```
+
+---
+
+# Session 045
+
+Date
+
+2026-07-25
+
+Roadmap
+
+Maintenance Video Input Audio Extraction
+
+Summary
+
+Added cached FFmpeg audio extraction for video inputs before the existing
+audio subtitle pipeline.
+
+Changes
+
+- Discovered AVI, M4V, MKV, MOV, MP4, and WebM beside existing audio formats.
+- Extracted the first decodable audio stream to mono 16 kHz PCM WAV.
+- Loaded and processed extracted audio through the unchanged subtitle stages.
+- Reused extraction output and complete results by source-content digest.
+- Included extractor configuration in video pipeline cache fingerprints only.
+- Reported extraction timing and a dedicated stage JSON artifact.
+- Preserved original video paths for output names and pipeline item results.
+
+Documentation
+
+- README.md
+- docs/local-audio-srt-cli.md
+- CHANGELOG.md
+
+Tests
+
+- test_subtitle_pipeline_runner.py
+- test_pipeline_cache.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (258 passed)
+
+Commit
+
+created by this commit
+
+```
+feat(video): extract cached audio for transcription
+```

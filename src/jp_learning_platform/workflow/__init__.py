@@ -24,6 +24,7 @@ from jp_learning_platform.workflow.subtitle_pipeline_runner import (
     DuplicateSubtitleOutputError,
     SubtitlePipelineRunner,
     SubtitlePipelineRunnerError,
+    VideoAudioExtractionError,
 )
 from jp_learning_platform.workflow.homophone_stage import (
     HOMOPHONE_RESOLUTION_STAGE_NAME,
@@ -227,6 +228,7 @@ __all__ = [
     "SubtitleMergerStageError",
     "SubtitlePipelineRunner",
     "SubtitlePipelineRunnerError",
+    "VideoAudioExtractionError",
     "SubtitleValidation",
     "SubtitleValidationFailedError",
     "SubtitleValidationRequest",

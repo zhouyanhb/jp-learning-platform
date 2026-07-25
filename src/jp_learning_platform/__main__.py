@@ -90,12 +90,12 @@ def build_parser() -> ArgumentParser:
     )
     transcribe_parser = subparsers.add_parser(
         "transcribe",
-        help="Generate structured listening JSON for an audio file or folder.",
+        help="Generate structured listening JSON for an audio/video file or folder.",
     )
     transcribe_parser.add_argument(
         "input_path",
         type=Path,
-        help="Audio file or folder to transcribe.",
+        help="Audio/video file or folder to transcribe.",
     )
     transcribe_parser.add_argument(
         "--output-dir",

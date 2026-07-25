@@ -128,6 +128,10 @@ class DuplicateSubtitleOutputError(SubtitlePipelineRunnerError):
         super().__init__(f"Duplicate subtitle output path: {output_path}")
 
 
+class VideoAudioExtractionError(SubtitlePipelineRunnerError):
+    """Raised when a video source cannot be prepared for audio processing."""
+
+
 def _normalize_output_extension(value: str) -> str:
     if not isinstance(value, str):
         raise TypeError("output_extension must be a string.")
@@ -366,11 +370,27 @@ class SubtitlePipelineRunner:
         context: PipelineContext,
         progress: _PipelineRunProgress,
     ) -> None:
-        self._load_audio(source_path, context, progress)
+        processing_source_path = source_path
+        normalized = False
+        if self.discovery.is_video(source_path):
+            processing_source_path = self._extract_video_audio(
+                source_path=source_path,
+                audio_digest=None,
+                cache_directory=context.working_directory / "video-audio",
+                context=context,
+                progress=progress,
+            )
+            context = _rebind_context(
+                context,
+                source_path=processing_source_path,
+                working_directory=context.working_directory,
+                run_id=context.run_id,
+            )
+            normalized = True
+        self._load_audio(processing_source_path, context, progress)
         stages = self._stages()
         processing_stages = stages[:-1]
         writer_stage = stages[-1]
-        normalized = False
         for stage in processing_stages:
             if (
                 not normalized
@@ -380,7 +400,7 @@ class SubtitlePipelineRunner:
                 context = _rebind_context(
                     context,
                     source_path=self._normalize_audio(
-                        source_path=source_path,
+                        source_path=processing_source_path,
                         audio_digest=None,
                         cache_directory=context.working_directory / "audio",
                         context=context,
@@ -423,6 +443,11 @@ class SubtitlePipelineRunner:
             self.cache_namespace,
             processing_stages,
             audio_normalizer=self.audio_normalizer,
+            source_preprocessor=(
+                self.audio_normalizer
+                if self.discovery.is_video(source_path)
+                else None
+            ),
         )
         pipeline_fingerprint = fingerprints[-1]
 
@@ -459,10 +484,28 @@ class SubtitlePipelineRunner:
                 isinstance(stage, WhisperStage | WhisperXAlignmentStage)
                 for stage in remaining_stages
             )
-            if needs_audio:
-                self._load_audio(source_path, context, progress)
-
+            processing_source_path = source_path
             normalized = False
+            if needs_audio:
+                if self.discovery.is_video(source_path):
+                    processing_source_path = self._extract_video_audio(
+                        source_path=source_path,
+                        audio_digest=audio_digest,
+                        cache_directory=self.cache.normalized_audio_directory(
+                            audio_digest
+                        ),
+                        context=context,
+                        progress=progress,
+                    )
+                    context = _rebind_context(
+                        context,
+                        source_path=processing_source_path,
+                        working_directory=context.working_directory,
+                        run_id=context.run_id,
+                    )
+                    normalized = True
+                self._load_audio(processing_source_path, context, progress)
+
             for stage_index, stage in enumerate(
                 remaining_stages,
                 start=next_stage_index,
@@ -473,7 +516,7 @@ class SubtitlePipelineRunner:
                     and _stage_requires_normalized_audio(stage)
                 ):
                     processing_path = self._normalize_audio(
-                        source_path=source_path,
+                        source_path=processing_source_path,
                         audio_digest=audio_digest,
                         cache_directory=self.cache.normalized_audio_directory(
                             audio_digest
@@ -548,6 +591,52 @@ class SubtitlePipelineRunner:
             ),
         )
         return normalized_path
+
+    def _extract_video_audio(
+        self,
+        *,
+        source_path: Path,
+        audio_digest: str | None,
+        cache_directory: Path,
+        context: PipelineContext,
+        progress: _PipelineRunProgress,
+    ) -> Path:
+        if self.audio_normalizer is None:
+            raise VideoAudioExtractionError(
+                "Video input requires an FFmpeg audio extractor."
+            )
+        stage_name = "video-audio-extraction"
+        progress.emit(
+            stage_name=stage_name,
+            status=PipelineProgressStatus.STARTED,
+            context=context,
+        )
+        started_at = monotonic()
+        try:
+            digest = audio_digest or _audio_digest(source_path)
+            extracted_path = self.audio_normalizer.normalize(
+                source_path,
+                cache_directory,
+                digest,
+            )
+        except Exception as error:
+            progress.emit(
+                stage_name=stage_name,
+                status=PipelineProgressStatus.FAILED,
+                context=context,
+                elapsed_seconds=monotonic() - started_at,
+                message=str(error),
+            )
+            raise VideoAudioExtractionError(str(error)) from error
+        progress.emit(
+            stage_name=stage_name,
+            status=PipelineProgressStatus.SUCCEEDED,
+            context=context,
+            elapsed_seconds=monotonic() - started_at,
+            data=extracted_path,
+            message="extracted-audio-cache-ready",
+        )
+        return extracted_path
 
     def _longest_cached_context(
         self,
@@ -672,6 +761,7 @@ __all__ = [
     "PipelineContextCache",
     "SubtitlePipelineRunner",
     "SubtitlePipelineRunnerError",
+    "VideoAudioExtractionError",
 ]
 
 
@@ -680,9 +770,21 @@ def _cumulative_stage_fingerprints(
     stages: tuple[Stage, ...],
     *,
     audio_normalizer: AudioNormalizer | None,
+    source_preprocessor: object | None = None,
 ) -> tuple[str, ...]:
     cumulative: list[str] = []
-    previous = sha256(namespace.encode("utf-8")).hexdigest()
+    if source_preprocessor is None:
+        previous = sha256(namespace.encode("utf-8")).hexdigest()
+    else:
+        source_configuration = json.dumps(
+            _stable_configuration(source_preprocessor),
+            ensure_ascii=True,
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+        previous = sha256(
+            f"{namespace}:{source_configuration}".encode("utf-8")
+        ).hexdigest()
     for stage in stages:
         stage_configuration = _stable_configuration(stage)
         if _stage_requires_normalized_audio(stage):

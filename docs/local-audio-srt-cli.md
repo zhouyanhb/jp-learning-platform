@@ -6,16 +6,23 @@ documented in `docs/homophone-prefilter-benchmark.md`.
 Japanese sentence-boundary and cross-segment dependent-continuation behavior
 is documented in `docs/japanese-sentence-boundary-resolution.md`.
 
-The local audio transcribe CLI generates structured intensive-listening JSON
-from a single audio file or a folder of audio files. SRT output is an optional
-export.
+The local transcribe CLI generates structured intensive-listening JSON from a
+single audio/video file or a folder containing supported media. SRT output is
+an optional export.
 
 ## Usage
 
 ```bash
 python -m jp_learning_platform transcribe audio.mp3
+python -m jp_learning_platform transcribe lesson.mp4
 python -m jp_learning_platform transcribe ./audios
 ```
+
+Supported video containers are AVI, M4V, MKV, MOV, MP4, and WebM. For video
+input, FFmpeg extracts the first audio stream as deterministic mono 16 kHz PCM
+before the existing audio loader and transcription stages run. A video without
+a decodable audio stream fails with the FFmpeg error instead of producing an
+empty transcription.
 
 Generated `.json` files are written to `output/` by default. A custom output
 directory can be supplied when needed:
@@ -44,8 +51,8 @@ order:
 2. Wait for an already-running identical task, then read the result it created.
 3. Resume after the latest compatible cached stage when only later processing
    changed.
-4. Reuse the deterministic normalized PCM WAV when an exact-sample consumer
-   still needs audio.
+4. Reuse video-extracted or normalized deterministic PCM WAV when an audio
+   consumer still needs it.
 5. Normalize and run the remaining stages only when no compatible entry exists.
 
 The writer always materializes an output for the current input filename, but a
@@ -54,7 +61,9 @@ analysis stages. Whisper, pass-through alignment, and standard WhisperX retain
 the original source because they can decode supported compressed audio
 directly. FFmpeg conversion to mono 16 kHz PCM is deferred until an adapter
 explicitly requires deterministic sample addressing, currently pyannote
-diarization. Whisper completes and is cached before that conversion, so a
+diarization. Video is the exception: its audio is extracted before loading and
+the extracted PCM is reused by Whisper, WhisperX, and pyannote. Whisper
+completes and is cached before any later conversion, so a
 conversion or diarization retry does not repeat transcription. Both context and
 audio writes are atomic, and failed stages are not recorded as successful cache
 entries.
@@ -70,9 +79,10 @@ does not disable compatibility processing: when pyannote diarization is
 enabled, the cold run still converts the source after Whisper and reports the
 `audio-normalization` duration before alignment/diarization begins.
 
-Progress includes separate `pipeline-cache`, `audio-loader`,
-`audio-normalization`, individual model/quality stage, and `pipeline-total`
-durations. This makes cached and uncached runs directly comparable.
+Progress includes separate `pipeline-cache`, `video-audio-extraction`,
+`audio-loader`, `audio-normalization`, individual model/quality stage, and
+`pipeline-total` durations. This makes cached and uncached runs directly
+comparable.
 
 For a multi-user service, place cache lookup behind the same authorization and
 tenant boundary as the uploaded audio and generated result. Content identity
@@ -102,7 +112,8 @@ and hallucination silence filtering are centralized in
 The CLI now runs the full subtitle quality workflow:
 
 ```text
-AudioLoader
+Video audio extraction (video input only)
+-> AudioLoader
 -> WhisperStage
 -> WhisperXAlignmentStage
 -> QwenRepairStage

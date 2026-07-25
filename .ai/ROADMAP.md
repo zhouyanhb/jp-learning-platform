@@ -199,3 +199,8 @@ particle as a sentence boundary, without lexical exclusion lists.
 
 Normalize identifiers, numeric counters, katakana compounds, and compatible
 auxiliary chains from morphology and character classes without lexical rules.
+
+- [x] Maintenance Video Input Audio Extraction
+
+Discover common local video containers, extract deterministic reusable audio,
+and pass it through the existing subtitle pipeline with cache and timing support.

@@ -103,3 +103,30 @@ def test_ffmpeg_normalizer_reuses_cached_audio(
     assert first_result == second_result
     assert first_result.read_bytes() == b"normalized wav"
     assert len(ffmpeg_commands) == 1
+
+
+def test_ffmpeg_normalizer_extracts_video_audio_without_video_stream(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    source_path = tmp_path / "lesson.mp4"
+    source_path.write_bytes(b"video")
+    commands: list[tuple[str, ...]] = []
+
+    def fake_run(command, **kwargs):
+        commands.append(tuple(command))
+        Path(command[-1]).write_bytes(b"pcm audio")
+        return subprocess.CompletedProcess(command, 0, "", "")
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+
+    result = FFmpegAudioNormalizer().normalize(
+        source_path,
+        tmp_path / "cache",
+        "c" * 64,
+    )
+
+    assert result.suffix == ".wav"
+    assert result.read_bytes() == b"pcm audio"
+    assert "-vn" in commands[0]
+    assert commands[0][commands[0].index("-i") + 1] == str(source_path)
