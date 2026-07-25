@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import unicodedata
 from dataclasses import dataclass
 from typing import Protocol
 
@@ -141,7 +142,75 @@ class JapaneseLearningWordNormalizer:
                 raw.append(_LearningUnit(previous.text + item.surface, previous.start, end, previous.pos))
             else:
                 raw.append(_LearningUnit(item.surface, start, end, item.part_of_speech))
-        return self._merge_reanalyzed_nominals(raw)
+        structural = self._merge_structural_units(raw)
+        return self._merge_reanalyzed_nominals(structural)
+
+    def _merge_structural_units(
+        self,
+        units: list[_LearningUnit],
+    ) -> list[_LearningUnit]:
+        merged: list[_LearningUnit] = []
+        for unit in units:
+            if merged and self._forms_structural_unit(merged[-1], unit):
+                previous = merged.pop()
+                merged.append(
+                    _LearningUnit(
+                        text=previous.text + unit.text,
+                        start=previous.start,
+                        end=unit.end,
+                        pos=previous.pos,
+                    )
+                )
+            else:
+                merged.append(unit)
+        return merged
+
+    @classmethod
+    def _forms_structural_unit(
+        cls,
+        left: _LearningUnit,
+        right: _LearningUnit,
+    ) -> bool:
+        return (
+            cls._forms_ascii_identifier(left.text, right.text)
+            or (cls._is_numeric_unit(left) and cls._is_counter_unit(right))
+            or (
+                cls._is_nominal_unit(left)
+                and cls._is_nominal_unit(right)
+                and cls._is_katakana_text(left.text)
+                and cls._is_katakana_text(right.text)
+            )
+        )
+
+    @staticmethod
+    def _forms_ascii_identifier(left: str, right: str) -> bool:
+        combined = left + right
+        return (
+            combined.isascii()
+            and combined.isalnum()
+            and any(character.isalpha() for character in combined)
+            and any(character.isdigit() for character in combined)
+        )
+
+    @staticmethod
+    def _is_numeric_unit(unit: _LearningUnit) -> bool:
+        return unit.text.isdecimal() or (
+            len(unit.pos) > 1
+            and unit.pos[0] == "名詞"
+            and unit.pos[1] == "数詞"
+        )
+
+    @staticmethod
+    def _is_counter_unit(unit: _LearningUnit) -> bool:
+        return unit.pos[0] == "名詞" and "助数詞可能" in unit.pos
+
+    @staticmethod
+    def _is_katakana_text(text: str) -> bool:
+        return bool(text) and all(
+            character in {"ー", "・"}
+            or unicodedata.name(character, "").startswith("KATAKANA")
+            for character in text
+        )
 
     def _merge_reanalyzed_nominals(
         self,
@@ -245,6 +314,12 @@ class JapaneseLearningWordNormalizer:
         item: JapaneseMorpheme,
         units: list[_LearningUnit],
     ) -> bool:
+        if (
+            item.dictionary_form == "だ"
+            and bool(units)
+            and units[-1].pos[0] != "形状詞"
+        ):
+            return False
         return (
             item.part_of_speech[0] == "助動詞"
             and bool(units)

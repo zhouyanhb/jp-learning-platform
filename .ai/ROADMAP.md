@@ -194,3 +194,8 @@ long semantic boundaries.
 
 Require independent timing evidence before treating an aligned question
 particle as a sentence boundary, without lexical exclusion lists.
+
+- [x] Maintenance Structural Learning Word Units
+
+Normalize identifiers, numeric counters, katakana compounds, and compatible
+auxiliary chains from morphology and character classes without lexical rules.

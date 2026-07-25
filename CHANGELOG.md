@@ -54,6 +54,9 @@ All notable changes to this project are documented in this file.
 
 ### Fixed
 
+- Normalized letter-number identifiers, numeric counters, and katakana nominal
+  compounds while rejecting incompatible verb-plus-copula auxiliary chains.
+
 - Required independent timing and sentence-final-form evidence before treating
   an aligned `か` as a question boundary, preserving continuous non-final uses
   without lexical exception lists.

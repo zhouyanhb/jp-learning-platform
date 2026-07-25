@@ -33,6 +33,15 @@ replacement tables. A standalone predicate remains separate, for example
 `問題 / が / ない`, and a copula after an ordinary noun remains separate,
 for example `便利 / です`.
 
+The same structural pass normalizes units that Sudachi intentionally leaves
+open-ended: contiguous ASCII letter-number identifiers (`N2`), a number plus a
+counter-capable noun (`2番`), and adjacent katakana nouns
+(`ポイントカード`). These rules use Unicode character classes and Sudachi
+part-of-speech features rather than identifier, counter, or compound word
+lists. Copular auxiliaries attach only to morphologically compatible
+predicates, preventing a new `では` clause from being absorbed into a preceding
+verb such as `休みましょう / で / は`.
+
 When a source alignment token is divided, its time range is distributed by
 character position. When fragments are joined, their ranges are joined and the
 minimum available confidence is retained. Speaker metadata is preserved.

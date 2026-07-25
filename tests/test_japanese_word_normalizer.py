@@ -12,6 +12,28 @@ from jp_learning_platform.workflow.word_normalization_stage import WordNormaliza
 
 class _Analyzer:
     def analyze(self, text: str) -> tuple[JapaneseMorpheme, ...]:
+        structural_fixtures = {
+            "N2": (
+                JapaneseMorpheme("N", ("名詞", "普通名詞", "助数詞可能")),
+                JapaneseMorpheme("2", ("名詞", "数詞", "*")),
+            ),
+            "2番": (
+                JapaneseMorpheme("2", ("名詞", "数詞", "*")),
+                JapaneseMorpheme("番", ("名詞", "普通名詞", "助数詞可能")),
+            ),
+            "ポイントカード": (
+                JapaneseMorpheme("ポイント", ("名詞", "普通名詞", "助数詞可能")),
+                JapaneseMorpheme("カード", ("名詞", "普通名詞", "一般")),
+            ),
+            "休みましょうでは": (
+                JapaneseMorpheme("休み", ("動詞", "一般", "*"), "休む"),
+                JapaneseMorpheme("ましょう", ("助動詞", "*", "*"), "ます"),
+                JapaneseMorpheme("で", ("助動詞", "*", "*"), "だ"),
+                JapaneseMorpheme("は", ("助詞", "係助詞", "*")),
+            ),
+        }
+        if text in structural_fixtures:
+            return structural_fixtures[text]
         fixtures = {
             "聞いて": (("聞い", "動詞", "一般"), ("て", "助詞", "接続助詞")),
             "話しています": (("話し", "動詞", "一般"), ("て", "助詞", "接続助詞"), ("い", "動詞", "非自立可能"), ("ます", "助動詞", "*")),
@@ -66,6 +88,10 @@ def _normalize(text: str, token_texts: tuple[str, ...]) -> tuple[Word, ...]:
         ("高くない", ("高く", "ない"), ("高くない",)),
         ("問題がない", ("問題", "が", "ない"), ("問題", "が", "ない")),
         ("回答用紙", ("回", "答", "用", "紙"), ("回答", "用紙")),
+        ("N2", ("N", "2"), ("N2",)),
+        ("2番", ("2", "番"), ("2番",)),
+        ("ポイントカード", ("ポイント", "カード"), ("ポイントカード",)),
+        ("休みましょうでは", ("休み", "ましょう", "で", "は"), ("休みましょう", "で", "は")),
     ],
 )
 def test_normalizes_learning_units_without_sentence_specific_replacements(

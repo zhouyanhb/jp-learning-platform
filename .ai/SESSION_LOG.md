@@ -2193,3 +2193,54 @@ created by this commit
 ```
 fix(sentences): require question boundary evidence
 ```
+
+---
+
+# Session 044
+
+Date
+
+2026-07-25
+
+Roadmap
+
+Maintenance Structural Learning Word Units
+
+Summary
+
+Normalized structurally complete learning words and rejected incompatible
+auxiliary chains without vocabulary-specific rules.
+
+Changes
+
+- Joined contiguous ASCII letter-number identifiers by character class.
+- Joined numbers with Sudachi counter-capable nouns consistently.
+- Joined adjacent katakana nominal morphology as loanword compounds.
+- Restricted copular auxiliaries to compatible adjectival predicates.
+- Preserved timing, minimum confidence, and speaker metadata through existing mapping.
+- Verified `N2`, numbered choices, `ポイントカード`, and
+  `休みましょう / で / は` against the latest full-audio cache.
+
+Documentation
+
+- docs/japanese-learning-word-normalization.md
+- CHANGELOG.md
+
+Tests
+
+- test_japanese_word_normalizer.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (255 passed)
+- cached full-audio regression (1.14 seconds) ✔
+
+Commit
+
+created by this commit
+
+```
+fix(words): normalize structural learning units
+```
