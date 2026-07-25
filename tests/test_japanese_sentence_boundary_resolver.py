@@ -316,6 +316,51 @@ def test_sentence_boundary_resolver_splits_extended_question_particle() -> None:
     assert result.decisions[0].reason == "sentence_final_question_particle"
 
 
+def test_sentence_boundary_resolver_splits_polite_question_with_held_pause() -> None:
+    words = (
+        _word("男の社員はこの後まず何をし", 0.0, 0.8),
+        _word("ます", 0.8, 1.1),
+        _word("か", 1.1, 2.3),
+        _word("あの", 2.3, 2.5),
+        _word("お願いがあります", 2.5, 3.2),
+    )
+
+    result = JapaneseSentenceBoundaryResolver().resolve(
+        _request(_segment(words))
+    )
+
+    assert tuple(sentence.text for sentence in result.segments[0].sentences) == (
+        "男の社員はこの後まず何をしますか?",
+        "あのお願いがあります",
+    )
+    assert result.decisions[0].reason == "sentence_final_question_particle"
+
+
+def test_sentence_boundary_resolver_requires_timing_evidence_for_question_particle() -> None:
+    continuous_constructions = (
+        ("誰", "か", "伝えておいてください"),
+        ("何", "か", "野菜を作りたい"),
+        ("家具", "と", "か", "電気製品"),
+        ("買い取ってくれない", "か", "も", "しれない"),
+        ("就職できる", "か", "どう", "か", "不安です"),
+        ("自分の考えな", "の", "か", "資料の引用な", "の", "か", "が曖昧です"),
+    )
+
+    for texts in continuous_constructions:
+        words = tuple(
+            _word(text, index * 0.2, (index + 1) * 0.2)
+            for index, text in enumerate(texts)
+        )
+        result = JapaneseSentenceBoundaryResolver().resolve(
+            _request(_segment(words))
+        )
+
+        assert tuple(
+            sentence.text for sentence in result.segments[0].sentences
+        ) == ("".join(texts),)
+        assert not result.decisions
+
+
 def test_sentence_boundary_resolver_splits_alignment_held_silence() -> None:
     words = (
         _word("次回", 0.0, 0.4),

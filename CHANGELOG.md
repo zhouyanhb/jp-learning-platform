@@ -54,6 +54,10 @@ All notable changes to this project are documented in this file.
 
 ### Fixed
 
+- Required independent timing and sentence-final-form evidence before treating
+  an aligned `か` as a question boundary, preserving continuous non-final uses
+  without lexical exception lists.
+
 - Deferred FFmpeg PCM normalization until an exact-sample adapter such as
   pyannote diarization requires it, avoiding conversion for ordinary MP3
   transcription and preserving cached Whisper work on later-stage failure.

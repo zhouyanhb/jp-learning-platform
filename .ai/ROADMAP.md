@@ -189,3 +189,8 @@ assignment separately while retaining the aggregate alignment duration.
 Recover sentence boundaries from sentence-final particles and alignment-held
 silence, preserve connective clauses, and prevent subtitle re-merging across
 long semantic boundaries.
+
+- [x] Maintenance Evidence-based Question Boundaries
+
+Require independent timing evidence before treating an aligned question
+particle as a sentence boundary, without lexical exclusion lists.

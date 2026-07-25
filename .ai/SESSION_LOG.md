@@ -2142,3 +2142,54 @@ created by this commit
 ```
 fix(sentences): recover robust Japanese boundaries
 ```
+
+---
+
+# Session 043
+
+Date
+
+2026-07-25
+
+Roadmap
+
+Maintenance Evidence-based Question Boundaries
+
+Summary
+
+Required independent structural and timing evidence before splitting at an
+aligned Japanese question particle.
+
+Changes
+
+- Reused the generic abnormal-alignment detector for strongly held particles.
+- Accepted shorter held pauses only after configured complete sentence-final forms.
+- Removed unconditional splitting at every standalone aligned `か` token.
+- Preserved indefinite, listing, modal, and embedded-question constructions.
+- Avoided lexical exclusion lists and sentence-specific replacements.
+- Reduced full-audio question-particle decisions from 63 to 24 while retaining
+  genuine question-to-dialogue boundaries.
+
+Documentation
+
+- docs/japanese-sentence-boundary-resolution.md
+- CHANGELOG.md
+
+Tests
+
+- test_japanese_sentence_boundary_resolver.py
+
+Validation
+
+- compileall ✔
+- package entry ✔
+- pytest (251 passed)
+- cached full-audio regression (0.79 seconds) ✔
+
+Commit
+
+created by this commit
+
+```
+fix(sentences): require question boundary evidence
+```

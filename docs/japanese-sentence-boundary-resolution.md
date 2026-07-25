@@ -13,10 +13,14 @@ word durations as a boundary signal. It caps only the boundary word's sentence
 time to a conservative speech duration; the original segment time remains
 available, and the following sentence retains its original start time.
 
-A standalone final `か` is treated as a question boundary and receives a
-question mark when the aligned transcript omitted one. Both Japanese and ASCII
-question and exclamation marks protect that boundary from later subtitle
-merging.
+An aligned `か` is treated as a question boundary only when timing supplies
+independent evidence. An abnormally extended alignment is sufficient; a
+normal held pause is sufficient only when the preceding clause already ends
+in a configured complete sentence-final form. This structural rule avoids
+lexical exclusion lists and preserves indefinite, listing, modal, and embedded
+question constructions. A confirmed boundary receives a question mark when
+the aligned transcript omitted one. Both Japanese and ASCII question and
+exclamation marks protect that boundary from later subtitle merging.
 
 ## Connective clauses
 

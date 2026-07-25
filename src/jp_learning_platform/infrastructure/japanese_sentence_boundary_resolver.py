@@ -195,18 +195,15 @@ class JapaneseSentenceBoundaryResolver:
         if _starts_with_dependent_continuation(right_text):
             return None
 
-        if current_text == "か":
+        if current_text == "か" and _has_question_boundary_evidence(
+            words,
+            chunk_start,
+            word_index,
+            self.sentence_final_suffixes,
+        ):
             return "sentence_final_question_particle"
 
-        if (
-            words[word_index].time_range.duration_seconds
-            >= DEFAULT_SENTENCE_BOUNDARY_CONFIG.extended_word_duration_seconds
-            and (
-                words[word_index].time_range.duration_seconds
-                / max(len(current_text), 1)
-                >= DEFAULT_SENTENCE_BOUNDARY_CONFIG.extended_word_seconds_per_character
-            )
-        ):
+        if _is_extended_alignment_word(words[word_index]):
             return "extended_aligned_word"
 
         if right_text[:1].isdigit() and not _looks_sentence_final(
@@ -258,6 +255,35 @@ def _words_text(words: tuple[Word, ...]) -> str:
 
 def _word_text(word: Word) -> str:
     return unicodedata.normalize("NFKC", word.text).strip()
+
+
+def _is_extended_alignment_word(word: Word) -> bool:
+    text = _word_text(word)
+    duration = word.time_range.duration_seconds
+    config = DEFAULT_SENTENCE_BOUNDARY_CONFIG
+    return (
+        duration >= config.extended_word_duration_seconds
+        and duration / max(len(text), 1)
+        >= config.extended_word_seconds_per_character
+    )
+
+
+def _has_question_boundary_evidence(
+    words: tuple[Word, ...],
+    chunk_start: int,
+    word_index: int,
+    sentence_final_suffixes: tuple[str, ...],
+) -> bool:
+    word = words[word_index]
+    if _is_extended_alignment_word(word):
+        return True
+
+    preceding_clause = _words_text(words[chunk_start:word_index])
+    return (
+        word.time_range.duration_seconds
+        >= DEFAULT_SENTENCE_BOUNDARY_CONFIG.min_pause_seconds
+        and _looks_sentence_final(preceding_clause, sentence_final_suffixes)
+    )
 
 
 def _append_question_mark(words: tuple[Word, ...]) -> tuple[Word, ...]:
