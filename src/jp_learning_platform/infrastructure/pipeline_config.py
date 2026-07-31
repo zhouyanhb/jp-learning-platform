@@ -18,9 +18,13 @@ class WhisperTranscriptionConfig:
     temperature: float = 0.0
     word_timestamps: bool = True
     vad_filter: bool = True
-    vad_min_silence_ms: int = 350
+    vad_min_silence_ms: int = 600
     condition_on_previous_text: bool = False
     hallucination_silence_threshold_seconds: float = 2.0
+    retry_confidence_threshold: float = 0.65
+    retry_context_confidence_threshold: float = 0.85
+    retry_min_confidence_improvement: float = 0.05
+    retry_max_segments: int = 12
 
 
 @dataclass(frozen=True, slots=True)
@@ -28,14 +32,6 @@ class WhisperXAlignmentConfig:
     """Default WhisperX forced-alignment settings."""
 
     language_code: str = "ja"
-
-
-@dataclass(frozen=True, slots=True)
-class PyannoteDiarizationConfig:
-    """Default pyannote.audio speaker diarization settings."""
-
-    model_name: str = "pyannote/speaker-diarization-3.1"
-    token_environment_variable: str = "HF_TOKEN"
 
 
 @dataclass(frozen=True, slots=True)
@@ -67,6 +63,14 @@ class HomophonePrefilterConfig:
 
 
 @dataclass(frozen=True, slots=True)
+class HomophoneConfidencePolicyConfig:
+    """Evidence thresholds for changing acoustically confident homophones."""
+
+    high_asr_confidence: float = 0.9
+    high_confidence_min_score_ratio: float = 200.0
+
+
+@dataclass(frozen=True, slots=True)
 class SubtitleMergeConfig:
     """Default conservative subtitle merge settings."""
 
@@ -77,16 +81,39 @@ class SubtitleMergeConfig:
 
 
 @dataclass(frozen=True, slots=True)
+class SubtitleDisplayConfig:
+    """Limits for turning one linguistic sentence into timed display cues."""
+
+    max_chars: int = 42
+    max_duration_seconds: float = 10.0
+
+
+@dataclass(frozen=True, slots=True)
 class SentenceBoundaryConfig:
     """Default pause-aware Japanese sentence boundary settings."""
 
     min_pause_seconds: float = 0.5
     max_dependent_continuation_gap_seconds: float = 0.2
+    max_continuation_candidate_gap_seconds: float = 0.5
+    max_syntactic_dependency_gap_seconds: float = 1.0
+    continuation_score_threshold: int = 4
+    close_timing_evidence_score: int = 1
+    dependent_prefix_evidence_score: int = 3
+    functional_continuation_evidence_score: int = 2
+    incomplete_left_evidence_score: int = 2
+    question_answer_min_pause_ratio: float = 0.3
+    question_answer_min_relative_pause: float = 0.35
+    connective_response_min_pause_ratio: float = 0.8
+    connective_response_min_relative_pause: float = 0.75
     max_connective_continuation_gap_seconds: float = 1.25
+    connective_merge_score_margin: int = 1
+    numbering_region_min_sequence_length: int = 3
+    numbering_region_max_item_gap_seconds: float = 45.0
+    numbering_region_min_body_characters: int = 2
     extended_word_duration_seconds: float = 3.0
     extended_word_seconds_per_character: float = 1.0
     max_aligned_word_seconds_per_character: float = 0.5
-    terminal_marks: tuple[str, ...] = ("。", "？", "！")
+    terminal_marks: tuple[str, ...] = ("。", "？", "！", "?", "!")
     sentence_final_suffixes: tuple[str, ...] = (
         "ください",
         "下さい",
@@ -139,32 +166,35 @@ class ReadabilityConfig:
 
 DEFAULT_WHISPER_TRANSCRIPTION_CONFIG = WhisperTranscriptionConfig()
 DEFAULT_WHISPERX_ALIGNMENT_CONFIG = WhisperXAlignmentConfig()
-DEFAULT_PYANNOTE_DIARIZATION_CONFIG = PyannoteDiarizationConfig()
 DEFAULT_QWEN_REPAIR_CONFIG = QwenRepairConfig()
 DEFAULT_QWEN_REPAIR_SAFETY_CONFIG = QwenRepairSafetyConfig()
 DEFAULT_HOMOPHONE_PREFILTER_CONFIG = HomophonePrefilterConfig()
+DEFAULT_HOMOPHONE_CONFIDENCE_POLICY_CONFIG = HomophoneConfidencePolicyConfig()
+DEFAULT_SUBTITLE_DISPLAY_CONFIG = SubtitleDisplayConfig()
 DEFAULT_SUBTITLE_MERGE_CONFIG = SubtitleMergeConfig()
 DEFAULT_SENTENCE_BOUNDARY_CONFIG = SentenceBoundaryConfig()
 DEFAULT_READABILITY_CONFIG = ReadabilityConfig()
 
 
 __all__ = [
-    "DEFAULT_PYANNOTE_DIARIZATION_CONFIG",
     "DEFAULT_HOMOPHONE_PREFILTER_CONFIG",
+    "DEFAULT_HOMOPHONE_CONFIDENCE_POLICY_CONFIG",
     "DEFAULT_QWEN_REPAIR_CONFIG",
     "DEFAULT_QWEN_REPAIR_SAFETY_CONFIG",
     "DEFAULT_READABILITY_CONFIG",
     "DEFAULT_SENTENCE_BOUNDARY_CONFIG",
+    "DEFAULT_SUBTITLE_DISPLAY_CONFIG",
     "DEFAULT_SUBTITLE_MERGE_CONFIG",
     "DEFAULT_WHISPER_TRANSCRIPTION_CONFIG",
     "DEFAULT_WHISPERX_ALIGNMENT_CONFIG",
-    "PyannoteDiarizationConfig",
     "HomophonePrefilterConfig",
+    "HomophoneConfidencePolicyConfig",
     "QwenRepairConfig",
     "QwenRepairSafetyConfig",
     "ReadabilityConfig",
     "SentenceBoundaryConfig",
     "SubtitleMergeConfig",
+    "SubtitleDisplayConfig",
     "WhisperTranscriptionConfig",
     "WhisperXAlignmentConfig",
 ]

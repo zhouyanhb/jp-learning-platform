@@ -17,6 +17,8 @@ from jp_learning_platform.application import (
 from jp_learning_platform.infrastructure import (
     AudioLoader,
     AudioLoaderError,
+    AuditableOverlapTextCleaner,
+    AuditableRepeatedTextCleaner,
     CompositeSubtitleWriter,
     ConservativeSubtitleMerger,
     ConsoleProgressReporter,
@@ -29,7 +31,6 @@ from jp_learning_platform.infrastructure import (
     DEFAULT_WHISPER_MODEL_SIZE,
     DEFAULT_WHISPERX_LANGUAGE,
     BertHomophoneResolver,
-    DiarizingWhisperXAligner,
     DomainSubtitleValidator,
     FasterWhisperDependencyError,
     FasterWhisperTranscriber,
@@ -37,13 +38,10 @@ from jp_learning_platform.infrastructure import (
     HomophoneResolverDependencyError,
     JapaneseLearningWordNormalizer,
     JapaneseSentenceBoundaryResolver,
-    LlamaCppQwenRepairer,
+    SudachiMorphologicalAnalyzer,
     ListeningJsonWriter,
     LocalPipelineContextCache,
     LocalReadabilityOptimizer,
-    PassthroughQwenRepairer,
-    PassthroughWhisperXAligner,
-    PyannoteSpeakerDiarizer,
     SrtSubtitleWriter,
     StageArtifactStore,
     WhisperXAlignerAdapter,
@@ -60,11 +58,14 @@ _PIPELINE_STAGES = (
     "Audio",
     "Whisper",
     "WhisperX Alignment",
-    "Qwen Repair",
     "Homophone Resolution (optional)",
-    "Learning Word Normalization (optional)",
+    "Auditable Overlap Text Cleanup",
+    "Auditable Repeated Text Cleanup",
     "Sentence Boundary Resolution",
+    "Punctuation Attribution",
+    "Learning Word Normalization (optional)",
     "Subtitle Builder",
+    "Subtitle Display Normalization",
     "Subtitle Merger",
     "Readability Optimizer",
     "Subtitle Validator",
@@ -134,26 +135,19 @@ def build_parser() -> ArgumentParser:
     transcribe_parser.add_argument(
         "--enable-whisperx",
         action="store_true",
-        help="Use WhisperX forced alignment after Whisper transcription.",
+        default=True,
+        help="Use WhisperX forced alignment after Whisper transcription (default).",
     )
     transcribe_parser.add_argument(
-        "--enable-diarization",
-        action="store_true",
-        help="Use pyannote.audio to assign speaker identifiers.",
-    )
-    transcribe_parser.add_argument(
-        "--hf-token",
-        help="Hugging Face token for pyannote.audio. Defaults to HF_TOKEN.",
+        "--disable-whisperx",
+        action="store_false",
+        dest="enable_whisperx",
+        help="Disable WhisperX forced alignment.",
     )
     transcribe_parser.add_argument(
         "--whisperx-language",
         default=DEFAULT_WHISPERX_LANGUAGE,
         help="WhisperX alignment language code. Defaults to ja.",
-    )
-    transcribe_parser.add_argument(
-        "--qwen-model-path",
-        type=Path,
-        help="Local Qwen GGUF model path for transcript repair.",
     )
     transcribe_parser.add_argument(
         "--enable-homophone-resolver",
@@ -216,6 +210,11 @@ def _write_status(output: TextIO) -> None:
 
 def _run_transcribe(args: Namespace, output: TextIO, error_output: TextIO) -> int:
     writer = _build_writer(args)
+    morphological_analyzer = (
+        SudachiMorphologicalAnalyzer()
+        if args.enable_word_normalization or args.enable_homophone_resolver
+        else None
+    )
     runner = SubtitlePipelineRunner(
         audio_loader=AudioLoader(),
         transcriber=FasterWhisperTranscriber(
@@ -227,10 +226,17 @@ def _run_transcribe(args: Namespace, output: TextIO, error_output: TextIO) -> in
         writer=writer,
         output_extension=DEFAULT_LISTENING_JSON_EXTENSION,
         aligner=_build_aligner(args),
-        repairer=_build_repairer(args),
         homophone_resolver=_build_homophone_resolver(args),
+        overlap_text_cleaner=AuditableOverlapTextCleaner(
+            morphological_analyzer=morphological_analyzer
+        ),
+        repeated_text_cleaner=AuditableRepeatedTextCleaner(
+            morphological_analyzer=morphological_analyzer
+        ),
         word_normalizer=_build_word_normalizer(args),
-        sentence_boundary_resolver=JapaneseSentenceBoundaryResolver(),
+        sentence_boundary_resolver=JapaneseSentenceBoundaryResolver(
+            morphological_analyzer=morphological_analyzer
+        ),
         merger=ConservativeSubtitleMerger(),
         optimizer=LocalReadabilityOptimizer(),
         validator=DomainSubtitleValidator(),
@@ -244,7 +250,9 @@ def _run_transcribe(args: Namespace, output: TextIO, error_output: TextIO) -> in
             else LocalPipelineContextCache(args.output_dir / ".cache")
         ),
         audio_normalizer=FFmpegAudioNormalizer(),
-        cache_namespace=f"jp-learning-platform-{__version__}",
+        cache_namespace=(
+            f"jp-learning-platform-{__version__}-sentence-provenance-v24"
+        ),
     )
 
     try:
@@ -287,29 +295,16 @@ def _build_writer(args: Namespace) -> ListeningJsonWriter | CompositeSubtitleWri
 
 def _build_aligner(
     args: Namespace,
-) -> PassthroughWhisperXAligner | WhisperXAlignerAdapter | DiarizingWhisperXAligner:
+) -> WhisperXAlignerAdapter | None:
     if args.enable_whisperx:
         base_aligner = WhisperXAlignerAdapter(
             device=args.device,
             language_code=args.whisperx_language,
         )
     else:
-        base_aligner = PassthroughWhisperXAligner()
-
-    if args.enable_diarization:
-        return DiarizingWhisperXAligner(
-            base_aligner=base_aligner,
-            diarizer=PyannoteSpeakerDiarizer(auth_token=args.hf_token),
-        )
+        base_aligner = None
 
     return base_aligner
-
-
-def _build_repairer(args: Namespace) -> PassthroughQwenRepairer | LlamaCppQwenRepairer:
-    if args.qwen_model_path is not None:
-        return LlamaCppQwenRepairer(model_path=args.qwen_model_path)
-
-    return PassthroughQwenRepairer()
 
 
 def _build_homophone_resolver(args: Namespace) -> BertHomophoneResolver | None:

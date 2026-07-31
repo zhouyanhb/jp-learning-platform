@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from math import inf, isfinite
 from typing import Any
 
 from jp_learning_platform.domain import Segment, Sentence, TimeRange, Word
@@ -34,6 +35,16 @@ DEFAULT_WHISPER_CONDITION_ON_PREVIOUS_TEXT = (
 DEFAULT_WHISPER_HALLUCINATION_SILENCE_THRESHOLD_SECONDS = (
     DEFAULT_WHISPER_TRANSCRIPTION_CONFIG.hallucination_silence_threshold_seconds
 )
+DEFAULT_RETRY_CONFIDENCE_THRESHOLD = (
+    DEFAULT_WHISPER_TRANSCRIPTION_CONFIG.retry_confidence_threshold
+)
+DEFAULT_RETRY_CONTEXT_CONFIDENCE_THRESHOLD = (
+    DEFAULT_WHISPER_TRANSCRIPTION_CONFIG.retry_context_confidence_threshold
+)
+DEFAULT_RETRY_MIN_CONFIDENCE_IMPROVEMENT = (
+    DEFAULT_WHISPER_TRANSCRIPTION_CONFIG.retry_min_confidence_improvement
+)
+DEFAULT_RETRY_MAX_SEGMENTS = DEFAULT_WHISPER_TRANSCRIPTION_CONFIG.retry_max_segments
 
 
 class FasterWhisperDependencyError(RuntimeError):
@@ -64,6 +75,14 @@ class FasterWhisperTranscriber:
     hallucination_silence_threshold_seconds: float = (
         DEFAULT_WHISPER_HALLUCINATION_SILENCE_THRESHOLD_SECONDS
     )
+    retry_confidence_threshold: float = DEFAULT_RETRY_CONFIDENCE_THRESHOLD
+    retry_context_confidence_threshold: float = (
+        DEFAULT_RETRY_CONTEXT_CONFIDENCE_THRESHOLD
+    )
+    retry_min_confidence_improvement: float = (
+        DEFAULT_RETRY_MIN_CONFIDENCE_IMPROVEMENT
+    )
+    retry_max_segments: int = DEFAULT_RETRY_MAX_SEGMENTS
     _model: Any | None = field(default=None, init=False, repr=False)
 
     def transcribe(self, request: WhisperTranscriptionRequest) -> WhisperTranscript:
@@ -71,23 +90,19 @@ class FasterWhisperTranscriber:
             raise TypeError("request must be a WhisperTranscriptionRequest.")
 
         model = self._load_model()
+        source_path = str(request.source_path)
         external_segments, _info = model.transcribe(
-            str(request.source_path),
-            language=self.language,
-            beam_size=self.beam_size,
-            best_of=self.best_of,
-            temperature=self.temperature,
-            word_timestamps=self.word_timestamps,
-            vad_filter=self.vad_filter,
-            vad_parameters={"min_silence_duration_ms": self.vad_min_silence_ms},
-            condition_on_previous_text=self.condition_on_previous_text,
-            hallucination_silence_threshold=(
-                self.hallucination_silence_threshold_seconds
-            ),
+            source_path,
+            **self._transcription_options(),
+        )
+        selected_segments = self._retry_low_confidence_segments(
+            model,
+            source_path,
+            tuple(external_segments),
         )
 
         segments: list[Segment] = []
-        for external_segment in external_segments:
+        for external_segment in selected_segments:
             text = str(getattr(external_segment, "text", "")).strip()
             if text:
                 segments.append(self._convert_segment(len(segments), external_segment))
@@ -96,6 +111,86 @@ class FasterWhisperTranscriber:
             source_path=request.source_path,
             segments=tuple(segments),
         )
+
+    def _transcription_options(self) -> dict[str, object]:
+        return {
+            "language": self.language,
+            "beam_size": self.beam_size,
+            "best_of": self.best_of,
+            "temperature": self.temperature,
+            "word_timestamps": self.word_timestamps,
+            "vad_filter": self.vad_filter,
+            "vad_parameters": {
+                "min_silence_duration_ms": self.vad_min_silence_ms,
+            },
+            # The first pass is intentionally neutral. Context is introduced only
+            # for bounded retries whose preceding text is already high confidence.
+            "condition_on_previous_text": self.condition_on_previous_text,
+            "hallucination_silence_threshold": (
+                self.hallucination_silence_threshold_seconds
+            ),
+        }
+
+    def _retry_low_confidence_segments(
+        self,
+        model: Any,
+        source_path: str,
+        segments: tuple[Any, ...],
+    ) -> tuple[Any, ...]:
+        if self.retry_max_segments <= 0:
+            return segments
+
+        selected: list[Any] = []
+        retries = 0
+        reliable_context = ""
+        for segment in segments:
+            confidence = _external_segment_confidence((segment,))
+            replacement = (segment,)
+            if (
+                confidence < self.retry_confidence_threshold
+                and retries < self.retry_max_segments
+            ):
+                retries += 1
+                retry_segments, _info = model.transcribe(
+                    source_path,
+                    **self._retry_options(segment, reliable_context),
+                )
+                candidate = tuple(retry_segments)
+                candidate_confidence = _external_segment_confidence(candidate)
+                if candidate and isfinite(candidate_confidence) and (
+                    not isfinite(confidence)
+                    or candidate_confidence
+                    >= confidence + self.retry_min_confidence_improvement
+                ):
+                    replacement = candidate
+                    confidence = candidate_confidence
+
+            selected.extend(replacement)
+            if confidence >= self.retry_context_confidence_threshold:
+                reliable_context = "".join(
+                    str(getattr(item, "text", "")).strip()
+                    for item in replacement
+                )
+
+        return tuple(selected)
+
+    def _retry_options(
+        self,
+        segment: Any,
+        reliable_context: str,
+    ) -> dict[str, object]:
+        options = self._transcription_options()
+        options.update(
+            {
+                "clip_timestamps": [
+                    float(getattr(segment, "start")),
+                    float(getattr(segment, "end")),
+                ],
+                "initial_prompt": reliable_context or None,
+                "condition_on_previous_text": False,
+            }
+        )
+        return options
 
     def _load_model(self) -> Any:
         if self._model is None:
@@ -134,14 +229,13 @@ class FasterWhisperTranscriber:
             text=text,
             time_range=time_range,
             words=words,
-            speaker_id=_speaker_id(external_segment),
+            asr_boundary_word_indexes=_text_boundary_word_indexes(text, words),
         )
         return Segment(
             position=position,
             text=text,
             time_range=time_range,
             sentences=(sentence,),
-            speaker_id=_speaker_id(external_segment),
         )
 
     def _convert_word(self, external_word: Any) -> Word:
@@ -153,16 +247,38 @@ class FasterWhisperTranscriber:
                 end_seconds=float(getattr(external_word, "end")),
             ),
             confidence=float(probability) if probability is not None else None,
-            speaker_id=_speaker_id(external_word),
         )
 
 
-def _speaker_id(source: Any) -> str | None:
-    value = getattr(source, "speaker", getattr(source, "speaker_id", None))
-    if value is None:
-        return None
+def _external_segment_confidence(segments: tuple[Any, ...]) -> float:
+    probabilities = tuple(
+        float(probability)
+        for segment in segments
+        for word in (getattr(segment, "words", None) or ())
+        if (probability := getattr(word, "probability", None)) is not None
+    )
+    if not probabilities:
+        return -inf
 
-    return str(value).strip() or None
+    return sum(probabilities) / len(probabilities)
+
+
+def _text_boundary_word_indexes(text: str, words: tuple[Word, ...]) -> tuple[int, ...]:
+    boundary_offsets: set[int] = set()
+    offset = 0
+    for character in text:
+        if character.isspace():
+            if offset:
+                boundary_offsets.add(offset)
+        else:
+            offset += 1
+    indexes: list[int] = []
+    word_offset = 0
+    for index, word in enumerate(words[:-1], start=1):
+        word_offset += len("".join(word.text.split()))
+        if word_offset in boundary_offsets:
+            indexes.append(index)
+    return tuple(indexes)
 
 
 __all__ = [
@@ -178,6 +294,10 @@ __all__ = [
     "DEFAULT_WHISPER_TEMPERATURE",
     "DEFAULT_WHISPER_VAD_FILTER",
     "DEFAULT_WHISPER_WORD_TIMESTAMPS",
+    "DEFAULT_RETRY_CONFIDENCE_THRESHOLD",
+    "DEFAULT_RETRY_CONTEXT_CONFIDENCE_THRESHOLD",
+    "DEFAULT_RETRY_MAX_SEGMENTS",
+    "DEFAULT_RETRY_MIN_CONFIDENCE_IMPROVEMENT",
     "FasterWhisperDependencyError",
     "FasterWhisperTranscriber",
 ]

@@ -63,12 +63,8 @@ The writer always materializes an output for the current input filename, but a
 complete cache hit does not call the audio loader, FFmpeg, Whisper, or later
 analysis stages. Whisper, pass-through alignment, and standard WhisperX retain
 the original source because they can decode supported compressed audio
-directly. FFmpeg conversion to mono 16 kHz PCM is deferred until an adapter
-explicitly requires deterministic sample addressing, currently pyannote
-diarization. Video is the exception: its audio is extracted before loading and
-the extracted PCM is reused by Whisper, WhisperX, and pyannote. Whisper
-completes and is cached before any later conversion, so a
-conversion or diarization retry does not repeat transcription. Both context and
+directly. Video is the exception: its audio is extracted before loading and
+the extracted PCM is reused by Whisper and WhisperX. Both context and
 audio writes are atomic, and failed stages are not recorded as successful cache
 entries.
 
@@ -78,10 +74,7 @@ Use a cold run for benchmarking or troubleshooting when needed:
 python -m jp_learning_platform transcribe audio.mp3 --no-cache
 ```
 
-`--no-cache` disables cross-run result, stage, and normalized-audio reuse. It
-does not disable compatibility processing: when pyannote diarization is
-enabled, the cold run still converts the source after Whisper and reports the
-`audio-normalization` duration before alignment/diarization begins.
+`--no-cache` disables cross-run result, stage, and normalized-audio reuse.
 
 Progress includes separate `pipeline-cache`, `video-audio-extraction`,
 `audio-content-cache`, `audio-loader`, `audio-normalization`, individual
@@ -120,7 +113,9 @@ Video audio extraction (video input only)
 -> AudioLoader
 -> WhisperStage
 -> WhisperXAlignmentStage
--> QwenRepairStage
+-> HomophoneResolutionStage (optional)
+-> SentenceBoundaryResolutionStage
+-> WordNormalizationStage (optional)
 -> SubtitleBuilderStage
 -> SubtitleMergerStage
 -> ReadabilityOptimizerStage
@@ -128,12 +123,11 @@ Video audio extraction (video input only)
 -> SubtitleWriterStage
 ```
 
-WhisperX and Qwen are external-model stages. By default, their pass-through
-adapters keep the pipeline runnable without additional model files. Enable real
-WhisperX alignment with:
+WhisperX forced alignment is enabled by default. It can be disabled explicitly
+when the alignment dependency is unavailable:
 
 ```bash
-python -m jp_learning_platform transcribe audio.mp3 --enable-whisperx
+python -m jp_learning_platform transcribe audio.mp3 --disable-whisperx
 ```
 
 Install the optional alignment dependency first:
@@ -142,42 +136,15 @@ Install the optional alignment dependency first:
 python -m pip install -e ".[align]"
 ```
 
-Enable pyannote.audio speaker diarization when speaker identifiers should be
-assigned automatically:
+## Confidence-Gated Retries
 
-```bash
-python -m jp_learning_platform transcribe audio.mp3 --enable-diarization
-```
-
-Install the optional diarization dependency and provide a Hugging Face token
-accepted for the pyannote speaker diarization model:
-
-```bash
-python -m pip install -e ".[diarization]"
-HF_TOKEN=hf_... python -m jp_learning_platform transcribe audio.mp3 --enable-diarization
-```
-
-The token can also be passed with `--hf-token`. Diarization runs inside the
-existing WhisperX alignment workflow boundary: the configured aligner produces
-timed segments first, then pyannote speaker turns are matched to words by time
-overlap. When a sentence contains multiple speakers, it is split into
-speaker-specific segment runs before subtitle building.
-
-Enable local Qwen repair by passing a GGUF model path:
-
-```bash
-python -m jp_learning_platform transcribe audio.mp3 --qwen-model-path models/qwen.gguf
-```
-
-Local Qwen repair uses a conservative safety policy. If a model output appears
-to add or remove spoken content, the repairer keeps the original aligned text
-so subtitle timing and word timing remain authoritative.
-
-Install the optional Qwen dependency first:
-
-```bash
-python -m pip install -e ".[qwen]"
-```
+The first Whisper pass is intentionally neutral: it fixes the language to
+Japanese but does not use a domain prompt or carry previous decoded text across
+windows. After that pass, only a bounded number of low-confidence segments are
+transcribed again over their original time ranges. A retry may use the nearest
+preceding high-confidence text from the same audio as context. Its output
+replaces the first pass only when word confidence improves by the configured
+margin; otherwise the original result is retained.
 
 ## ASR Dependency
 
@@ -196,7 +163,9 @@ The first-stage local CLI uses the existing workflow contracts:
 AudioLoader
 -> WhisperStage
 -> WhisperXAlignmentStage
--> QwenRepairStage
+-> HomophoneResolutionStage (optional)
+-> SentenceBoundaryResolutionStage
+-> WordNormalizationStage (optional)
 -> WordSubtitleBuilder
 -> ConservativeSubtitleMerger
 -> LocalReadabilityOptimizer
@@ -205,16 +174,13 @@ AudioLoader
 -> ListeningJsonWriter
 ```
 
-The generated subtitles preserve word-derived timing through the domain
-`Sentence` and `Word` objects before writing the final structured JSON. The
-JSON output contains segment, sentence, word, and subtitle timing so downstream
-intensive-listening views can query unfamiliar words without parsing SRT text.
+The generated subtitles preserve aligned-word timing through the domain
+`Sentence` and `Word` objects. Sudachi writes separate `learning_words` after
+sentence boundaries are resolved. The structured JSON schema is version 1.4
+and contains both collections so study views never need to reinterpret the
+authoritative audio timeline.
 
-When upstream alignment data includes speaker identifiers, the pipeline keeps
-different speakers in separate subtitle cues and prevents cross-speaker merging.
-With `--enable-diarization`, speaker identifiers can be produced from the audio
-itself by pyannote.audio. Speaker identifiers remain structured metadata.
-Optional SRT export does not display speaker labels.
+Optional SRT export writes the same text and timing without additional metadata.
 
 ## Progress and Stage Artifacts
 
@@ -239,13 +205,12 @@ output/.work/<run-name>/<audio-name>/00_audio_normalization.json
 output/.work/<run-name>/<audio-name>/01_whisper.json
 output/.work/<run-name>/<audio-name>/02_align.json
 output/.work/<run-name>/<audio-name>/02a_forced_alignment.json
-output/.work/<run-name>/<audio-name>/02b_pyannote_diarization.json
-output/.work/<run-name>/<audio-name>/02c_speaker_assignment.json
-output/.work/<run-name>/<audio-name>/03_repair.json
 output/.work/<run-name>/<audio-name>/04_homophone_resolution.json
-output/.work/<run-name>/<audio-name>/05_word_normalization.json
-output/.work/<run-name>/<audio-name>/06_sentence_boundary_resolution.json
+output/.work/<run-name>/<audio-name>/05_sentence_boundary_resolution.json
+output/.work/<run-name>/<audio-name>/05a_punctuation_attribution.json
+output/.work/<run-name>/<audio-name>/06_word_normalization.json
 output/.work/<run-name>/<audio-name>/07_build.json
+output/.work/<run-name>/<audio-name>/07a_subtitle_display_normalization.json
 output/.work/<run-name>/<audio-name>/08_merge.json
 output/.work/<run-name>/<audio-name>/09_readability.json
 output/.work/<run-name>/<audio-name>/10_validate.json

@@ -40,6 +40,20 @@ from jp_learning_platform.workflow.sentence_boundary_stage import (
     SentenceBoundaryResolutionStage,
     SentenceBoundaryResolver,
 )
+from jp_learning_platform.workflow.overlap_text_cleanup_stage import (
+    OverlapTextCleaner,
+    OverlapTextCleanupStage,
+)
+from jp_learning_platform.workflow.repeated_text_cleanup_stage import (
+    RepeatedTextCleaner,
+    RepeatedTextCleanupStage,
+)
+from jp_learning_platform.workflow.punctuation_attribution_stage import (
+    PunctuationAttributionStage,
+)
+from jp_learning_platform.workflow.subtitle_display_normalization_stage import (
+    SubtitleDisplayNormalizationStage,
+)
 from jp_learning_platform.workflow.word_normalization_stage import (
     WordNormalizationStage,
     WordNormalizer,
@@ -274,6 +288,8 @@ class SubtitlePipelineRunner:
     homophone_resolver: HomophoneResolver | None = None
     word_normalizer: WordNormalizer | None = None
     sentence_boundary_resolver: SentenceBoundaryResolver | None = None
+    overlap_text_cleaner: OverlapTextCleaner | None = None
+    repeated_text_cleaner: RepeatedTextCleaner | None = None
     merger: SubtitleMerger | None = None
     optimizer: ReadabilityOptimizer | None = None
     validator: SubtitleValidator | None = None
@@ -790,15 +806,25 @@ class SubtitlePipelineRunner:
         if self.homophone_resolver is not None:
             stages.append(HomophoneResolutionStage(self.homophone_resolver))
 
-        if self.word_normalizer is not None:
-            stages.append(WordNormalizationStage(self.word_normalizer))
+        if self.overlap_text_cleaner is not None:
+            stages.append(OverlapTextCleanupStage(self.overlap_text_cleaner))
+
+        if self.repeated_text_cleaner is not None:
+            stages.append(RepeatedTextCleanupStage(self.repeated_text_cleaner))
 
         if self.sentence_boundary_resolver is not None:
             stages.append(
                 SentenceBoundaryResolutionStage(self.sentence_boundary_resolver)
             )
+            stages.append(PunctuationAttributionStage())
+
+        if self.word_normalizer is not None:
+            stages.append(WordNormalizationStage(self.word_normalizer))
 
         stages.append(SubtitleBuilderStage(self.builder))
+
+        if self.sentence_boundary_resolver is not None:
+            stages.append(SubtitleDisplayNormalizationStage())
 
         if self.merger is not None:
             stages.append(SubtitleMergerStage(self.merger))

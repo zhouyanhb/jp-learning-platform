@@ -32,13 +32,35 @@ def _subtitle(
     text: str,
     start: float,
     end: float,
-    speaker_id: str | None = None,
+    source_sentence_index: int | None = 0,
 ) -> Subtitle:
     return Subtitle(
         index=index,
         text=text,
         time_range=TimeRange(start, end),
-        speaker_id=speaker_id,
+        source_sentence_index=source_sentence_index,
+    )
+
+
+def test_conservative_subtitle_merger_never_crosses_source_sentence() -> None:
+    subtitles = (
+        _subtitle(1, "そうですか", 0.0, 0.5, source_sentence_index=0),
+        _subtitle(2, "そうですね", 0.5, 1.0, source_sentence_index=1),
+    )
+
+    result = ConservativeSubtitleMerger().merge(
+        SubtitleMergeRequest(
+            source_path=Path("audio.mp3"),
+            working_directory=Path("work"),
+            run_id="run-001",
+            segments=(_segment(),),
+            subtitles=subtitles,
+        )
+    )
+
+    assert tuple(item.text for item in result.subtitles) == (
+        "そうですか",
+        "そうですね",
     )
 
 
@@ -96,30 +118,6 @@ def test_conservative_subtitle_merger_merges_short_adjacent_cues() -> None:
     assert result.subtitles[0].time_range == TimeRange(0.0, 1.0)
 
 
-def test_conservative_subtitle_merger_does_not_merge_different_speakers() -> None:
-    subtitles = (
-        _subtitle(1, "そう", 0.0, 0.3, speaker_id="speaker-1"),
-        _subtitle(2, "はい。", 0.4, 0.8, speaker_id="speaker-2"),
-    )
-
-    result = ConservativeSubtitleMerger().merge(
-        SubtitleMergeRequest(
-            source_path=Path("audio.mp3"),
-            working_directory=Path("work"),
-            run_id="run-001",
-            segments=(_segment(),),
-            subtitles=subtitles,
-        )
-    )
-
-    assert len(result.subtitles) == 2
-    assert tuple(subtitle.text for subtitle in result.subtitles) == ("そう", "はい。")
-    assert tuple(subtitle.speaker_id for subtitle in result.subtitles) == (
-        "speaker-1",
-        "speaker-2",
-    )
-
-
 def test_conservative_subtitle_merger_keeps_sentence_final_cues_separate() -> None:
     subtitles = (
         _subtitle(1, "手を挙げてください", 60.49, 63.99),
@@ -161,28 +159,8 @@ def test_conservative_subtitle_merger_rejects_long_combined_duration() -> None:
     assert result.subtitles == subtitles
 
 
-def test_conservative_subtitle_merger_preserves_speaker_when_merging() -> None:
-    subtitles = (
-        _subtitle(1, "日本語", 0.0, 0.5, speaker_id="speaker-1"),
-        _subtitle(2, "です。", 0.6, 1.0, speaker_id="speaker-1"),
-    )
-
-    result = ConservativeSubtitleMerger().merge(
-        SubtitleMergeRequest(
-            source_path=Path("audio.mp3"),
-            working_directory=Path("work"),
-            run_id="run-001",
-            segments=(_segment(),),
-            subtitles=subtitles,
-        )
-    )
-
-    assert len(result.subtitles) == 1
-    assert result.subtitles[0].speaker_id == "speaker-1"
-
-
 def test_local_readability_optimizer_normalizes_punctuation() -> None:
-    subtitle = _subtitle(1, " 日本語です..  ", 0.0, 1.0, speaker_id="speaker-1")
+    subtitle = _subtitle(1, " 日本語です..  ", 0.0, 1.0)
 
     result = LocalReadabilityOptimizer().optimize(
         ReadabilityOptimizationRequest(
@@ -195,7 +173,6 @@ def test_local_readability_optimizer_normalizes_punctuation() -> None:
     )
 
     assert result.subtitles[0].text == "日本語です。"
-    assert result.subtitles[0].speaker_id == "speaker-1"
 
 
 def test_local_readability_optimizer_removes_spaces_between_japanese_words() -> None:

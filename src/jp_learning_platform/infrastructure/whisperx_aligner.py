@@ -136,12 +136,11 @@ class WhisperXAlignerAdapter:
                 end_seconds = max(end_seconds, words[-1].time_range.end_seconds)
 
             time_range = TimeRange(start_seconds, end_seconds)
-            speaker_id = _speaker_id(external_segment) or _common_speaker_id(words)
             sentence = Sentence(
                 text=text,
                 time_range=time_range,
                 words=words,
-                speaker_id=speaker_id,
+                asr_boundary_word_indexes=_text_boundary_word_indexes(text, words),
             )
             segments.append(
                 Segment(
@@ -149,7 +148,6 @@ class WhisperXAlignerAdapter:
                     text=text,
                     time_range=time_range,
                     sentences=(sentence,),
-                    speaker_id=speaker_id,
                 )
             )
 
@@ -171,26 +169,7 @@ class WhisperXAlignerAdapter:
             text=text,
             time_range=TimeRange(float(start), float(end)),
             confidence=float(confidence) if confidence is not None else None,
-            speaker_id=_speaker_id(external_word),
         )
-
-
-def _speaker_id(source: Any) -> str | None:
-    speaker = _value(source, "speaker", _value(source, "speaker_id", None))
-    if speaker is None:
-        return None
-
-    return str(speaker).strip() or None
-
-
-def _common_speaker_id(words: tuple[Word, ...]) -> str | None:
-    speaker_ids = tuple(
-        dict.fromkeys(word.speaker_id for word in words if word.speaker_id is not None)
-    )
-    if len(speaker_ids) == 1:
-        return speaker_ids[0]
-
-    return None
 
 
 def _value(source: Any, key: str, default: Any) -> Any:
@@ -198,6 +177,25 @@ def _value(source: Any, key: str, default: Any) -> Any:
         return source.get(key, default)
 
     return getattr(source, key, default)
+
+
+def _text_boundary_word_indexes(text: str, words: tuple[Word, ...]) -> tuple[int, ...]:
+    boundary_offsets: set[int] = set()
+    offset = 0
+    for character in text:
+        if character.isspace():
+            if offset:
+                boundary_offsets.add(offset)
+        else:
+            offset += 1
+
+    indexes: list[int] = []
+    word_offset = 0
+    for index, word in enumerate(words[:-1], start=1):
+        word_offset += len("".join(word.text.split()))
+        if word_offset in boundary_offsets:
+            indexes.append(index)
+    return tuple(indexes)
 
 
 __all__ = [

@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
+import pytest
+
 from jp_learning_platform.domain import (
     Segment,
     Sentence,
@@ -242,8 +244,8 @@ def test_homophone_resolver_propagates_strict_confirmation_within_document() -> 
     )
     assert [decision.reason for decision in result.decisions] == [
         "accepted_same_reading_context",
-        "accepted_document_consistency",
-        "accepted_document_consistency",
+        "accepted_high_asr_confidence_with_strong_context",
+        "accepted_high_asr_confidence_with_strong_context",
     ]
 
 
@@ -353,10 +355,10 @@ def test_homophone_resolver_rejects_candidate_that_is_not_better_than_original()
     assert decision.candidates[0].text == "聴解"
 
 
-def test_homophone_resolver_rejects_high_confidence_asr_word() -> None:
+def test_homophone_resolver_requires_stronger_context_for_high_confidence_asr_word() -> None:
     resolver = _resolver(
-        (HomophoneLanguageModelCandidate(text="聴解", score=0.8),),
-        original_score=0.001,
+        (HomophoneLanguageModelCandidate(text="聴解", score=0.3),),
+        original_score=0.01,
     )
     segment = _segment("2021年第2回日本語能力試験 懲戒N2")
     sentence = segment.sentences[0]
@@ -381,7 +383,45 @@ def test_homophone_resolver_rejects_high_confidence_asr_word() -> None:
     result = resolver.resolve(_request(segment))
 
     assert result.segments[0].text.endswith("懲戒N2")
-    assert result.decisions[0].reason == "asr_confidence_too_high"
+    decision = result.decisions[0]
+    assert decision.reason == "high_asr_confidence_requires_stronger_context"
+    assert decision.asr_confidence == 0.99
+    assert decision.score_ratio == pytest.approx(30.0)
+
+
+def test_homophone_resolver_accepts_decisive_context_despite_high_asr_confidence() -> None:
+    resolver = _resolver(
+        (HomophoneLanguageModelCandidate(text="聴解", score=0.8),),
+        original_score=0.001,
+    )
+    segment = _segment("2021年第2回日本語能力試験 懲戒N2")
+    sentence = segment.sentences[0]
+    segment = Segment(
+        position=segment.position,
+        text=segment.text,
+        time_range=segment.time_range,
+        sentences=(
+            Sentence(
+                text=sentence.text,
+                time_range=sentence.time_range,
+                words=(
+                    Word(
+                        "懲戒",
+                        sentence.words[0].time_range,
+                        confidence=0.99,
+                    ),
+                ),
+            ),
+        ),
+    )
+
+    result = resolver.resolve(_request(segment))
+
+    assert result.segments[0].text.endswith("聴解N2")
+    decision = result.decisions[0]
+    assert decision.accepted
+    assert decision.reason == "accepted_high_asr_confidence_with_strong_context"
+    assert decision.score_ratio == pytest.approx(800.0)
 
 
 def test_homophone_resolver_rejects_weak_contextual_ratio() -> None:

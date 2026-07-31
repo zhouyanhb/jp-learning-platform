@@ -81,10 +81,29 @@ def test_stage_artifact_store_uses_ordered_stage_filenames(tmp_path: Path) -> No
         == "04_homophone_resolution.json"
     )
     assert (
-        store.stage_path(source_path, "sentence-boundary-resolution").name
-        == "06_sentence_boundary_resolution.json"
+        store.stage_path(source_path, "overlap-text-cleanup").name
+        == "04a_overlap_text_cleanup.json"
     )
-    assert store.stage_path(source_path, "word-normalization").name == "05_word_normalization.json"
+    assert (
+        store.stage_path(source_path, "repeated-text-cleanup").name
+        == "04b_repeated_text_cleanup.json"
+    )
+    assert (
+        store.stage_path(source_path, "sentence-boundary-resolution").name
+        == "05_sentence_boundary_resolution.json"
+    )
+    assert (
+        store.stage_path(source_path, "punctuation-attribution").name
+        == "05a_punctuation_attribution.json"
+    )
+    assert (
+        store.stage_path(source_path, "word-normalization").name
+        == "06_word_normalization.json"
+    )
+    assert (
+        store.stage_path(source_path, "subtitle-display-normalization").name
+        == "07a_subtitle_display_normalization.json"
+    )
     assert store.stage_path(source_path, "subtitle-writer").name == "11_write.json"
 
 

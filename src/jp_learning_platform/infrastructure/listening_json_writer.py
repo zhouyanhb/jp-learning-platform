@@ -7,14 +7,21 @@ from dataclasses import dataclass
 import json
 from pathlib import Path
 
-from jp_learning_platform.domain import Segment, Sentence, Subtitle, TimeRange, Word
+from jp_learning_platform.domain import (
+    LearningWord,
+    Segment,
+    Sentence,
+    Subtitle,
+    TimeRange,
+    Word,
+)
 from jp_learning_platform.workflow.subtitle_writer_stage import (
     SubtitleWrite,
     SubtitleWriteRequest,
     SubtitleWriter,
 )
 
-LISTENING_JSON_SCHEMA_VERSION = "1.0"
+LISTENING_JSON_SCHEMA_VERSION = "1.4"
 DEFAULT_LISTENING_JSON_EXTENSION = ".json"
 
 
@@ -29,8 +36,18 @@ def _time_range_payload(time_range: TimeRange) -> Mapping[str, float]:
 def _word_payload(word: Word) -> Mapping[str, object]:
     return {
         "text": word.text,
-        "speaker_id": word.speaker_id,
         "confidence": word.confidence,
+        **_time_range_payload(word.time_range),
+    }
+
+
+def _learning_word_payload(word: LearningWord) -> Mapping[str, object]:
+    return {
+        "text": word.text,
+        "start_char": word.start_char,
+        "end_char": word.end_char,
+        "aligned_word_indexes": list(word.aligned_word_indexes),
+        "timing_estimated": word.timing_estimated,
         **_time_range_payload(word.time_range),
     }
 
@@ -38,9 +55,13 @@ def _word_payload(word: Word) -> Mapping[str, object]:
 def _sentence_payload(sentence: Sentence) -> Mapping[str, object]:
     return {
         "text": sentence.text,
-        "speaker_id": sentence.speaker_id,
+        "is_question": sentence.is_question,
+        "asr_boundary_word_indexes": list(sentence.asr_boundary_word_indexes),
         **_time_range_payload(sentence.time_range),
         "words": [_word_payload(word) for word in sentence.words],
+        "learning_words": [
+            _learning_word_payload(word) for word in sentence.learning_words
+        ],
     }
 
 
@@ -48,7 +69,6 @@ def _segment_payload(segment: Segment) -> Mapping[str, object]:
     return {
         "position": segment.position,
         "text": segment.text,
-        "speaker_id": segment.speaker_id,
         **_time_range_payload(segment.time_range),
         "sentences": [
             _sentence_payload(sentence) for sentence in segment.sentences
@@ -60,7 +80,6 @@ def _subtitle_payload(subtitle: Subtitle) -> Mapping[str, object]:
     return {
         "index": subtitle.index,
         "text": subtitle.text,
-        "speaker_id": subtitle.speaker_id,
         **_time_range_payload(subtitle.time_range),
     }
 

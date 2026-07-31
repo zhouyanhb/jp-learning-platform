@@ -2,7 +2,7 @@
 
 The local Japanese sentence boundary resolver runs before subtitle building.
 It uses aligned word timing, terminal punctuation, sentence-final expressions,
-speaker metadata, and Japanese dependent continuations to preserve grammatical
+timing evidence and Japanese dependent continuations to preserve grammatical
 sentence units.
 
 ## Alignment-held silence

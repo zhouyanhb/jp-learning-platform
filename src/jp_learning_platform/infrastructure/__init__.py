@@ -50,6 +50,12 @@ from jp_learning_platform.infrastructure.japanese_sentence_boundary_resolver imp
     DEFAULT_SENTENCE_BOUNDARY_TERMINAL_MARKS,
     JapaneseSentenceBoundaryResolver,
 )
+from jp_learning_platform.infrastructure.overlap_text_cleaner import (
+    AuditableOverlapTextCleaner,
+)
+from jp_learning_platform.infrastructure.repeated_text_cleaner import (
+    AuditableRepeatedTextCleaner,
+)
 from jp_learning_platform.infrastructure.japanese_word_normalizer import (
     JapaneseLearningWordNormalizer,
     JapaneseMorpheme,
@@ -63,8 +69,8 @@ from jp_learning_platform.infrastructure.listening_json_writer import (
     ListeningJsonWriter,
 )
 from jp_learning_platform.infrastructure.pipeline_config import (
+    DEFAULT_HOMOPHONE_CONFIDENCE_POLICY_CONFIG,
     DEFAULT_HOMOPHONE_PREFILTER_CONFIG,
-    DEFAULT_PYANNOTE_DIARIZATION_CONFIG,
     DEFAULT_QWEN_REPAIR_CONFIG,
     DEFAULT_QWEN_REPAIR_SAFETY_CONFIG,
     DEFAULT_READABILITY_CONFIG,
@@ -72,7 +78,7 @@ from jp_learning_platform.infrastructure.pipeline_config import (
     DEFAULT_SUBTITLE_MERGE_CONFIG,
     DEFAULT_WHISPER_TRANSCRIPTION_CONFIG,
     DEFAULT_WHISPERX_ALIGNMENT_CONFIG,
-    PyannoteDiarizationConfig,
+    HomophoneConfidencePolicyConfig,
     HomophonePrefilterConfig,
     QwenRepairConfig,
     QwenRepairSafetyConfig,
@@ -90,15 +96,6 @@ from jp_learning_platform.infrastructure.pipeline_cache import (
     FFmpegAudioNormalizer,
     LocalPipelineContextCache,
     PipelineCacheError,
-)
-from jp_learning_platform.infrastructure.pyannote_diarizer import (
-    DEFAULT_HF_TOKEN_ENVIRONMENT_VARIABLE,
-    DEFAULT_PYANNOTE_DIARIZATION_MODEL,
-    DiarizingWhisperXAligner,
-    PyannoteAuthTokenError,
-    PyannoteDependencyError,
-    PyannoteSpeakerDiarizer,
-    SpeakerTurn,
 )
 from jp_learning_platform.infrastructure.qwen_repairer import (
     DEFAULT_QWEN_CONTEXT,
@@ -151,6 +148,8 @@ __all__ = [
     "AudioLoader",
     "AudioLoaderError",
     "AudioNormalizationError",
+    "AuditableOverlapTextCleaner",
+    "AuditableRepeatedTextCleaner",
     "JapaneseLearningWordNormalizer",
     "JapaneseMorpheme",
     "SudachiMorphologicalAnalyzer",
@@ -160,7 +159,6 @@ __all__ = [
     "ConservativeSubtitleMerger",
     "ConsoleProgressReporter",
     "CompositeSubtitleWriter",
-    "DEFAULT_HF_TOKEN_ENVIRONMENT_VARIABLE",
     "DEFAULT_NORMALIZATION_VERSION",
     "DEFAULT_NORMALIZED_CHANNELS",
     "DEFAULT_NORMALIZED_SAMPLE_RATE",
@@ -173,10 +171,9 @@ __all__ = [
     "DEFAULT_HOMOPHONE_SCORE_MARGIN",
     "DEFAULT_HOMOPHONE_TOP_K",
     "DEFAULT_LISTENING_JSON_EXTENSION",
+    "DEFAULT_HOMOPHONE_CONFIDENCE_POLICY_CONFIG",
     "DEFAULT_HOMOPHONE_PREFILTER_CONFIG",
     "LISTENING_JSON_SCHEMA_VERSION",
-    "DEFAULT_PYANNOTE_DIARIZATION_CONFIG",
-    "DEFAULT_PYANNOTE_DIARIZATION_MODEL",
     "DEFAULT_QWEN_CONTEXT",
     "DEFAULT_QWEN_GPU_LAYERS",
     "DEFAULT_QWEN_MAX_TOKENS",
@@ -200,7 +197,6 @@ __all__ = [
     "DEFAULT_WHISPER_TRANSCRIPTION_CONFIG",
     "DEFAULT_WHISPERX_ALIGNMENT_CONFIG",
     "DEFAULT_WHISPERX_LANGUAGE",
-    "DiarizingWhisperXAligner",
     "DomainSubtitleValidator",
     "DuplicateToolError",
     "EmptyAudioFileError",
@@ -208,6 +204,7 @@ __all__ = [
     "FasterWhisperTranscriber",
     "FFmpegAudioNormalizer",
     "HomophoneCandidateGenerator",
+    "HomophoneConfidencePolicyConfig",
     "HomophonePrefilterConfig",
     "HomophoneLanguageModelCandidate",
     "HomophonePrefilterCandidateGenerator",
@@ -223,10 +220,6 @@ __all__ = [
     "PassthroughQwenRepairer",
     "PassthroughWhisperXAligner",
     "PipelineCacheError",
-    "PyannoteAuthTokenError",
-    "PyannoteDependencyError",
-    "PyannoteDiarizationConfig",
-    "PyannoteSpeakerDiarizer",
     "QwenDependencyError",
     "QwenModelNotFoundError",
     "QwenRepairConfig",
@@ -237,7 +230,6 @@ __all__ = [
     "SentenceBoundaryConfig",
     "ReadabilityConfig",
     "RegisteredTool",
-    "SpeakerTurn",
     "SrtSubtitleWriter",
     "STAGE_ARTIFACT_FILENAMES",
     "StageArtifactSerializationError",

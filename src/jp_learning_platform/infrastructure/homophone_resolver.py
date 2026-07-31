@@ -8,6 +8,7 @@ import unicodedata
 
 from jp_learning_platform.domain import Segment, Sentence, TimeRange, Word
 from jp_learning_platform.infrastructure.pipeline_config import (
+    DEFAULT_HOMOPHONE_CONFIDENCE_POLICY_CONFIG,
     DEFAULT_HOMOPHONE_PREFILTER_CONFIG,
 )
 from jp_learning_platform.workflow.homophone_stage import (
@@ -22,18 +23,25 @@ DEFAULT_HOMOPHONE_TOP_K = 80
 DEFAULT_HOMOPHONE_SCORE_MARGIN = 0.0
 DEFAULT_HOMOPHONE_MIN_CANDIDATE_SCORE = 0.0001
 DEFAULT_HOMOPHONE_MIN_SCORE_RATIO = 20.0
-DEFAULT_HOMOPHONE_MAX_ASR_CONFIDENCE = 0.9
+DEFAULT_HOMOPHONE_MAX_ASR_CONFIDENCE = (
+    DEFAULT_HOMOPHONE_CONFIDENCE_POLICY_CONFIG.high_asr_confidence
+)
+DEFAULT_HOMOPHONE_HIGH_CONFIDENCE_MIN_SCORE_RATIO = (
+    DEFAULT_HOMOPHONE_CONFIDENCE_POLICY_CONFIG.high_confidence_min_score_ratio
+)
 DEFAULT_HOMOPHONE_MIN_TOKEN_CHARS = 2
 DEFAULT_HOMOPHONE_MAX_CANDIDATE_PIECES = 3
 DEFAULT_HOMOPHONE_MAX_LEXICAL_CANDIDATES = 64
 DEFAULT_HOMOPHONE_MAX_TARGETS_PER_SENTENCE = (
     DEFAULT_HOMOPHONE_PREFILTER_CONFIG.max_targets_per_sentence
 )
+_MIN_CONTEXT_SCORE_DENOMINATOR = 1e-12
 _DEFAULT_SUDACHI_SPLIT_MODE = "C"
 _CONTENT_POS = {"名詞", "動詞", "形容詞", "副詞"}
 _SKIPPED_SURFACES = {"する", "した", "して", "ある", "いる", "ます", "です"}
 _DOCUMENT_PROPAGATION_REASONS = {
     "asr_confidence_too_high",
+    "high_asr_confidence_requires_stronger_context",
     "candidate_score_ratio_too_low",
 }
 
@@ -622,6 +630,9 @@ class BertHomophoneResolver:
     min_candidate_score: float = DEFAULT_HOMOPHONE_MIN_CANDIDATE_SCORE
     min_score_ratio: float = DEFAULT_HOMOPHONE_MIN_SCORE_RATIO
     max_asr_confidence: float = DEFAULT_HOMOPHONE_MAX_ASR_CONFIDENCE
+    high_confidence_min_score_ratio: float = (
+        DEFAULT_HOMOPHONE_HIGH_CONFIDENCE_MIN_SCORE_RATIO
+    )
     min_token_chars: int = DEFAULT_HOMOPHONE_MIN_TOKEN_CHARS
     max_targets_per_sentence: int = DEFAULT_HOMOPHONE_MAX_TARGETS_PER_SENTENCE
     require_original_score: bool = True
@@ -640,12 +651,19 @@ class BertHomophoneResolver:
         self.min_candidate_score = float(self.min_candidate_score)
         self.min_score_ratio = float(self.min_score_ratio)
         self.max_asr_confidence = float(self.max_asr_confidence)
+        self.high_confidence_min_score_ratio = float(
+            self.high_confidence_min_score_ratio
+        )
         if self.min_candidate_score < 0:
             raise ValueError("min_candidate_score must be non-negative.")
         if self.min_score_ratio <= 1:
             raise ValueError("min_score_ratio must be greater than 1.0.")
         if not 0 <= self.max_asr_confidence <= 1:
             raise ValueError("max_asr_confidence must be between 0.0 and 1.0.")
+        if self.high_confidence_min_score_ratio <= self.min_score_ratio:
+            raise ValueError(
+                "high_confidence_min_score_ratio must exceed min_score_ratio."
+            )
         if isinstance(self.min_token_chars, bool) or not isinstance(
             self.min_token_chars,
             int,
@@ -735,7 +753,6 @@ class BertHomophoneResolver:
                 text=segment.text,
                 time_range=segment.time_range,
                 words=(),
-                speaker_id=segment.speaker_id,
             ),
         )
 
@@ -765,7 +782,6 @@ class BertHomophoneResolver:
                 text=segment_text,
                 time_range=TimeRange(start_seconds, end_seconds),
                 sentences=tuple(resolved_sentences),
-                speaker_id=segment.speaker_id,
             ),
             tuple(decisions),
         )
@@ -822,7 +838,7 @@ class BertHomophoneResolver:
                 text=text,
                 time_range=sentence.time_range,
                 words=words,
-                speaker_id=sentence.speaker_id,
+                asr_boundary_word_indexes=sentence.asr_boundary_word_indexes,
             ),
             tuple(decisions),
         )
@@ -1000,13 +1016,14 @@ class BertHomophoneResolver:
             key=lambda candidate: candidate.score or 0.0,
         )
         selected_score = selected.score
+        asr_confidence = _surface_confidence(
+            sentence_words,
+            morpheme.surface,
+        )
         accepted, reason = self._accept_candidate(
             original_score=original_score,
             selected_score=selected_score,
-            asr_confidence=_surface_confidence(
-                sentence_words,
-                morpheme.surface,
-            ),
+            asr_confidence=asr_confidence,
         )
         return HomophoneResolutionDecision(
             segment_position=segment_position,
@@ -1021,6 +1038,8 @@ class BertHomophoneResolver:
             candidates=tuple(scored_candidates),
             target_start=morpheme.start,
             target_end=morpheme.end,
+            asr_confidence=asr_confidence,
+            score_ratio=_score_ratio(selected_score, original_score),
         )
 
     def _should_consider(self, morpheme: _AnalyzedMorpheme) -> bool:
@@ -1054,9 +1073,6 @@ class BertHomophoneResolver:
         if asr_confidence is None:
             return False, "missing_asr_confidence"
 
-        if asr_confidence > self.max_asr_confidence:
-            return False, "asr_confidence_too_high"
-
         if original_score is None:
             if self.require_original_score:
                 return False, "missing_original_score"
@@ -1065,10 +1081,30 @@ class BertHomophoneResolver:
         if selected_score <= original_score + self.score_margin:
             return False, "candidate_not_better_than_original"
 
-        if original_score > 0 and selected_score / original_score < self.min_score_ratio:
+        score_ratio = _score_ratio(selected_score, original_score)
+        if score_ratio is not None and score_ratio < self.min_score_ratio:
             return False, "candidate_score_ratio_too_low"
 
+        if (
+            asr_confidence > self.max_asr_confidence
+            and score_ratio is not None
+            and score_ratio < self.high_confidence_min_score_ratio
+        ):
+            return False, "high_asr_confidence_requires_stronger_context"
+
+        if asr_confidence > self.max_asr_confidence:
+            return True, "accepted_high_asr_confidence_with_strong_context"
+
         return True, "accepted_same_reading_context"
+
+
+def _score_ratio(
+    selected_score: float | None,
+    original_score: float | None,
+) -> float | None:
+    if selected_score is None or original_score is None:
+        return None
+    return selected_score / max(original_score, _MIN_CONTEXT_SCORE_DENOMINATOR)
 
 
 def _apply_text_changes(
@@ -1121,7 +1157,6 @@ def _apply_accepted_decisions(
                 text=segment.text,
                 time_range=segment.time_range,
                 words=(),
-                speaker_id=segment.speaker_id,
             ),
         )
         resolved_sentences: list[Sentence] = []
@@ -1147,7 +1182,7 @@ def _apply_accepted_decisions(
                     text=_apply_text_changes(sentence.text, changes),
                     time_range=sentence.time_range,
                     words=_apply_word_changes(sentence.words, changes),
-                    speaker_id=sentence.speaker_id,
+                    asr_boundary_word_indexes=sentence.asr_boundary_word_indexes,
                 )
             )
         resolved_segments.append(
@@ -1156,7 +1191,6 @@ def _apply_accepted_decisions(
                 text="".join(sentence.text for sentence in resolved_sentences),
                 time_range=segment.time_range,
                 sentences=tuple(resolved_sentences),
-                speaker_id=segment.speaker_id,
             )
         )
     return tuple(resolved_segments)
@@ -1237,7 +1271,6 @@ def _apply_word_changes(
                                 ),
                                 default=None,
                             ),
-                            speaker_id=word.speaker_id,
                         )
                     )
                     word_index = end_index + 1
@@ -1260,7 +1293,6 @@ def _apply_word_changes(
                 text=replacement.selected_text,
                 time_range=word.time_range,
                 confidence=word.confidence,
-                speaker_id=word.speaker_id,
             )
         )
         word_index += 1

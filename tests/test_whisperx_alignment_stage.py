@@ -224,7 +224,7 @@ def test_whisperx_alignment_is_immutable() -> None:
         alignment.segments = ()
 
 
-def test_whisperx_adapter_maps_external_speaker_labels() -> None:
+def test_whisperx_adapter_ignores_external_speaker_labels() -> None:
     adapter = WhisperXAlignerAdapter(device="cpu")
 
     assert adapter.requires_normalized_audio is False
@@ -262,15 +262,20 @@ def test_whisperx_adapter_maps_external_speaker_labels() -> None:
         )
     )
 
-    assert tuple(segment.speaker_id for segment in segments) == (
-        "speaker-1",
-        "speaker-2",
+    assert tuple(segment.text for segment in segments) == ("そう", "はい")
+
+
+def test_whisperx_adapter_records_text_boundaries_as_word_indexes() -> None:
+    segments = WhisperXAlignerAdapter(device="cpu")._to_domain_segments(
+        ({
+            "text": "どうですか そうです",
+            "start": 0.0,
+            "end": 1.0,
+            "words": tuple(
+                {"word": text, "start": index / 5, "end": (index + 1) / 5}
+                for index, text in enumerate(("どう", "です", "か", "そう", "です"))
+            ),
+        },)
     )
-    assert tuple(segment.sentences[0].speaker_id for segment in segments) == (
-        "speaker-1",
-        "speaker-2",
-    )
-    assert tuple(segment.sentences[0].words[0].speaker_id for segment in segments) == (
-        "speaker-1",
-        "speaker-2",
-    )
+
+    assert segments[0].sentences[0].asr_boundary_word_indexes == (3,)

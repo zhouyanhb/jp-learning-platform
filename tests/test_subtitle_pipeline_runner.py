@@ -19,6 +19,8 @@ from jp_learning_platform.domain import (
     Word,
 )
 from jp_learning_platform.infrastructure import (
+    AuditableOverlapTextCleaner,
+    AuditableRepeatedTextCleaner,
     AudioLoader,
     CompositeSubtitleWriter,
     ListeningJsonWriter,
@@ -38,6 +40,8 @@ from jp_learning_platform.workflow import (
     QwenRepairRequest,
     ReadabilityOptimization,
     ReadabilityOptimizationRequest,
+    SentenceBoundaryResolution,
+    SentenceBoundaryResolutionRequest,
     SubtitleMerge,
     SubtitleMergeRequest,
     SubtitlePipelineRunner,
@@ -47,6 +51,10 @@ from jp_learning_platform.workflow import (
     WhisperTranscriptionRequest,
     WhisperXAlignment,
     WhisperXAlignmentRequest,
+)
+from jp_learning_platform.workflow.word_normalization_stage import (
+    WordNormalization,
+    WordNormalizationRequest,
 )
 
 
@@ -127,6 +135,33 @@ class RecordingHomophoneResolver:
                     reason="no_same_reading_candidate",
                 ),
             ),
+        )
+
+
+@dataclass(slots=True)
+class RecordingSentenceBoundaryResolver:
+    requests: list[SentenceBoundaryResolutionRequest]
+
+    def resolve(
+        self,
+        request: SentenceBoundaryResolutionRequest,
+    ) -> SentenceBoundaryResolution:
+        self.requests.append(request)
+        return SentenceBoundaryResolution(
+            source_path=request.source_path,
+            segments=request.segments,
+        )
+
+
+@dataclass(slots=True)
+class RecordingWordNormalizer:
+    requests: list[WordNormalizationRequest]
+
+    def normalize(self, request: WordNormalizationRequest) -> WordNormalization:
+        self.requests.append(request)
+        return WordNormalization(
+            source_path=request.source_path,
+            segments=request.segments,
         )
 
 
@@ -321,6 +356,48 @@ def test_subtitle_pipeline_runner_can_execute_quality_stages(
     assert len(merger.requests) == 1
     assert len(optimizer.requests) == 1
     assert len(validator.requests) == 1
+
+
+def test_runner_resolves_sentences_before_creating_learning_words(
+    tmp_path: Path,
+) -> None:
+    boundary_resolver = RecordingSentenceBoundaryResolver(requests=[])
+    word_normalizer = RecordingWordNormalizer(requests=[])
+    runner = SubtitlePipelineRunner(
+        audio_loader=AudioLoader(),
+        transcriber=FakeTranscriber(requests=[]),
+        homophone_resolver=RecordingHomophoneResolver(requests=[]),
+        overlap_text_cleaner=AuditableOverlapTextCleaner(),
+        repeated_text_cleaner=AuditableRepeatedTextCleaner(),
+        sentence_boundary_resolver=boundary_resolver,
+        word_normalizer=word_normalizer,
+        builder=WordSubtitleBuilder(),
+        writer=SrtSubtitleWriter(output_directory=tmp_path / "output"),
+    )
+
+    stage_names = tuple(stage.name for stage in runner._stages())
+
+    assert stage_names.index("homophone-resolution") < stage_names.index(
+        "overlap-text-cleanup"
+    )
+    assert stage_names.index("overlap-text-cleanup") < stage_names.index(
+        "repeated-text-cleanup"
+    )
+    assert stage_names.index("repeated-text-cleanup") < stage_names.index(
+        "sentence-boundary-resolution"
+    )
+    assert stage_names.index("sentence-boundary-resolution") < stage_names.index(
+        "punctuation-attribution"
+    )
+    assert stage_names.index("punctuation-attribution") < stage_names.index(
+        "word-normalization"
+    )
+    assert stage_names.index("word-normalization") < stage_names.index(
+        "subtitle-builder"
+    )
+    assert stage_names.index("subtitle-builder") < stage_names.index(
+        "subtitle-display-normalization"
+    )
 
 
 def test_runner_reuses_complete_result_for_identical_audio_and_configuration(
@@ -568,8 +645,6 @@ def test_runner_reports_alignment_phase_timings(tmp_path: Path) -> None:
     )
     phase_timings = (
         StagePhaseTiming("whisperx-forced-alignment", 2.0),
-        StagePhaseTiming("pyannote-diarization", 5.0),
-        StagePhaseTiming("speaker-assignment", 0.25),
     )
     runner = SubtitlePipelineRunner(
         audio_loader=AudioLoader(),
@@ -594,12 +669,8 @@ def test_runner_reports_alignment_phase_timings(tmp_path: Path) -> None:
         if event.status.value == "succeeded"
     }
     assert succeeded["whisperx-forced-alignment"] == 2.0
-    assert succeeded["pyannote-diarization"] == 5.0
-    assert succeeded["speaker-assignment"] == 0.25
     artifact_directory = artifact_store.audio_directory(audio_path)
     assert (artifact_directory / "02a_forced_alignment.json").exists()
-    assert (artifact_directory / "02b_pyannote_diarization.json").exists()
-    assert (artifact_directory / "02c_speaker_assignment.json").exists()
 
 
 def test_subtitle_pipeline_runner_generates_srt_for_audio_folder(

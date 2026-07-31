@@ -13,29 +13,34 @@ time.
 ## Word
 
 `Word` represents a recognized token from speech recognition or alignment. It
-stores normalized text, a time range, an optional confidence score from `0.0`
-to `1.0`, and an optional speaker identifier when an upstream tool provides
-one.
+stores normalized text, a time range, and an optional confidence score from
+`0.0` to `1.0`. These aligned words remain the authoritative audio timeline and are not
+replaced by learning-word normalization.
+
+## LearningWord
+
+`LearningWord` represents a learning-oriented unit created by Sudachi after
+sentence boundaries are resolved. It stores its character span in sentence
+text, the contiguous aligned-word indexes that support it, a derived time
+range, and whether that timing required character-level estimation.
 
 ## Sentence
 
-`Sentence` groups words into readable text. When words are present, each word
-must fall within the sentence time range. A sentence may carry an optional
-speaker identifier so downstream subtitle stages can preserve dialogue
-boundaries.
+`Sentence` groups aligned words and learning words into readable text. Both
+collections must fall within the sentence time range. Aligned `words` support
+timing and boundary decisions; `learning_words` support lookup and study UI.
+ASR text boundaries are retained as indexes of the aligned word that starts
+after each boundary, so later text reconstruction cannot erase boundary evidence.
 
 ## Segment
 
 `Segment` represents an ordered transcript interval. It contains transcript text
-and may contain sentence objects produced by upstream processing. Segments may
-carry an optional speaker identifier from alignment or diarization metadata.
+and may contain sentence objects produced by upstream processing.
 
 ## Subtitle
 
 `Subtitle` represents a subtitle cue ready for validation or writing. Subtitle
-indexes are one-based to match subtitle file conventions. A subtitle may keep an
-optional speaker identifier for merge decisions; SRT output does not include
-speaker labels.
+indexes are one-based to match subtitle file conventions.
 
 ## Document
 

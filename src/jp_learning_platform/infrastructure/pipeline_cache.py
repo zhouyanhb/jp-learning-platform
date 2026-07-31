@@ -14,6 +14,7 @@ from typing import Protocol
 
 from jp_learning_platform.domain import (
     Document,
+    LearningWord,
     PipelineContext,
     Segment,
     Sentence,
@@ -283,7 +284,6 @@ def _word_payload(value: Word) -> Mapping[str, object]:
         "text": value.text,
         "time_range": _time_range_payload(value.time_range),
         "confidence": value.confidence,
-        "speaker_id": value.speaker_id,
     }
 
 
@@ -292,7 +292,30 @@ def _word_from_payload(value: Mapping[str, object]) -> Word:
         text=str(value["text"]),
         time_range=_time_range_from_payload(value["time_range"]),
         confidence=value.get("confidence"),
-        speaker_id=value.get("speaker_id"),
+    )
+
+
+def _learning_word_payload(value: LearningWord) -> Mapping[str, object]:
+    return {
+        "text": value.text,
+        "start_char": value.start_char,
+        "end_char": value.end_char,
+        "aligned_word_indexes": list(value.aligned_word_indexes),
+        "time_range": _time_range_payload(value.time_range),
+        "timing_estimated": value.timing_estimated,
+    }
+
+
+def _learning_word_from_payload(value: Mapping[str, object]) -> LearningWord:
+    return LearningWord(
+        text=str(value["text"]),
+        start_char=int(value["start_char"]),
+        end_char=int(value["end_char"]),
+        aligned_word_indexes=tuple(
+            int(index) for index in value.get("aligned_word_indexes", ())
+        ),
+        time_range=_time_range_from_payload(value["time_range"]),
+        timing_estimated=bool(value.get("timing_estimated", False)),
     )
 
 
@@ -301,7 +324,11 @@ def _sentence_payload(value: Sentence) -> Mapping[str, object]:
         "text": value.text,
         "time_range": _time_range_payload(value.time_range),
         "words": [_word_payload(item) for item in value.words],
-        "speaker_id": value.speaker_id,
+        "learning_words": [
+            _learning_word_payload(item) for item in value.learning_words
+        ],
+        "is_question": value.is_question,
+        "asr_boundary_word_indexes": list(value.asr_boundary_word_indexes),
     }
 
 
@@ -310,7 +337,14 @@ def _sentence_from_payload(value: Mapping[str, object]) -> Sentence:
         text=str(value["text"]),
         time_range=_time_range_from_payload(value["time_range"]),
         words=tuple(_word_from_payload(item) for item in value.get("words", ())),
-        speaker_id=value.get("speaker_id"),
+        learning_words=tuple(
+            _learning_word_from_payload(item)
+            for item in value.get("learning_words", ())
+        ),
+        is_question=bool(value.get("is_question", False)),
+        asr_boundary_word_indexes=tuple(
+            int(index) for index in value.get("asr_boundary_word_indexes", ())
+        ),
     )
 
 
@@ -320,7 +354,6 @@ def _segment_payload(value: Segment) -> Mapping[str, object]:
         "text": value.text,
         "time_range": _time_range_payload(value.time_range),
         "sentences": [_sentence_payload(item) for item in value.sentences],
-        "speaker_id": value.speaker_id,
     }
 
 
@@ -332,7 +365,6 @@ def _segment_from_payload(value: Mapping[str, object]) -> Segment:
         sentences=tuple(
             _sentence_from_payload(item) for item in value.get("sentences", ())
         ),
-        speaker_id=value.get("speaker_id"),
     )
 
 
@@ -341,7 +373,7 @@ def _subtitle_payload(value: Subtitle) -> Mapping[str, object]:
         "index": value.index,
         "text": value.text,
         "time_range": _time_range_payload(value.time_range),
-        "speaker_id": value.speaker_id,
+        "source_sentence_index": value.source_sentence_index,
     }
 
 
@@ -350,7 +382,11 @@ def _subtitle_from_payload(value: Mapping[str, object]) -> Subtitle:
         index=int(value["index"]),
         text=str(value["text"]),
         time_range=_time_range_from_payload(value["time_range"]),
-        speaker_id=value.get("speaker_id"),
+        source_sentence_index=(
+            int(value["source_sentence_index"])
+            if value.get("source_sentence_index") is not None
+            else None
+        ),
     )
 
 

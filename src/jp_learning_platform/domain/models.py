@@ -127,7 +127,6 @@ class Word:
     text: str
     time_range: TimeRange
     confidence: float | None = None
-    speaker_id: str | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.time_range, TimeRange):
@@ -139,11 +138,47 @@ class Word:
             "confidence",
             _normalize_optional_confidence(self.confidence),
         )
-        object.__setattr__(
-            self,
-            "speaker_id",
-            _normalize_optional_text(self.speaker_id, "speaker_id"),
-        )
+
+
+@dataclass(frozen=True, slots=True)
+class LearningWord:
+    text: str
+    start_char: int
+    end_char: int
+    aligned_word_indexes: tuple[int, ...]
+    time_range: TimeRange
+    timing_estimated: bool = False
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.time_range, TimeRange):
+            raise TypeError("time_range must be a TimeRange.")
+        if not isinstance(self.timing_estimated, bool):
+            raise TypeError("timing_estimated must be a bool.")
+
+        start_char = _normalize_position(self.start_char, "start_char", 0)
+        end_char = _normalize_position(self.end_char, "end_char", 1)
+        if end_char <= start_char:
+            raise ValueError("end_char must be greater than start_char.")
+
+        indexes = tuple(self.aligned_word_indexes)
+        if any(
+            isinstance(index, bool) or not isinstance(index, int)
+            for index in indexes
+        ):
+            raise TypeError("aligned_word_indexes must contain integers.")
+        if any(index < 0 for index in indexes):
+            raise ValueError("aligned_word_indexes must be non-negative.")
+        if tuple(sorted(set(indexes))) != indexes:
+            raise ValueError(
+                "aligned_word_indexes must be unique and strictly increasing."
+            )
+        if indexes and indexes != tuple(range(indexes[0], indexes[-1] + 1)):
+            raise ValueError("aligned_word_indexes must be contiguous.")
+
+        object.__setattr__(self, "text", _normalize_text(self.text, "text"))
+        object.__setattr__(self, "start_char", start_char)
+        object.__setattr__(self, "end_char", end_char)
+        object.__setattr__(self, "aligned_word_indexes", indexes)
 
 
 @dataclass(frozen=True, slots=True)
@@ -151,24 +186,46 @@ class Sentence:
     text: str
     time_range: TimeRange
     words: tuple[Word, ...] = ()
-    speaker_id: str | None = None
+    learning_words: tuple[LearningWord, ...] = ()
+    is_question: bool = False
+    asr_boundary_word_indexes: tuple[int, ...] = ()
 
     def __post_init__(self) -> None:
         if not isinstance(self.time_range, TimeRange):
             raise TypeError("time_range must be a TimeRange.")
+        if not isinstance(self.is_question, bool):
+            raise TypeError("is_question must be a bool.")
 
         words = _tuple_of_type(self.words, Word, "words")
         for word in words:
             if not self.time_range.contains(word.time_range):
                 raise ValueError("words must fall within the sentence time range.")
+        learning_words = _tuple_of_type(
+            self.learning_words,
+            LearningWord,
+            "learning_words",
+        )
+        for learning_word in learning_words:
+            if not self.time_range.contains(learning_word.time_range):
+                raise ValueError(
+                    "learning_words must fall within the sentence time range."
+                )
+            if learning_word.end_char > len(self.text.strip()):
+                raise ValueError("learning_words must fall within sentence text.")
+            if any(index >= len(words) for index in learning_word.aligned_word_indexes):
+                raise ValueError("learning_words must reference existing words.")
+        asr_boundaries = tuple(self.asr_boundary_word_indexes)
+        if any(isinstance(index, bool) or not isinstance(index, int) for index in asr_boundaries):
+            raise TypeError("asr_boundary_word_indexes must contain integers.")
+        if any(index <= 0 or index >= len(words) for index in asr_boundaries):
+            raise ValueError("asr_boundary_word_indexes must fall between words.")
+        if tuple(sorted(set(asr_boundaries))) != asr_boundaries:
+            raise ValueError("asr_boundary_word_indexes must be unique and increasing.")
 
         object.__setattr__(self, "text", _normalize_text(self.text, "text"))
         object.__setattr__(self, "words", words)
-        object.__setattr__(
-            self,
-            "speaker_id",
-            _normalize_optional_text(self.speaker_id, "speaker_id"),
-        )
+        object.__setattr__(self, "learning_words", learning_words)
+        object.__setattr__(self, "asr_boundary_word_indexes", asr_boundaries)
 
 
 @dataclass(frozen=True, slots=True)
@@ -177,7 +234,6 @@ class Segment:
     text: str
     time_range: TimeRange
     sentences: tuple[Sentence, ...] = ()
-    speaker_id: str | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.time_range, TimeRange):
@@ -195,11 +251,6 @@ class Segment:
         )
         object.__setattr__(self, "text", _normalize_text(self.text, "text"))
         object.__setattr__(self, "sentences", sentences)
-        object.__setattr__(
-            self,
-            "speaker_id",
-            _normalize_optional_text(self.speaker_id, "speaker_id"),
-        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -207,7 +258,7 @@ class Subtitle:
     index: int
     text: str
     time_range: TimeRange
-    speaker_id: str | None = None
+    source_sentence_index: int | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.time_range, TimeRange):
@@ -219,11 +270,16 @@ class Subtitle:
             _normalize_position(self.index, "index", MIN_SUBTITLE_INDEX),
         )
         object.__setattr__(self, "text", _normalize_text(self.text, "text"))
-        object.__setattr__(
-            self,
-            "speaker_id",
-            _normalize_optional_text(self.speaker_id, "speaker_id"),
-        )
+        if self.source_sentence_index is not None:
+            object.__setattr__(
+                self,
+                "source_sentence_index",
+                _normalize_position(
+                    self.source_sentence_index,
+                    "source_sentence_index",
+                    0,
+                ),
+            )
 
 
 @dataclass(frozen=True, slots=True)
@@ -258,6 +314,7 @@ class PipelineContext:
 
 __all__ = [
     "Document",
+    "LearningWord",
     "PipelineContext",
     "Segment",
     "Sentence",

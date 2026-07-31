@@ -4,8 +4,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
+import unicodedata
 
-from jp_learning_platform.domain.models import Document, Segment, Subtitle
+from jp_learning_platform.domain.models import Document, LearningWord, Segment, Subtitle
 
 FIRST_SEGMENT_POSITION = 0
 FIRST_SUBTITLE_INDEX = 1
@@ -18,6 +19,7 @@ class ValidationCode(Enum):
     DUPLICATE_SUBTITLE_INDEX = "duplicate_subtitle_index"
     GAP_IN_SUBTITLE_INDEXES = "gap_in_subtitle_indexes"
     OVERLAPPING_SUBTITLES = "overlapping_subtitles"
+    INVALID_LEARNING_WORD_COVERAGE = "invalid_learning_word_coverage"
 
 
 @dataclass(frozen=True, slots=True)
@@ -124,7 +126,52 @@ def _validate_segments(segments: tuple[Segment, ...]) -> tuple[ValidationIssue, 
                 )
             )
 
+    for segment in segments:
+        for sentence_index, sentence in enumerate(segment.sentences):
+            learning_words = sentence.learning_words
+            if not learning_words:
+                continue
+            compact_text = "".join(
+                character for character in sentence.text if not character.isspace()
+            )
+            if not _learning_words_cover_lexical_text(compact_text, learning_words):
+                issues.append(
+                    ValidationIssue(
+                        code=ValidationCode.INVALID_LEARNING_WORD_COVERAGE,
+                        message=(
+                            "Learning words must continuously and exactly cover "
+                            "the sentence text."
+                        ),
+                        location=(
+                            f"document.segments[{segment.position}]"
+                            f".sentences[{sentence_index}].learning_words"
+                        ),
+                    )
+                )
+
     return tuple(issues)
+
+
+def _learning_words_cover_lexical_text(
+    text: str,
+    learning_words: tuple[LearningWord, ...],
+) -> bool:
+    cursor = 0
+    for item in learning_words:
+        if (
+            item.start_char < cursor
+            or item.end_char > len(text)
+            or item.end_char - item.start_char != len(item.text)
+            or text[item.start_char : item.end_char] != item.text
+            or not _is_punctuation_only(text[cursor : item.start_char])
+        ):
+            return False
+        cursor = item.end_char
+    return _is_punctuation_only(text[cursor:])
+
+
+def _is_punctuation_only(text: str) -> bool:
+    return all(unicodedata.category(character).startswith("P") for character in text)
 
 
 def _validate_subtitles(

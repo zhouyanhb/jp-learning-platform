@@ -32,9 +32,6 @@ word-normalization = [
   "sudachipy>=0.6",
   "sudachidict-core>=2024.1"
 ]
-diarization = [
-  "pyannote.audio>=3.1"
-]
 qwen = [
   "llama-cpp-python>=0.2"
 ]

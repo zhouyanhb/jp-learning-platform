@@ -12,6 +12,11 @@ from jp_learning_platform.domain import (
     DomainValidationError,
     ValidationCode,
     ValidationIssue,
+    LearningWord,
+    Sentence,
+    Segment,
+    TimeRange,
+    Word,
 )
 
 
@@ -98,6 +103,67 @@ def test_validator_reports_overlapping_subtitles() -> None:
     result = DocumentValidator().validate(document)
 
     assert result.issues[0].code is ValidationCode.OVERLAPPING_SUBTITLES
+
+
+def test_validator_reports_incomplete_learning_word_coverage() -> None:
+    time_range = TimeRange(0.0, 1.0)
+    aligned = Word("日本語です", time_range)
+    sentence = Sentence(
+        "日本語です",
+        time_range,
+        (aligned,),
+        learning_words=(
+            LearningWord("日本語", 0, 3, (0,), time_range, True),
+        ),
+    )
+    document = Document(
+        Path("audio/input.wav"),
+        (Segment(0, sentence.text, time_range, (sentence,)),),
+    )
+
+    result = DocumentValidator().validate(document)
+
+    assert result.issues[0].code is ValidationCode.INVALID_LEARNING_WORD_COVERAGE
+
+
+def test_validator_allows_punctuation_gaps_between_learning_words() -> None:
+    time_range = TimeRange(0.0, 1.0)
+    sentence = Sentence(
+        "2、3冊",
+        time_range,
+        (Word("2、3冊", time_range),),
+        learning_words=(
+            LearningWord("2", 0, 1, (0,), time_range, True),
+            LearningWord("3冊", 2, 4, (0,), time_range, True),
+        ),
+    )
+    document = Document(
+        Path("audio/input.wav"),
+        (Segment(0, sentence.text, time_range, (sentence,)),),
+    )
+
+    assert DocumentValidator().validate(document).is_valid
+
+
+def test_validator_rejects_lexical_gaps_between_learning_words() -> None:
+    time_range = TimeRange(0.0, 1.0)
+    sentence = Sentence(
+        "日本語です",
+        time_range,
+        (Word("日本語です", time_range),),
+        learning_words=(
+            LearningWord("日本", 0, 2, (0,), time_range, True),
+            LearningWord("です", 3, 5, (0,), time_range, True),
+        ),
+    )
+    document = Document(
+        Path("audio/input.wav"),
+        (Segment(0, sentence.text, time_range, (sentence,)),),
+    )
+
+    result = DocumentValidator().validate(document)
+
+    assert result.issues[0].code is ValidationCode.INVALID_LEARNING_WORD_COVERAGE
 
 
 def test_validation_result_can_raise_for_errors() -> None:

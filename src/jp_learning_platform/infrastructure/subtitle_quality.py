@@ -81,12 +81,14 @@ class ConservativeSubtitleMerger:
             nxt.time_range.end_seconds - current.time_range.start_seconds
         )
         return (
+            current.source_sentence_index is not None
+            and current.source_sentence_index == nxt.source_sentence_index
+            and
             0 <= gap <= self.max_gap_seconds
             and len(combined_text) <= self.max_chars
             and combined_duration <= self.max_duration_seconds
             and not current.text.endswith(JAPANESE_TERMINAL_MARKS)
             and not current.text.endswith(JAPANESE_SENTENCE_FINAL_SUFFIXES)
-            and not _speaker_boundary(current, nxt)
         )
 
     def _merge_pair(self, current: Subtitle, nxt: Subtitle) -> Subtitle:
@@ -97,7 +99,7 @@ class ConservativeSubtitleMerger:
                 current.time_range.start_seconds,
                 nxt.time_range.end_seconds,
             ),
-            speaker_id=current.speaker_id,
+            source_sentence_index=current.source_sentence_index,
         )
 
 
@@ -119,7 +121,7 @@ class LocalReadabilityOptimizer:
                 index=subtitle.index,
                 text=self._normalize_text(subtitle.text, comma, period),
                 time_range=subtitle.time_range,
-                speaker_id=subtitle.speaker_id,
+                source_sentence_index=subtitle.source_sentence_index,
             )
             for subtitle in request.subtitles
         )
@@ -205,17 +207,10 @@ def _reindex(subtitles: list[Subtitle]) -> tuple[Subtitle, ...]:
             index=index,
             text=subtitle.text,
             time_range=subtitle.time_range,
-            speaker_id=subtitle.speaker_id,
+            source_sentence_index=subtitle.source_sentence_index,
         )
         for index, subtitle in enumerate(subtitles, start=1)
     )
-
-
-def _speaker_boundary(current: Subtitle, nxt: Subtitle) -> bool:
-    if current.speaker_id is None and nxt.speaker_id is None:
-        return False
-
-    return current.speaker_id != nxt.speaker_id
 
 
 __all__ = [

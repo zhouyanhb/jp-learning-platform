@@ -5,6 +5,7 @@ import subprocess
 
 from jp_learning_platform.domain import (
     Document,
+    LearningWord,
     PipelineContext,
     Segment,
     Sentence,
@@ -24,26 +25,31 @@ def _context(source_path: Path, working_directory: Path) -> PipelineContext:
         text="聴解",
         time_range=time_range,
         confidence=0.8,
-        speaker_id="speaker-1",
     )
     sentence = Sentence(
         text="聴解です。",
         time_range=time_range,
         words=(word,),
-        speaker_id="speaker-1",
+        learning_words=(
+            LearningWord(
+                "聴解",
+                0,
+                2,
+                (0,),
+                time_range,
+            ),
+        ),
     )
     segment = Segment(
         position=0,
         text=sentence.text,
         time_range=time_range,
         sentences=(sentence,),
-        speaker_id="speaker-1",
     )
     subtitle = Subtitle(
         index=1,
         text=sentence.text,
         time_range=time_range,
-        speaker_id="speaker-1",
     )
     return PipelineContext(
         run_id="run-1",

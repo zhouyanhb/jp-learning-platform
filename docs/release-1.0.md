@@ -6,7 +6,7 @@ Version 1.0.0 completes the frozen Version 1.0 subtitle pipeline scope.
 
 The release includes the full subtitle pipeline:
 
-Audio -> Whisper -> WhisperX Alignment -> Qwen Repair -> Subtitle Builder -> Subtitle Merger -> Readability Optimizer -> Subtitle Validator -> Subtitle Writer
+Audio -> Whisper -> WhisperX Alignment -> Homophone Resolution -> Sentence Boundary Resolution -> Learning Word Normalization -> Subtitle Builder -> Subtitle Merger -> Readability Optimizer -> Subtitle Validator -> Subtitle Writer
 
 Features outside the subtitle pipeline remain out of scope for this release.
 

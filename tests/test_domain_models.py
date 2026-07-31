@@ -7,6 +7,7 @@ import pytest
 
 from jp_learning_platform.domain import (
     Document,
+    LearningWord,
     PipelineContext,
     Segment,
     Sentence,
@@ -34,12 +35,10 @@ def test_word_normalizes_text_and_confidence() -> None:
         text="  nihongo  ",
         time_range=TimeRange(0.0, 0.5),
         confidence=0.9,
-        speaker_id=" speaker-1 ",
     )
 
     assert word.text == "nihongo"
     assert word.confidence == 0.9
-    assert word.speaker_id == "speaker-1"
 
 
 def test_word_rejects_confidence_outside_probability_range() -> None:
@@ -54,47 +53,46 @@ def test_sentence_requires_words_inside_time_range() -> None:
         Sentence(text="nihongo", time_range=TimeRange(0.0, 1.0), words=(word,))
 
 
+def test_sentence_keeps_aligned_and_learning_words_separate() -> None:
+    aligned = Word("日本語です", TimeRange(0.0, 1.0), 0.9)
+    learning = LearningWord(
+        text="日本語",
+        start_char=0,
+        end_char=3,
+        aligned_word_indexes=(0,),
+        time_range=TimeRange(0.0, 0.6),
+        timing_estimated=True,
+    )
+
+    sentence = Sentence(
+        text="日本語です",
+        time_range=TimeRange(0.0, 1.0),
+        words=(aligned,),
+        learning_words=(learning,),
+    )
+
+    assert sentence.words == (aligned,)
+    assert sentence.learning_words == (learning,)
+
+
 def test_segment_converts_sentence_collection_to_tuple() -> None:
     sentence = Sentence(
         text="nihongo desu",
         time_range=TimeRange(0.0, 2.0),
-        speaker_id="speaker-1",
     )
     segment = Segment(
         position=0,
         text="nihongo desu",
         time_range=TimeRange(0.0, 2.0),
         sentences=[sentence],
-        speaker_id=" speaker-1 ",
     )
 
     assert segment.sentences == (sentence,)
-    assert segment.speaker_id == "speaker-1"
-
-
-def test_sentence_rejects_empty_speaker_id() -> None:
-    with pytest.raises(ValueError, match="speaker_id"):
-        Sentence(
-            text="nihongo",
-            time_range=TimeRange(0.0, 1.0),
-            speaker_id=" ",
-        )
 
 
 def test_subtitle_uses_one_based_index() -> None:
     with pytest.raises(ValueError, match="index"):
         Subtitle(index=0, text="nihongo desu", time_range=TimeRange(0.0, 2.0))
-
-
-def test_subtitle_normalizes_optional_speaker_id() -> None:
-    subtitle = Subtitle(
-        index=1,
-        text="nihongo desu",
-        time_range=TimeRange(0.0, 2.0),
-        speaker_id=" speaker-2 ",
-    )
-
-    assert subtitle.speaker_id == "speaker-2"
 
 
 def test_document_converts_paths_and_collections() -> None:

@@ -17,12 +17,8 @@ a protocol implemented by infrastructure or plugin adapters and receives a
 
 The aligner returns a `WhisperXAlignment`.
 
-When pyannote diarization wraps WhisperX, the returned alignment also carries
-three measured phase durations:
-
-- `whisperx-forced-alignment`: audio loading and WhisperX forced alignment
-- `pyannote-diarization`: pyannote model inference and speaker-turn extraction
-- `speaker-assignment`: deterministic overlap matching and segment splitting
+The returned alignment may carry the measured `whisperx-forced-alignment`
+phase duration for audio loading and forced alignment.
 
 The progress layer emits each phase as a separate successful timing event and
 retains `whisperx-alignment` as the aggregate duration. Phase measurement does
@@ -33,10 +29,7 @@ rerun these phases and therefore does not emit fresh phase durations.
 
 `WhisperXAlignment` contains the source path and aligned domain `Segment`
 objects. Aligned segments may include nested `Sentence` and `Word` values with
-word-level timing and confidence. Infrastructure adapters may also assign
-speaker identifiers. The local pyannote.audio adapter wraps a configured
-aligner, matches diarized speaker turns to word time ranges, and splits
-mixed-speaker sentence runs before returning aligned segments.
+word-level timing and confidence.
 
 The stage validates that:
 

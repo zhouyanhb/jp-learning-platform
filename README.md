@@ -12,7 +12,7 @@ Release notes are maintained in `docs/release-1.0.md`.
 
 Version 1.0 is limited to the subtitle pipeline:
 
-Audio -> Whisper -> WhisperX Alignment -> Qwen Repair -> Subtitle Builder -> Subtitle Merger -> Readability Optimizer -> Subtitle Validator -> Subtitle Writer
+Audio -> Whisper -> WhisperX Alignment -> Homophone Resolution -> Sentence Boundary Resolution -> Learning Word Normalization -> Subtitle Builder -> Subtitle Merger -> Readability Optimizer -> Subtitle Validator -> Subtitle Writer
 
 Features outside this pipeline are intentionally out of scope for Version 1.0.
 
@@ -33,8 +33,6 @@ Install ASR support when generating subtitles from audio:
 ```bash
 python -m pip install -e ".[asr]"
 python -m pip install -e ".[align]"
-python -m pip install -e ".[diarization]"
-python -m pip install -e ".[qwen]"
 ```
 
 ## Run
@@ -47,9 +45,7 @@ python -m jp_learning_platform transcribe audio.mp3
 python -m jp_learning_platform transcribe ./audios
 python -m jp_learning_platform transcribe audio.mp3 --export-srt
 python -m jp_learning_platform transcribe audio.mp3 --model-size small --device cpu --compute-type int8
-python -m jp_learning_platform transcribe audio.mp3 --enable-whisperx
-python -m jp_learning_platform transcribe audio.mp3 --enable-diarization
-python -m jp_learning_platform transcribe audio.mp3 --qwen-model-path models/qwen.gguf
+python -m jp_learning_platform transcribe audio.mp3 --disable-whisperx
 python -m jp_learning_platform transcribe audio.mp3 --no-cache
 ```
 
@@ -64,8 +60,8 @@ deterministically extracted audio is hashed so another video with the same
 audio can reuse existing Whisper and later-stage results. Use
 `--export-srt` when an SRT file should be written beside the JSON output. Use
 `--output-dir` only when a custom output directory is needed.
-Use `--enable-diarization` with a Hugging Face token from `HF_TOKEN` or
-`--hf-token` when speaker identifiers should be assigned with pyannote.audio.
+WhisperX forced alignment is enabled by default; use `--disable-whisperx` only
+when word-level forced alignment is intentionally unavailable.
 
 During transcription, the command reports the current file and pipeline stage
 to stderr. Per-stage JSON artifacts are saved under
@@ -76,8 +72,6 @@ Successful work is cached by audio content, complete analysis configuration,
 and stage implementation under `output/.cache/`. Identical reruns reuse the
 complete result without decoding or normalizing the audio again. Use
 `--no-cache` for an intentionally cold run.
-Cold runs still perform required PCM conversion when diarization is enabled;
-the option disables reuse, not audio compatibility handling.
 
 ## Checks
 
@@ -122,10 +116,6 @@ Whisper transcription stage contracts are documented in `docs/whisper-stage.md`.
 
 WhisperX alignment stage contracts are documented in
 `docs/whisperx-alignment-stage.md`.
-
-## Qwen Repair Stage
-
-Qwen repair stage contracts are documented in `docs/qwen-repair-stage.md`.
 
 ## Subtitle Builder Stage
 

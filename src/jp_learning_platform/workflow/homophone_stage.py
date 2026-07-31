@@ -120,6 +120,8 @@ class HomophoneResolutionDecision:
     candidates: tuple[HomophoneCandidateScore, ...] = ()
     target_start: int | None = None
     target_end: int | None = None
+    asr_confidence: float | None = None
+    score_ratio: float | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(
@@ -143,6 +145,16 @@ class HomophoneResolutionDecision:
             _normalize_name(self.selected_text, "selected_text"),
         )
         object.__setattr__(self, "reading", _normalize_name(self.reading, "reading"))
+        object.__setattr__(
+            self,
+            "asr_confidence",
+            _normalize_optional_score(self.asr_confidence, "asr_confidence"),
+        )
+        object.__setattr__(
+            self,
+            "score_ratio",
+            _normalize_optional_score(self.score_ratio, "score_ratio"),
+        )
         if not isinstance(self.accepted, bool):
             raise TypeError("accepted must be a bool.")
 

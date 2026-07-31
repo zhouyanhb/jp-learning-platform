@@ -3,6 +3,7 @@
 from jp_learning_platform.domain.factory import DomainModelFactory
 from jp_learning_platform.domain.models import (
     Document,
+    LearningWord,
     PipelineContext,
     Segment,
     Sentence,
@@ -21,6 +22,7 @@ from jp_learning_platform.domain.validation import (
 
 __all__ = [
     "Document",
+    "LearningWord",
     "DocumentRepository",
     "DocumentValidator",
     "DomainModelFactory",

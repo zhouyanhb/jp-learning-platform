@@ -6,7 +6,13 @@ import unicodedata
 from dataclasses import dataclass
 from typing import Protocol
 
-from jp_learning_platform.domain import Segment, Sentence, TimeRange, Word
+from jp_learning_platform.domain import (
+    LearningWord,
+    Segment,
+    Sentence,
+    TimeRange,
+    Word,
+)
 from jp_learning_platform.workflow.word_normalization_stage import (
     WordNormalization,
     WordNormalizationRequest,
@@ -65,6 +71,9 @@ class _LearningUnit:
     start: int
     end: int
     pos: tuple[str, ...]
+    prefixed: bool = False
+    suffixed: bool = False
+    auxiliary_stem: bool = False
 
 
 class JapaneseLearningWordNormalizer:
@@ -84,7 +93,6 @@ class JapaneseLearningWordNormalizer:
             position=segment.position,
             text=segment.text,
             time_range=segment.time_range,
-            speaker_id=segment.speaker_id,
             sentences=tuple(self._normalize_sentence(item) for item in segment.sentences),
         )
 
@@ -94,14 +102,16 @@ class JapaneseLearningWordNormalizer:
         if not units:
             return sentence
         total_chars = max(units[-1].end, 1)
-        words = tuple(
-            self._make_word(unit, sentence, total_chars) for unit in units
+        learning_words = tuple(
+            self._make_learning_word(unit, sentence, total_chars) for unit in units
         )
         return Sentence(
             text=sentence.text,
             time_range=sentence.time_range,
-            words=words,
-            speaker_id=sentence.speaker_id,
+            words=sentence.words,
+            learning_words=learning_words,
+            is_question=sentence.is_question,
+            asr_boundary_word_indexes=sentence.asr_boundary_word_indexes,
         )
 
     def _learning_units(self, morphemes: tuple[JapaneseMorpheme, ...]) -> tuple[_LearningUnit, ...]:
@@ -110,8 +120,20 @@ class JapaneseLearningWordNormalizer:
         for item in morphemes:
             start, end = cursor, cursor + len(item.surface)
             cursor = end
+            # 接頭辞は後続する中心語と組み合わせる。
+            if self._continues_prefix(item, raw):
+                previous = raw.pop()
+                raw.append(
+                    _LearningUnit(
+                        previous.text + item.surface,
+                        previous.start,
+                        end,
+                        item.part_of_speech,
+                        prefixed=True,
+                    )
+                )
             # でも is one functional learning unit, independently of its host word.
-            if self._continues_compound_particle(item, raw):
+            elif self._continues_compound_particle(item, raw):
                 previous = raw.pop()
                 raw.append(_LearningUnit("でも", previous.start, end, item.part_of_speech))
             # サ変可能名詞＋「する」の活用を一つの主要動詞にする。
@@ -129,29 +151,60 @@ class JapaneseLearningWordNormalizer:
             elif self._continues_te_form(item, raw):
                 previous = raw.pop()
                 raw.append(_LearningUnit(previous.text + item.surface, previous.start, end, previous.pos))
-            # 活用助動詞を主要動詞・形容詞または補助動詞自身に付ける。
+            # 非自立動詞に続く助動詞語幹を、後続する活用助動詞まで一つの鎖にする。
+            elif self._continues_auxiliary_stem(item, raw):
+                previous = raw.pop()
+                raw.append(
+                    _LearningUnit(
+                        previous.text + item.surface,
+                        previous.start,
+                        end,
+                        previous.pos,
+                        auxiliary_stem=True,
+                    )
+                )
+            # 活用語に続く助動詞と、連続する助動詞の活用鎖を一単位にする。
             elif self._continues_inflection(item, raw):
                 previous = raw.pop()
-                raw.append(_LearningUnit(previous.text + item.surface, previous.start, end, previous.pos))
+                raw.append(
+                    _LearningUnit(
+                        previous.text + item.surface,
+                        previous.start,
+                        end,
+                        previous.pos,
+                        auxiliary_stem=previous.auxiliary_stem,
+                    )
+                )
             # 「高く＋ない」のような非自立形容詞は直前の形容詞に付ける。
             elif self._continues_adjective_inflection(item, raw):
                 previous = raw.pop()
                 raw.append(_LearningUnit(previous.text + item.surface, previous.start, end, previous.pos))
+            elif self._is_numeric_enumeration_separator(item, raw):
+                raw.append(_LearningUnit(item.surface, start, end, item.part_of_speech))
             elif item.part_of_speech[0] == "補助記号" and raw:
                 previous = raw.pop()
                 raw.append(_LearningUnit(previous.text + item.surface, previous.start, end, previous.pos))
             else:
                 raw.append(_LearningUnit(item.surface, start, end, item.part_of_speech))
         structural = self._merge_structural_units(raw)
-        return self._merge_reanalyzed_nominals(structural)
+        merged = self._merge_reanalyzed_nominals(structural)
+        return tuple(unit for unit in merged if not self._is_pure_punctuation(unit))
+
+    @staticmethod
+    def _is_pure_punctuation(unit: _LearningUnit) -> bool:
+        return bool(unit.text) and all(
+            unicodedata.category(character).startswith("P")
+            for character in unit.text
+        )
 
     def _merge_structural_units(
         self,
         units: list[_LearningUnit],
     ) -> list[_LearningUnit]:
         merged: list[_LearningUnit] = []
-        for unit in units:
-            if merged and self._forms_structural_unit(merged[-1], unit):
+        for index, unit in enumerate(units):
+            following = units[index + 1] if index + 1 < len(units) else None
+            if merged and self._forms_structural_unit(merged[-1], unit, following):
                 previous = merged.pop()
                 merged.append(
                     _LearningUnit(
@@ -159,6 +212,12 @@ class JapaneseLearningWordNormalizer:
                         start=previous.start,
                         end=unit.end,
                         pos=previous.pos,
+                        prefixed=previous.prefixed,
+                        suffixed=(
+                            previous.suffixed
+                            or self._is_nominal_suffix_unit(unit)
+                        ),
+                        auxiliary_stem=previous.auxiliary_stem or unit.auxiliary_stem,
                     )
                 )
             else:
@@ -170,16 +229,37 @@ class JapaneseLearningWordNormalizer:
         cls,
         left: _LearningUnit,
         right: _LearningUnit,
+        following: _LearningUnit | None,
     ) -> bool:
         return (
             cls._forms_ascii_identifier(left.text, right.text)
-            or (cls._is_numeric_unit(left) and cls._is_counter_unit(right))
+            or (
+                not left.suffixed
+                and cls._is_numeric_unit(left)
+                and cls._is_counter_unit(right)
+            )
+            or cls._forms_nominal_suffix_unit(left, right)
+            or cls._forms_person_title_unit(left, right, following)
             or (
                 cls._is_nominal_unit(left)
                 and cls._is_nominal_unit(right)
                 and cls._is_katakana_text(left.text)
                 and cls._is_katakana_text(right.text)
             )
+        )
+
+    @staticmethod
+    def _is_numeric_enumeration_separator(
+        item: JapaneseMorpheme,
+        units: list[_LearningUnit],
+    ) -> bool:
+        return bool(
+            units
+            and JapaneseLearningWordNormalizer._is_numeric_unit(units[-1])
+            and item.part_of_speech
+            and item.part_of_speech[0] == "補助記号"
+            and len(item.part_of_speech) > 1
+            and item.part_of_speech[1] == "読点"
         )
 
     @staticmethod
@@ -203,6 +283,86 @@ class JapaneseLearningWordNormalizer:
     @staticmethod
     def _is_counter_unit(unit: _LearningUnit) -> bool:
         return unit.pos[0] == "名詞" and "助数詞可能" in unit.pos
+
+    @classmethod
+    def _forms_nominal_suffix_unit(
+        cls,
+        left: _LearningUnit,
+        right: _LearningUnit,
+    ) -> bool:
+        return (
+            not left.suffixed
+            and
+            len(right.pos) > 1
+            and right.pos[0] == "接尾辞"
+            and right.pos[1] == "名詞的"
+            and (
+                cls._is_numeric_unit(left)
+                or left.prefixed
+                or cls._is_person_reference(left)
+                or cls._is_nominal_suffix_unit(left)
+            )
+        )
+
+    @staticmethod
+    def _is_nominal_suffix_unit(unit: _LearningUnit) -> bool:
+        return bool(
+            len(unit.pos) > 1
+            and unit.pos[0] == "接尾辞"
+            and unit.pos[1] == "名詞的"
+        )
+
+    @staticmethod
+    def _is_person_reference(unit: _LearningUnit) -> bool:
+        return bool(
+            unit.pos
+            and unit.pos[0] == "名詞"
+            and (
+                "副詞可能" in unit.pos
+                or (
+                    len(unit.pos) > 3
+                    and unit.pos[1] == "固有名詞"
+                    and unit.pos[2] == "人名"
+                )
+            )
+        )
+
+    @classmethod
+    def _forms_person_title_unit(
+        cls,
+        left: _LearningUnit,
+        right: _LearningUnit,
+        following: _LearningUnit | None,
+    ) -> bool:
+        if not cls._is_person_name(left) or not cls._is_title_noun_candidate(right):
+            return False
+        return following is None or bool(
+            following.pos
+            and following.pos[0] in {"助詞", "助動詞", "補助記号"}
+        )
+
+    @staticmethod
+    def _is_person_name(unit: _LearningUnit) -> bool:
+        return bool(
+            len(unit.pos) > 2
+            and unit.pos[0] == "名詞"
+            and unit.pos[1] == "固有名詞"
+            and unit.pos[2] == "人名"
+        )
+
+    @staticmethod
+    def _is_title_noun_candidate(unit: _LearningUnit) -> bool:
+        return bool(
+            len(unit.pos) > 2
+            and unit.pos[0] == "名詞"
+            and unit.pos[1] == "普通名詞"
+            and unit.pos[2] == "一般"
+            and unit.text
+            and all(
+                unicodedata.name(character, "").startswith("CJK UNIFIED IDEOGRAPH")
+                for character in unit.text
+            )
+        )
 
     @staticmethod
     def _is_katakana_text(text: str) -> bool:
@@ -238,6 +398,9 @@ class JapaneseLearningWordNormalizer:
                     start=candidates[0].start,
                     end=candidates[-1].end,
                     pos=analysis[0].part_of_speech,
+                    prefixed=any(item.prefixed for item in candidates),
+                    suffixed=any(item.suffixed for item in candidates),
+                    auxiliary_stem=any(item.auxiliary_stem for item in candidates),
                 )
                 selected_size = size
                 break
@@ -268,6 +431,25 @@ class JapaneseLearningWordNormalizer:
             and analysis[0].surface == combined_text
             and bool(analysis[0].part_of_speech)
             and analysis[0].part_of_speech[0] == "名詞"
+        )
+
+    @staticmethod
+    def _continues_prefix(
+        item: JapaneseMorpheme,
+        units: list[_LearningUnit],
+    ) -> bool:
+        return bool(
+            units
+            and units[-1].pos
+            and units[-1].pos[0] == "接頭辞"
+            and item.part_of_speech
+            and item.part_of_speech[0] in {
+                "名詞",
+                "代名詞",
+                "動詞",
+                "形容詞",
+                "形状詞",
+            }
         )
 
     @staticmethod
@@ -315,15 +497,40 @@ class JapaneseLearningWordNormalizer:
         units: list[_LearningUnit],
     ) -> bool:
         if (
-            item.dictionary_form == "だ"
+            item.conjugation_type == "助動詞-ダ"
             and bool(units)
             and units[-1].pos[0] != "形状詞"
+            and not units[-1].auxiliary_stem
         ):
             return False
         return (
             item.part_of_speech[0] == "助動詞"
             and bool(units)
-            and units[-1].pos[0] in {"動詞", "形容詞", "形状詞"}
+            and units[-1].pos[0] in {
+                "動詞",
+                "形容詞",
+                "形状詞",
+                "助動詞",
+            }
+        )
+
+    @staticmethod
+    def _continues_auxiliary_stem(
+        item: JapaneseMorpheme,
+        units: list[_LearningUnit],
+    ) -> bool:
+        if not units or not item.part_of_speech or not units[-1].pos:
+            return False
+        previous = units[-1]
+        return bool(
+            item.part_of_speech[0] == "形状詞"
+            and len(item.part_of_speech) > 1
+            and item.part_of_speech[1] == "助動詞語幹"
+            and previous.pos[0] == "動詞"
+            and len(previous.pos) > 1
+            and previous.pos[1] == "非自立可能"
+            and len(previous.pos) > 5
+            and "連用形" in previous.pos[5]
         )
 
     @staticmethod
@@ -339,22 +546,41 @@ class JapaneseLearningWordNormalizer:
             and units[-1].pos[0] == "形容詞"
         )
 
-    def _make_word(self, unit: _LearningUnit, sentence: Sentence, total_chars: int) -> Word:
+    def _make_learning_word(
+        self,
+        unit: _LearningUnit,
+        sentence: Sentence,
+        total_chars: int,
+    ) -> LearningWord:
         source_words = sentence.words
         if source_words:
-            overlaps = self._overlapping_words(unit, source_words, total_chars)
+            spans = self._source_spans(source_words, total_chars)
+            aligned_indexes = tuple(
+                index
+                for index, (start, end, _word) in enumerate(spans)
+                if start < unit.end and unit.start < end
+            )
             start = self._time_at(unit.start, source_words, total_chars)
             end = self._time_at(unit.end, source_words, total_chars)
-            confidences = [word.confidence for word in overlaps if word.confidence is not None]
-            speakers = {word.speaker_id for word in overlaps if word.speaker_id is not None}
-            confidence = min(confidences) if confidences else None
-            speaker = next(iter(speakers)) if len(speakers) == 1 else sentence.speaker_id
+            timing_estimated = self._timing_is_estimated(
+                unit,
+                aligned_indexes,
+                spans,
+            )
         else:
             duration = sentence.time_range.duration_seconds
             start = sentence.time_range.start_seconds + duration * unit.start / total_chars
             end = sentence.time_range.start_seconds + duration * unit.end / total_chars
-            confidence, speaker = None, sentence.speaker_id
-        return Word(unit.text, TimeRange(start, end), confidence, speaker)
+            aligned_indexes = ()
+            timing_estimated = True
+        return LearningWord(
+            text=unit.text,
+            start_char=unit.start,
+            end_char=unit.end,
+            aligned_word_indexes=aligned_indexes,
+            time_range=TimeRange(start, end),
+            timing_estimated=timing_estimated,
+        )
 
     @staticmethod
     def _source_spans(words: tuple[Word, ...], total_chars: int) -> tuple[tuple[int, int, Word], ...]:
@@ -367,8 +593,17 @@ class JapaneseLearningWordNormalizer:
             cursor = end
         return tuple(spans)
 
-    def _overlapping_words(self, unit: _LearningUnit, words: tuple[Word, ...], total_chars: int) -> tuple[Word, ...]:
-        return tuple(word for start, end, word in self._source_spans(words, total_chars) if start < unit.end and unit.start < end)
+    @staticmethod
+    def _timing_is_estimated(
+        unit: _LearningUnit,
+        aligned_indexes: tuple[int, ...],
+        spans: tuple[tuple[int, int, Word], ...],
+    ) -> bool:
+        if not aligned_indexes:
+            return True
+        first_start = spans[aligned_indexes[0]][0]
+        last_end = spans[aligned_indexes[-1]][1]
+        return unit.start != first_start or unit.end != last_end
 
     def _time_at(self, offset: int, words: tuple[Word, ...], total_chars: int) -> float:
         spans = self._source_spans(words, total_chars)

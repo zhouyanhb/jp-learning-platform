@@ -1,7 +1,7 @@
 # Japanese Learning Word Normalization
 
 The optional `word-normalization` stage runs after homophone correction and
-before sentence-boundary resolution. Enable it with
+sentence-boundary resolution. Enable it with
 `--enable-word-normalization`; enabling the homophone resolver also enables
 this stage because both use Sudachi.
 
@@ -42,9 +42,12 @@ lists. Copular auxiliaries attach only to morphologically compatible
 predicates, preventing a new `では` clause from being absorbed into a preceding
 verb such as `休みましょう / で / は`.
 
-When a source alignment token is divided, its time range is distributed by
-character position. When fragments are joined, their ranges are joined and the
-minimum available confidence is retained. Speaker metadata is preserved.
+The stage writes separate `learning_words` and never replaces the sentence's
+aligned `words`. A learning word records its sentence character span and the
+contiguous aligned-word indexes that support it. When a source alignment token
+is divided, only the learning-word time is estimated by character position and
+marked as estimated. When complete aligned tokens are joined, their time ranges
+are joined without changing the source tokens.
 
 Install only this optional capability with:
 

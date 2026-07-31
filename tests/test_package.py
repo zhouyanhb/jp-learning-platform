@@ -20,9 +20,6 @@ def test_package_exposes_release_version() -> None:
 
     assert pyproject["project"]["version"] == "1.0.0"
     assert jp_learning_platform.__version__ == pyproject["project"]["version"]
-    assert pyproject["project"]["optional-dependencies"]["diarization"] == [
-        "pyannote.audio>=3.1"
-    ]
     assert pyproject["project"]["optional-dependencies"]["homophone"] == [
         "transformers>=4.39",
         "torch>=2.0",
@@ -41,6 +38,7 @@ def test_module_entrypoint_returns_success() -> None:
     result = output.getvalue()
     assert "jp-learning-platform 1.0.0" in result
     assert "Version 1.0 subtitle pipeline" in result
+    assert "Qwen" not in result
     assert "Subtitle Writer" in result
 
 
@@ -59,6 +57,7 @@ def test_transcribe_command_defaults_output_directory() -> None:
     assert args.model_size == "large-v3"
     assert args.device == "cpu"
     assert args.compute_type == "int8"
+    assert args.enable_whisperx
     assert not args.enable_homophone_resolver
     assert args.homophone_model_id == DEFAULT_HOMOPHONE_MODEL_ID
     assert args.homophone_top_k == DEFAULT_HOMOPHONE_TOP_K
@@ -98,29 +97,19 @@ def test_transcribe_command_accepts_quality_stage_options() -> None:
             "--enable-whisperx",
             "--whisperx-language",
             "ja",
-            "--qwen-model-path",
-            "models/qwen.gguf",
         )
     )
 
     assert args.enable_whisperx
     assert args.whisperx_language == "ja"
-    assert args.qwen_model_path == Path("models/qwen.gguf")
 
 
-def test_transcribe_command_accepts_diarization_options() -> None:
+def test_transcribe_command_can_disable_whisperx() -> None:
     args = build_parser().parse_args(
-        (
-            "transcribe",
-            "audio.mp3",
-            "--enable-diarization",
-            "--hf-token",
-            "hf-token",
-        )
+        ("transcribe", "audio.mp3", "--disable-whisperx")
     )
 
-    assert args.enable_diarization
-    assert args.hf_token == "hf-token"
+    assert not args.enable_whisperx
 
 
 def test_transcribe_command_accepts_homophone_resolver_options() -> None:
