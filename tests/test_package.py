@@ -54,7 +54,7 @@ def test_transcribe_command_defaults_output_directory() -> None:
 
     assert args.output_dir == Path("output")
     assert not args.export_srt
-    assert args.model_size == "large-v3"
+    assert args.model_size == "turbo"
     assert args.device == "cpu"
     assert args.compute_type == "int8"
     assert args.enable_whisperx

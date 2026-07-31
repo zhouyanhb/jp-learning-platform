@@ -1,0 +1,5986 @@
+{
+  "schema_version": 2,
+  "dataset_id": "jlpt-2021-12-n2-sentence-boundaries",
+  "language": "ja",
+  "annotation_status": "silver",
+  "source": "input/2021年12月N2听力.md",
+  "normalization": {
+    "unicode": "NFKC",
+    "speaker_labels_removed": true,
+    "whitespace_removed": true,
+    "punctuation_and_symbols_removed": true
+  },
+  "boundary_sources": [
+    "terminal_punctuation",
+    "speaker_turn",
+    "source_line_break"
+  ],
+  "roles": {
+    "instruction": "Spoken or written section and item directions.",
+    "dialogue": "Listening-test body, including dialogue and monologue.",
+    "question": "Exam narrator question about the listening body.",
+    "option": "Numbered answer or response option."
+  },
+  "limitations": [
+    "The source mixes spoken transcript text with printed answer choices.",
+    "Source transcription and orthography have not been fully proofread.",
+    "needs_review samples require human semantic-boundary verification."
+  ],
+  "samples": [
+    {
+      "id": "2021-12-n2-001",
+      "source_lines": [
+        1,
+        1
+      ],
+      "input_text": "音楽教室の事務室で女の社員と男の社員が話しています男の社員はこの後まず何をしますかあのちょっと頼みたいことがあるんだけど何でしょうか初級ギターのグループレッスンを受講している山田さんから電話があって次のレッスンから曜日を日曜から土曜日のクラスに変更したいって土曜も初級クラスは同じ木村先生が担当なんだけどねじゃまず希望するクラスが空いているか確認しましょうかあそれは大丈夫だったただテキストと先生が同じでもクラスによって進む速さが違う場合もあるでしょう山田さんに次何をやるのかって聞かれてはいそれで先生に電話して確かめてもらえないかなでそれを山田さんに伝えてくれる今日私早退するのでわかりました山田さんへの連絡が済んだら受講生の名簿の修正もしといてもらえると助かるんだけどはい男の社員はこの後まず何をしますか",
+      "sentences": [
+        {
+          "text": "音楽教室の事務室で女の社員と男の社員が話しています",
+          "source_text": "音楽教室の事務室で女の社員と男の社員が話しています。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 1,
+          "start_char": 0,
+          "end_char": 25
+        },
+        {
+          "text": "男の社員はこの後まず何をしますか",
+          "source_text": "男の社員はこの後まず何をしますか。",
+          "role": "question",
+          "speaker": null,
+          "source_line": 1,
+          "start_char": 25,
+          "end_char": 41
+        },
+        {
+          "text": "あのちょっと頼みたいことがあるんだけど",
+          "source_text": "あの、ちょっと頼みたいことがあるんだけど。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 1,
+          "start_char": 41,
+          "end_char": 60
+        },
+        {
+          "text": "何でしょうか",
+          "source_text": "何でしょうか。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 1,
+          "start_char": 60,
+          "end_char": 66
+        },
+        {
+          "text": "初級ギターのグループレッスンを受講している山田さんから電話があって次のレッスンから曜日を日曜から土曜日のクラスに変更したいって土曜も初級クラスは同じ木村先生が担当なんだけどね",
+          "source_text": "初級ギターのグループレッスンを受講している山田さんから電話があって、次のレッスンから曜日を日曜から土曜日のクラスに変更したいって、土曜も初級クラスは同じ木村先生が担当なんだけどね。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 1,
+          "start_char": 66,
+          "end_char": 153
+        },
+        {
+          "text": "じゃまず希望するクラスが空いているか確認しましょうか",
+          "source_text": "じゃ、まず希望するクラスが空いているか確認しましょうか。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 1,
+          "start_char": 153,
+          "end_char": 179
+        },
+        {
+          "text": "あそれは大丈夫だった",
+          "source_text": "あ、それは大丈夫だった。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 1,
+          "start_char": 179,
+          "end_char": 189
+        },
+        {
+          "text": "ただテキストと先生が同じでもクラスによって進む速さが違う場合もあるでしょう",
+          "source_text": "ただ、テキストと先生が同じでも、クラスによって、進む速さが違う場合もあるでしょう。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 1,
+          "start_char": 189,
+          "end_char": 226
+        },
+        {
+          "text": "山田さんに次何をやるのかって聞かれて",
+          "source_text": "山田さんに次何をやるのかって聞かれて。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 1,
+          "start_char": 226,
+          "end_char": 244
+        },
+        {
+          "text": "はい",
+          "source_text": "はい。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 1,
+          "start_char": 244,
+          "end_char": 246
+        },
+        {
+          "text": "それで先生に電話して確かめてもらえないかな",
+          "source_text": "それで、先生に電話して確かめてもらえないかな。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 1,
+          "start_char": 246,
+          "end_char": 267
+        },
+        {
+          "text": "でそれを山田さんに伝えてくれる",
+          "source_text": "で、それを山田さんに伝えてくれる？",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 1,
+          "start_char": 267,
+          "end_char": 282
+        },
+        {
+          "text": "今日私早退するので",
+          "source_text": "今日、私早退するので。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 1,
+          "start_char": 282,
+          "end_char": 291
+        },
+        {
+          "text": "わかりました",
+          "source_text": "わかりました。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 1,
+          "start_char": 291,
+          "end_char": 297
+        },
+        {
+          "text": "山田さんへの連絡が済んだら受講生の名簿の修正もしといてもらえると助かるんだけど",
+          "source_text": "山田さんへの連絡が済んだら、受講生の名簿の修正もしといてもらえると助かるんだけど。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 1,
+          "start_char": 297,
+          "end_char": 336
+        },
+        {
+          "text": "はい",
+          "source_text": "はい。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 1,
+          "start_char": 336,
+          "end_char": 338
+        },
+        {
+          "text": "男の社員はこの後まず何をしますか",
+          "source_text": "男の社員はこの後、まず何をしますか。",
+          "role": "question",
+          "speaker": "男",
+          "source_line": 1,
+          "start_char": 338,
+          "end_char": 354
+        }
+      ],
+      "boundaries": [
+        {
+          "after_char": 25,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 41,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 60,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 66,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 153,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 179,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 189,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 226,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 244,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 246,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 267,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 282,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 291,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 297,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 336,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 338,
+          "types": [
+            "terminal_punctuation"
+          ]
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "id": "2021-12-n2-002",
+      "source_lines": [
+        4,
+        4
+      ],
+      "input_text": "公園で職員が花壇を作るボランティアの人に話していますボランティアの人はまず何をしますか午後のボランティアの皆さんよろしくお願いします午前の方には雑草を抜いて花壇の整備をしていただきました午後は花の苗を植えていただきます苗と苗は間隔をあけて植えていくので今からこちらの職員が植える場所の目印を付けていきますその間に皆さんには私と一緒にそちらの倉庫から花の苗を運んでいただきますとりあえず花壇の前に置いていってくださいその後職員が付けた目印に合わせて苗を並べていきますボランティアの人はまず何をしますか",
+      "sentences": [
+        {
+          "text": "公園で職員が花壇を作るボランティアの人に話しています",
+          "source_text": "公園で職員が花壇を作るボランティアの人に話しています。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 4,
+          "start_char": 0,
+          "end_char": 26
+        },
+        {
+          "text": "ボランティアの人はまず何をしますか",
+          "source_text": "ボランティアの人はまず何をしますか。",
+          "role": "question",
+          "speaker": null,
+          "source_line": 4,
+          "start_char": 26,
+          "end_char": 43
+        },
+        {
+          "text": "午後のボランティアの皆さんよろしくお願いします",
+          "source_text": "午後のボランティアの皆さん、よろしくお願いします。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 4,
+          "start_char": 43,
+          "end_char": 66
+        },
+        {
+          "text": "午前の方には雑草を抜いて花壇の整備をしていただきました",
+          "source_text": "午前の方には雑草を抜いて、花壇の整備をしていただきました。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 4,
+          "start_char": 66,
+          "end_char": 93
+        },
+        {
+          "text": "午後は花の苗を植えていただきます",
+          "source_text": "午後は花の苗を植えていただきます。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 4,
+          "start_char": 93,
+          "end_char": 109
+        },
+        {
+          "text": "苗と苗は間隔をあけて植えていくので今からこちらの職員が植える場所の目印を付けていきます",
+          "source_text": "苗と苗は間隔をあけて植えていくので、今からこちらの職員が植える場所の目印を付けていきます。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 4,
+          "start_char": 109,
+          "end_char": 152
+        },
+        {
+          "text": "その間に皆さんには私と一緒にそちらの倉庫から花の苗を運んでいただきます",
+          "source_text": "その間に、皆さんには私と一緒にそちらの倉庫から花の苗を運んでいただきます。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 4,
+          "start_char": 152,
+          "end_char": 187
+        },
+        {
+          "text": "とりあえず花壇の前に置いていってください",
+          "source_text": "とりあえず、花壇の前に置いていってください。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 4,
+          "start_char": 187,
+          "end_char": 207
+        },
+        {
+          "text": "その後職員が付けた目印に合わせて苗を並べていきます",
+          "source_text": "その後、職員が付けた目印に合わせて苗を並べていきます。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 4,
+          "start_char": 207,
+          "end_char": 232
+        },
+        {
+          "text": "ボランティアの人はまず何をしますか",
+          "source_text": "ボランティアの人はまず何をしますか。",
+          "role": "question",
+          "speaker": "男",
+          "source_line": 4,
+          "start_char": 232,
+          "end_char": 249
+        }
+      ],
+      "boundaries": [
+        {
+          "after_char": 26,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 43,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 66,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 93,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 109,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 152,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 187,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 207,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 232,
+          "types": [
+            "terminal_punctuation"
+          ]
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "id": "2021-12-n2-003",
+      "source_lines": [
+        6,
+        6
+      ],
+      "input_text": "女の留学生と男の留学生が話しています女の留学生はいらなくなったものをどうしますかいよいよ卒業だね国に帰るんで家具とか電気製品いらなくなるんだけどどうしたらいいかな僕の場合はアルバイト先の友達に譲るんだそれはいいね私のもまだ十分使えるから捨てるのもったいなくてこの間大学の掲示板で見たんだけど先輩の家具を引き取って新入生にあげる活動をしているボランティア団体があるんだって連絡すれば取りに来てくれるからそこに寄付すればへーいいねそれかリサイクルショップに売るっていうのもいいよねあーだけど電気製品の古いのは買い取ってくれないかもそうなんだあっインターネットでの販売はどう写真載せて買いたい人と直接やり取りするやつお店まで持って行く必要がないから楽でいいかなあって思ったんだけどあそれは避けたほうがいいと思うよ受け渡しとかお金のこととかトラブルもあるって聞くしそうかやっぱり新入生に喜んでもらうのがいいんじゃない手間かかんないしうんじゃそうしよう女の留学生はいらなくなったものをどうしますか",
+      "sentences": [
+        {
+          "text": "女の留学生と男の留学生が話しています",
+          "source_text": "女の留学生と男の留学生が話しています。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 6,
+          "start_char": 0,
+          "end_char": 18
+        },
+        {
+          "text": "女の留学生はいらなくなったものをどうしますか",
+          "source_text": "女の留学生はいらなくなったものをどうしますか。",
+          "role": "question",
+          "speaker": null,
+          "source_line": 6,
+          "start_char": 18,
+          "end_char": 40
+        },
+        {
+          "text": "いよいよ卒業だね",
+          "source_text": "いよいよ卒業だね。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 6,
+          "start_char": 40,
+          "end_char": 48
+        },
+        {
+          "text": "国に帰るんで家具とか電気製品いらなくなるんだけどどうしたらいいかな",
+          "source_text": "国に帰るんで、家具とか電気製品いらなくなるんだけど、どうしたらいいかな。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 6,
+          "start_char": 48,
+          "end_char": 81
+        },
+        {
+          "text": "僕の場合はアルバイト先の友達に譲るんだ",
+          "source_text": "僕の場合は、アルバイト先の友達に譲るんだ。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 6,
+          "start_char": 81,
+          "end_char": 100
+        },
+        {
+          "text": "それはいいね",
+          "source_text": "それはいいね。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 6,
+          "start_char": 100,
+          "end_char": 106
+        },
+        {
+          "text": "私のもまだ十分使えるから捨てるのもったいなくて",
+          "source_text": "私のもまだ十分使えるから、捨てるのもったいなくて。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 6,
+          "start_char": 106,
+          "end_char": 129
+        },
+        {
+          "text": "この間大学の掲示板で見たんだけど先輩の家具を引き取って新入生にあげる活動をしているボランティア団体があるんだって",
+          "source_text": "この間、大学の掲示板で見たんだけど、先輩の家具を引き取って新入生にあげる活動をしているボランティア団体があるんだって。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 6,
+          "start_char": 129,
+          "end_char": 185
+        },
+        {
+          "text": "連絡すれば取りに来てくれるからそこに寄付すれば",
+          "source_text": "連絡すれば、取りに来てくれるから、そこに寄付すれば。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 6,
+          "start_char": 185,
+          "end_char": 208
+        },
+        {
+          "text": "へーいいね",
+          "source_text": "へー、いいね。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 6,
+          "start_char": 208,
+          "end_char": 213
+        },
+        {
+          "text": "それかリサイクルショップに売るっていうのもいいよね",
+          "source_text": "それか、リサイクルショップに売るっていうのもいいよね。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 6,
+          "start_char": 213,
+          "end_char": 238
+        },
+        {
+          "text": "あーだけど電気製品の古いのは買い取ってくれないかも",
+          "source_text": "あー、だけど、電気製品の古いのは買い取ってくれないかも。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 6,
+          "start_char": 238,
+          "end_char": 263
+        },
+        {
+          "text": "そうなんだ",
+          "source_text": "そうなんだ。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 6,
+          "start_char": 263,
+          "end_char": 268
+        },
+        {
+          "text": "あっインターネットでの販売はどう",
+          "source_text": "あっ、インターネットでの販売はどう？",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 6,
+          "start_char": 268,
+          "end_char": 284
+        },
+        {
+          "text": "写真載せて買いたい人と直接やり取りするやつ",
+          "source_text": "写真載せて、買いたい人と直接やり取りするやつ。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 6,
+          "start_char": 284,
+          "end_char": 305
+        },
+        {
+          "text": "お店まで持って行く必要がないから楽でいいかなあって思ったんだけど",
+          "source_text": "お店まで持って行く必要がないから、楽でいいかなあって思ったんだけど。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 6,
+          "start_char": 305,
+          "end_char": 337
+        },
+        {
+          "text": "あそれは避けたほうがいいと思うよ",
+          "source_text": "あ、それは避けたほうがいいと思うよ。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 6,
+          "start_char": 337,
+          "end_char": 353
+        },
+        {
+          "text": "受け渡しとかお金のこととかトラブルもあるって聞くし",
+          "source_text": "受け渡しとか、お金のこととか、トラブルもあるって聞くし。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 6,
+          "start_char": 353,
+          "end_char": 378
+        },
+        {
+          "text": "そうか",
+          "source_text": "そうか。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 6,
+          "start_char": 378,
+          "end_char": 381
+        },
+        {
+          "text": "やっぱり新入生に喜んでもらうのがいいんじゃない",
+          "source_text": "やっぱり、新入生に喜んでもらうのがいいんじゃない。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 6,
+          "start_char": 381,
+          "end_char": 404
+        },
+        {
+          "text": "手間かかんないし",
+          "source_text": "手間かかんないし。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 6,
+          "start_char": 404,
+          "end_char": 412
+        },
+        {
+          "text": "うんじゃそうしよう",
+          "source_text": "うん、じゃ、そうしよう。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 6,
+          "start_char": 412,
+          "end_char": 421
+        },
+        {
+          "text": "女の留学生はいらなくなったものをどうしますか",
+          "source_text": "女の留学生はいらなくなったものをどうしますか。",
+          "role": "question",
+          "speaker": "女",
+          "source_line": 6,
+          "start_char": 421,
+          "end_char": 443
+        }
+      ],
+      "boundaries": [
+        {
+          "after_char": 18,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 40,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 48,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 81,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 100,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 106,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 129,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 185,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 208,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 213,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 238,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 263,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 268,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 284,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 305,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 337,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 353,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 378,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 381,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 404,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 412,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 421,
+          "types": [
+            "terminal_punctuation"
+          ]
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "id": "2021-12-n2-004",
+      "source_lines": [
+        8,
+        8
+      ],
+      "input_text": "大学で学生と先生がスピーチの原稿について話しています学生はまず原稿のどこを直しますか先生昨日スピーチの原稿を送らせていただいたんですがあーはい見ましたよいかがでしょうか全体の構成があまりよくないんじゃないかと思うんですがうん構成は悪くないと思いますよわかりやすく書けていますえただ導入の部分詳しく書いてあっていいんですが全体の長さを考えるともう少し簡潔にしたほうがいいですねあ長いですか真ん中の私の経験を書いた部分ももう少し短くしたほうがいいでしょうかうん具体的な経験が書いてある部分は大事なところなのでこのままでいいと思いますよそうですか最後のまとめの部分はどうでしょうか自分の意見をまとめてあってよく書けてますよここはもう少し長くてもいいような気がしますが全体がこれ以上長くなると良くないのでとりあえずこのままにしましょうはいわかりましたじゃすぐ直しますありがとうございました学生はまず原稿のどこを直しますか",
+      "sentences": [
+        {
+          "text": "大学で学生と先生がスピーチの原稿について話しています",
+          "source_text": "大学で、学生と先生がスピーチの原稿について話しています。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 8,
+          "start_char": 0,
+          "end_char": 26
+        },
+        {
+          "text": "学生はまず原稿のどこを直しますか",
+          "source_text": "学生はまず原稿のどこを直しますか。",
+          "role": "question",
+          "speaker": null,
+          "source_line": 8,
+          "start_char": 26,
+          "end_char": 42
+        },
+        {
+          "text": "先生昨日スピーチの原稿を送らせていただいたんですが",
+          "source_text": "先生、昨日スピーチの原稿を送らせていただいたんですが。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 8,
+          "start_char": 42,
+          "end_char": 67
+        },
+        {
+          "text": "あーはい見ましたよ",
+          "source_text": "あー、はい、見ましたよ。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 8,
+          "start_char": 67,
+          "end_char": 76
+        },
+        {
+          "text": "いかがでしょうか",
+          "source_text": "いかがでしょうか。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 8,
+          "start_char": 76,
+          "end_char": 84
+        },
+        {
+          "text": "全体の構成があまりよくないんじゃないかと思うんですが",
+          "source_text": "全体の構成があまりよくないんじゃないかと思うんですが。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 8,
+          "start_char": 84,
+          "end_char": 110
+        },
+        {
+          "text": "うん構成は悪くないと思いますよ",
+          "source_text": "うん、構成は悪くないと思いますよ。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 8,
+          "start_char": 110,
+          "end_char": 125
+        },
+        {
+          "text": "わかりやすく書けています",
+          "source_text": "わかりやすく書けています。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 8,
+          "start_char": 125,
+          "end_char": 137
+        },
+        {
+          "text": "えただ導入の部分詳しく書いてあっていいんですが全体の長さを考えるともう少し簡潔にしたほうがいいですね",
+          "source_text": "え、ただ、導入の部分、詳しく書いてあっていいんですが、全体の長さを考えると、もう少し簡潔にしたほうがいいですね。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 8,
+          "start_char": 137,
+          "end_char": 187
+        },
+        {
+          "text": "あ長いですか",
+          "source_text": "あ、長いですか。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 8,
+          "start_char": 187,
+          "end_char": 193
+        },
+        {
+          "text": "真ん中の私の経験を書いた部分ももう少し短くしたほうがいいでしょうか",
+          "source_text": "真ん中の私の経験を書いた部分ももう少し短くしたほうがいいでしょうか。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 8,
+          "start_char": 193,
+          "end_char": 226
+        },
+        {
+          "text": "うん具体的な経験が書いてある部分は大事なところなのでこのままでいいと思いますよ",
+          "source_text": "うん、具体的な経験が書いてある部分は大事なところなので、このままでいいと思いますよ。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 8,
+          "start_char": 226,
+          "end_char": 265
+        },
+        {
+          "text": "そうですか",
+          "source_text": "そうですか。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 8,
+          "start_char": 265,
+          "end_char": 270
+        },
+        {
+          "text": "最後のまとめの部分はどうでしょうか",
+          "source_text": "最後のまとめの部分はどうでしょうか。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 8,
+          "start_char": 270,
+          "end_char": 287
+        },
+        {
+          "text": "自分の意見をまとめてあってよく書けてますよ",
+          "source_text": "自分の意見をまとめてあって、よく書けてますよ。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 8,
+          "start_char": 287,
+          "end_char": 308
+        },
+        {
+          "text": "ここはもう少し長くてもいいような気がしますが全体がこれ以上長くなると良くないのでとりあえずこのままにしましょう",
+          "source_text": "ここはもう少し長くてもいいような気がしますが、全体がこれ以上長くなると良くないので、とりあえず、このままにしましょう。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 8,
+          "start_char": 308,
+          "end_char": 363
+        },
+        {
+          "text": "はいわかりました",
+          "source_text": "はい、わかりました。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 8,
+          "start_char": 363,
+          "end_char": 371
+        },
+        {
+          "text": "じゃすぐ直します",
+          "source_text": "じゃ、すぐ直します。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 8,
+          "start_char": 371,
+          "end_char": 379
+        },
+        {
+          "text": "ありがとうございました",
+          "source_text": "ありがとうございました。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 8,
+          "start_char": 379,
+          "end_char": 390
+        },
+        {
+          "text": "学生はまず原稿のどこを直しますか",
+          "source_text": "学生はまず原稿のどこを直しますか。",
+          "role": "question",
+          "speaker": "女",
+          "source_line": 8,
+          "start_char": 390,
+          "end_char": 406
+        }
+      ],
+      "boundaries": [
+        {
+          "after_char": 26,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 42,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 67,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 76,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 84,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 110,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 125,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 137,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 187,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 193,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 226,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 265,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 270,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 287,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 308,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 363,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 371,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 379,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 390,
+          "types": [
+            "terminal_punctuation"
+          ]
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "id": "2021-12-n2-005",
+      "source_lines": [
+        11,
+        11
+      ],
+      "input_text": "男の人と女の人がコンピューターを見ながら飛行機の席を選んでいます男の人はどの席を選ぶことにしますか男の人ですこの白いのが空いている席ってことですよねあーそうだね窓側がゆっくりできるからいいんだけど並んで座れるところあるかなできれば打ち合わせもしたいしそうですね一つが窓側でしかも並べるところですと一番後ろになりますねでも一番後ろって座席が倒せないから苦しいんだよねあーそうなんですかじゃあと並んで座れるのはこの通路側のところですねうん仕方ないか窓側だとここに一つ空いてますねうん私はその斜め前の席にしますよもしかしたら私の隣の人が課長の席と変わってくれるかもしれないですからそうだねそうしたら並べるかじゃそうしよう",
+      "sentences": [
+        {
+          "text": "男の人と女の人がコンピューターを見ながら飛行機の席を選んでいます",
+          "source_text": "男の人と女の人がコンピューターを見ながら飛行機の席を選んでいます。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 11,
+          "start_char": 0,
+          "end_char": 32
+        },
+        {
+          "text": "男の人はどの席を選ぶことにしますか",
+          "source_text": "男の人はどの席を選ぶことにしますか。",
+          "role": "question",
+          "speaker": null,
+          "source_line": 11,
+          "start_char": 32,
+          "end_char": 49
+        },
+        {
+          "text": "男の人です",
+          "source_text": "男の人です。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 11,
+          "start_char": 49,
+          "end_char": 54
+        },
+        {
+          "text": "この白いのが空いている席ってことですよね",
+          "source_text": "この白いのが空いている席ってことですよね。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 11,
+          "start_char": 54,
+          "end_char": 74
+        },
+        {
+          "text": "あーそうだね",
+          "source_text": "あー、そうだね。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 11,
+          "start_char": 74,
+          "end_char": 80
+        },
+        {
+          "text": "窓側がゆっくりできるからいいんだけど並んで座れるところあるかな",
+          "source_text": "窓側がゆっくりできるからいいんだけど、並んで座れるところあるかな。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 11,
+          "start_char": 80,
+          "end_char": 111
+        },
+        {
+          "text": "できれば打ち合わせもしたいし",
+          "source_text": "できれば打ち合わせもしたいし。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 11,
+          "start_char": 111,
+          "end_char": 125
+        },
+        {
+          "text": "そうですね",
+          "source_text": "そうですね。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 11,
+          "start_char": 125,
+          "end_char": 130
+        },
+        {
+          "text": "一つが窓側でしかも並べるところですと一番後ろになりますね",
+          "source_text": "一つが窓側で、しかも並べるところですと、一番後ろになりますね。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 11,
+          "start_char": 130,
+          "end_char": 158
+        },
+        {
+          "text": "でも一番後ろって座席が倒せないから苦しいんだよね",
+          "source_text": "でも、一番後ろって、座席が倒せないから、苦しいんだよね。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 11,
+          "start_char": 158,
+          "end_char": 182
+        },
+        {
+          "text": "あーそうなんですか",
+          "source_text": "あー、そうなんですか。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 11,
+          "start_char": 182,
+          "end_char": 191
+        },
+        {
+          "text": "じゃあと並んで座れるのはこの通路側のところですね",
+          "source_text": "じゃ、あと、並んで座れるのはこの通路側のところですね。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 11,
+          "start_char": 191,
+          "end_char": 215
+        },
+        {
+          "text": "うん仕方ないか",
+          "source_text": "うん、仕方ないか。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 11,
+          "start_char": 215,
+          "end_char": 222
+        },
+        {
+          "text": "窓側だとここに一つ空いてますね",
+          "source_text": "窓側だと、ここに一つ空いてますね。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 11,
+          "start_char": 222,
+          "end_char": 237
+        },
+        {
+          "text": "うん",
+          "source_text": "うん。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 11,
+          "start_char": 237,
+          "end_char": 239
+        },
+        {
+          "text": "私はその斜め前の席にしますよ",
+          "source_text": "私はその斜め前の席にしますよ。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 11,
+          "start_char": 239,
+          "end_char": 253
+        },
+        {
+          "text": "もしかしたら私の隣の人が課長の席と変わってくれるかもしれないですから",
+          "source_text": "もしかしたら、私の隣の人が課長の席と変わってくれるかもしれないですから。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 11,
+          "start_char": 253,
+          "end_char": 287
+        },
+        {
+          "text": "そうだね",
+          "source_text": "そうだね。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 11,
+          "start_char": 287,
+          "end_char": 291
+        },
+        {
+          "text": "そうしたら並べるか",
+          "source_text": "そうしたら並べるか。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 11,
+          "start_char": 291,
+          "end_char": 300
+        },
+        {
+          "text": "じゃそうしよう",
+          "source_text": "じゃ、そうしよう。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 11,
+          "start_char": 300,
+          "end_char": 307
+        }
+      ],
+      "boundaries": [
+        {
+          "after_char": 32,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 49,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 54,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 74,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 80,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 111,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 125,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 130,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 158,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 182,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 191,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 215,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 222,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 237,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 239,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 253,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 287,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 291,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 300,
+          "types": [
+            "terminal_punctuation"
+          ]
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "id": "2021-12-n2-006",
+      "source_lines": [
+        14,
+        15
+      ],
+      "input_text": "女の人と男の人が話しています男の人がうちでトマトを育てているのはどうしてですかこれなにトマトだよ最近作り始めたんだええおいしそうねえでもどうして農薬とか心配だからそうだね外で買う野菜はたくさん農薬がかかってるからうちで作ったほうが安心だって言う人も多いよねでもまあぼくはあまり気にしてないんだけどへえじゃあ家計の節約ははははこれぐらいじゃ節約にならないよこれは息子がなにか野菜を作りたいって言ってやってるんだへえたしか小学生だよねすごいね男の人がうちでトマトを育てているのはどうしてですか",
+      "sentences": [
+        {
+          "text": "女の人と男の人が話しています",
+          "source_text": "女の人と男の人が話しています。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 14,
+          "start_char": 0,
+          "end_char": 14
+        },
+        {
+          "text": "男の人がうちでトマトを育てているのはどうしてですか",
+          "source_text": "男の人がうちでトマトを育てているのはどうしてですか。",
+          "role": "question",
+          "speaker": null,
+          "source_line": 14,
+          "start_char": 14,
+          "end_char": 39
+        },
+        {
+          "text": "これなに",
+          "source_text": "これ、な～に？",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 15,
+          "start_char": 39,
+          "end_char": 43
+        },
+        {
+          "text": "トマトだよ",
+          "source_text": "トマトだよ。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 15,
+          "start_char": 43,
+          "end_char": 48
+        },
+        {
+          "text": "最近作り始めたんだ",
+          "source_text": "最近作り始めたんだ。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 15,
+          "start_char": 48,
+          "end_char": 57
+        },
+        {
+          "text": "ええおいしそうねえ",
+          "source_text": "ええ～、おいしそうねえ。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 15,
+          "start_char": 57,
+          "end_char": 66
+        },
+        {
+          "text": "でもどうして",
+          "source_text": "でも、どうして？",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 15,
+          "start_char": 66,
+          "end_char": 72
+        },
+        {
+          "text": "農薬とか心配だから",
+          "source_text": "農薬とか心配だから？",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 15,
+          "start_char": 72,
+          "end_char": 81
+        },
+        {
+          "text": "そうだね",
+          "source_text": "そうだね。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 15,
+          "start_char": 81,
+          "end_char": 85
+        },
+        {
+          "text": "外で買う野菜はたくさん農薬がかかってるからうちで作ったほうが安心だって言う人も多いよね",
+          "source_text": "外で買う野菜はたくさん農薬がかかってるから、うちで作ったほうが安心だって言う人も多いよね。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 15,
+          "start_char": 85,
+          "end_char": 128
+        },
+        {
+          "text": "でもまあぼくはあまり気にしてないんだけど",
+          "source_text": "でも、まあ、ぼくはあまり気にしてないんだけど。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 15,
+          "start_char": 128,
+          "end_char": 148
+        },
+        {
+          "text": "へえじゃあ家計の節約",
+          "source_text": "へえ～、じゃあ、家計の節約？",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 15,
+          "start_char": 148,
+          "end_char": 158
+        },
+        {
+          "text": "ははははこれぐらいじゃ節約にならないよ",
+          "source_text": "はははは、これぐらいじゃ、節約にならないよ。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 15,
+          "start_char": 158,
+          "end_char": 177
+        },
+        {
+          "text": "これは息子がなにか野菜を作りたいって言ってやってるんだ",
+          "source_text": "これは、息子がなにか野菜を作りたいって言って、やってるんだ。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 15,
+          "start_char": 177,
+          "end_char": 204
+        },
+        {
+          "text": "へえたしか小学生だよね",
+          "source_text": "へえ～、たしか小学生だよね。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 15,
+          "start_char": 204,
+          "end_char": 215
+        },
+        {
+          "text": "すごいね",
+          "source_text": "すごいね。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 15,
+          "start_char": 215,
+          "end_char": 219
+        },
+        {
+          "text": "男の人がうちでトマトを育てているのはどうしてですか",
+          "source_text": "男の人がうちでトマトを育てているのはどうしてですか。",
+          "role": "question",
+          "speaker": "女",
+          "source_line": 15,
+          "start_char": 219,
+          "end_char": 244
+        }
+      ],
+      "boundaries": [
+        {
+          "after_char": 14,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 39,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 43,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 48,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 57,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 66,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 72,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 81,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 85,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 128,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 148,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 158,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 177,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 204,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 215,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 219,
+          "types": [
+            "terminal_punctuation"
+          ]
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "id": "2021-12-n2-007",
+      "source_lines": [
+        17,
+        18
+      ],
+      "input_text": "大学で女の学生と男の学生が話しています男の学生はどうしてアルバイト先をレストランに換えたと言っていますか高橋くん今晩一緒にご飯食べに行かない悪い夜はレストランでウェイターのバイトなんだあれ高橋くん塾の講師やってるって言ってなかったうんこれから就職の準備で忙しくなるから今月からバイト換えたんだ塾は時給もいいし楽しかったんだけどね塾のシフト減らしてもらえばよかったんじゃない塾で一緒に働いていた友達にもそう言われたんだけど塾って決まった曜日と時間あけておかなきゃいけないでしょ面接が入ったり先輩と会ったりするからスケジュールが流動的でも対応できる方がいいと思って今のバイト先は一週間ごとに予定を提出すればいいんだそっか新しい仕事だと覚えることも多くて大変そうだねまあこれもいい経験だよ男の学生はどうしてアルバイト先をレストランに換えたと言っていますか",
+      "sentences": [
+        {
+          "text": "大学で女の学生と男の学生が話しています",
+          "source_text": "大学で、女の学生と男の学生が話しています。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 17,
+          "start_char": 0,
+          "end_char": 19
+        },
+        {
+          "text": "男の学生はどうしてアルバイト先をレストランに換えたと言っていますか",
+          "source_text": "男の学生はどうしてアルバイト先をレストランに換えたと言っていますか。",
+          "role": "question",
+          "speaker": null,
+          "source_line": 17,
+          "start_char": 19,
+          "end_char": 52
+        },
+        {
+          "text": "高橋くん今晩一緒にご飯食べに行かない",
+          "source_text": "高橋くん、今晩一緒にご飯食べに行かない。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 18,
+          "start_char": 52,
+          "end_char": 70
+        },
+        {
+          "text": "悪い",
+          "source_text": "悪い。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 18,
+          "start_char": 70,
+          "end_char": 72
+        },
+        {
+          "text": "夜はレストランでウェイターのバイトなんだ",
+          "source_text": "夜はレストランでウェイターのバイトなんだ。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 18,
+          "start_char": 72,
+          "end_char": 92
+        },
+        {
+          "text": "あれ",
+          "source_text": "あれ？",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 18,
+          "start_char": 92,
+          "end_char": 94
+        },
+        {
+          "text": "高橋くん塾の講師やってるって言ってなかった",
+          "source_text": "高橋くん、塾の講師やってるって言ってなかった？",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 18,
+          "start_char": 94,
+          "end_char": 115
+        },
+        {
+          "text": "うんこれから就職の準備で忙しくなるから今月からバイト換えたんだ",
+          "source_text": "うん、これから就職の準備で忙しくなるから、今月からバイト換えたんだ。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 18,
+          "start_char": 115,
+          "end_char": 146
+        },
+        {
+          "text": "塾は時給もいいし楽しかったんだけどね",
+          "source_text": "塾は時給もいいし、楽しかったんだけどね。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 18,
+          "start_char": 146,
+          "end_char": 164
+        },
+        {
+          "text": "塾のシフト減らしてもらえばよかったんじゃない",
+          "source_text": "塾のシフト、減らしてもらえばよかったんじゃない？",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 18,
+          "start_char": 164,
+          "end_char": 186
+        },
+        {
+          "text": "塾で一緒に働いていた友達にもそう言われたんだけど塾って決まった曜日と時間あけておかなきゃいけないでしょ",
+          "source_text": "塾で一緒に働いていた友達にもそう言われたんだけど、塾って、決まった曜日と時間、あけておかなきゃいけないでしょ。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 18,
+          "start_char": 186,
+          "end_char": 237
+        },
+        {
+          "text": "面接が入ったり先輩と会ったりするからスケジュールが流動的でも対応できる方がいいと思って今のバイト先は一週間ごとに予定を提出すればいいんだ",
+          "source_text": "面接が入ったり、先輩と会ったりするから、スケジュールが流動的でも、対応できる方がいいと思って、今のバイト先は、一週間ごとに予定を提出すればいいんだ。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 18,
+          "start_char": 237,
+          "end_char": 305
+        },
+        {
+          "text": "そっか",
+          "source_text": "そっか。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 18,
+          "start_char": 305,
+          "end_char": 308
+        },
+        {
+          "text": "新しい仕事だと覚えることも多くて大変そうだね",
+          "source_text": "新しい仕事だと、覚えることも多くて大変そうだね。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 18,
+          "start_char": 308,
+          "end_char": 330
+        },
+        {
+          "text": "まあこれもいい経験だよ",
+          "source_text": "まあ、これもいい経験だよ。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 18,
+          "start_char": 330,
+          "end_char": 341
+        },
+        {
+          "text": "男の学生はどうしてアルバイト先をレストランに換えたと言っていますか",
+          "source_text": "男の学生はどうしてアルバイト先をレストランに換えたと言っていますか。",
+          "role": "question",
+          "speaker": "男",
+          "source_line": 18,
+          "start_char": 341,
+          "end_char": 374
+        }
+      ],
+      "boundaries": [
+        {
+          "after_char": 19,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 52,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 70,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 72,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 92,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 94,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 115,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 146,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 164,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 186,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 237,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 305,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 308,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 330,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 341,
+          "types": [
+            "terminal_punctuation"
+          ]
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "id": "2021-12-n2-008",
+      "source_lines": [
+        21,
+        23
+      ],
+      "input_text": "大学の日本語のクラスで先生が留学生に話しています先生はレポートで何ができていない人が多かったと言っていますかこの間書いてもらったレポートを返します環境問題について自分の考察を書きましたね引用した資料はみなさん信頼できるものを使って書けていましたただ考察が自分の考えなのか資料にある文を引用したのかが曖昧なレポートが多く見られたので次からはこの点に気をつけましょう授業で注意した文体の統一については話し言葉がまざることはなく書けていました前回は決められた文字数を超える人がいましたが今回はみなさん決められた文字数の中でうまくまとめられていました先生はレポートで何ができていない人が多かったと言っていますか",
+      "sentences": [
+        {
+          "text": "大学の日本語のクラスで先生が留学生に話しています",
+          "source_text": "大学の日本語のクラスで先生が留学生に話しています。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 21,
+          "start_char": 0,
+          "end_char": 24
+        },
+        {
+          "text": "先生はレポートで何ができていない人が多かったと言っていますか",
+          "source_text": "先生はレポートで何ができていない人が多かったと言っていますか。",
+          "role": "question",
+          "speaker": null,
+          "source_line": 21,
+          "start_char": 24,
+          "end_char": 54
+        },
+        {
+          "text": "この間書いてもらったレポートを返します",
+          "source_text": "この間書いてもらったレポートを返します。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 22,
+          "start_char": 54,
+          "end_char": 73
+        },
+        {
+          "text": "環境問題について自分の考察を書きましたね",
+          "source_text": "環境問題について自分の考察を書きましたね。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 22,
+          "start_char": 73,
+          "end_char": 93
+        },
+        {
+          "text": "引用した資料はみなさん信頼できるものを使って書けていました",
+          "source_text": "引用した資料は、みなさん信頼できるものを使って書けていました。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 22,
+          "start_char": 93,
+          "end_char": 122
+        },
+        {
+          "text": "ただ考察が自分の考えなのか資料にある文を引用したのかが曖昧なレポートが多く見られたので次からはこの点に気をつけましょう",
+          "source_text": "ただ、考察が自分の考えなのか、資料にある文を引用したのかが、曖昧なレポートが多く見られたので、次からはこの点に気をつけましょう。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 22,
+          "start_char": 122,
+          "end_char": 181
+        },
+        {
+          "text": "授業で注意した文体の統一については話し言葉がまざることはなく書けていました",
+          "source_text": "授業で注意した文体の統一については、話し言葉がまざることはなく、書けていました。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 22,
+          "start_char": 181,
+          "end_char": 218
+        },
+        {
+          "text": "前回は決められた文字数を超える人がいましたが今回はみなさん決められた文字数の中でうまくまとめられていました",
+          "source_text": "前回は決められた文字数を超える人がいましたが、今回はみなさん決められた文字数の中でうまくまとめられていました。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 22,
+          "start_char": 218,
+          "end_char": 271
+        },
+        {
+          "text": "先生はレポートで何ができていない人が多かったと言っていますか",
+          "source_text": "先生はレポートで何ができていない人が多かったと言っていますか。",
+          "role": "question",
+          "speaker": null,
+          "source_line": 23,
+          "start_char": 271,
+          "end_char": 301
+        }
+      ],
+      "boundaries": [
+        {
+          "after_char": 24,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 54,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 73,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 93,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 122,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 181,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 218,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 271,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "id": "2021-12-n2-009",
+      "source_lines": [
+        26,
+        27
+      ],
+      "input_text": "フリーマーケットの会場で女の学生と男の学生が話しています二人はあした新たに何をすることにしましたかフリーマーケット一日目お疲れ様服予想以上に売れたねうんシャツとかズボンとか服の種類サイズ別に分けて見やすく並べたのがよかったんじゃないそうだねあしたはどうしようか今日隣の店が色ごとに分けてたのを見て見た目きれいだからあんな並べ方するのもいいかなって思ったんだうーん色の種類がそんなにあるわけじゃないしそこまでしなくていいよそれより値段もうすこし高い設定でもよかったかもでもお客さん喜んでくれてたよ値札は変えなくていいんじゃないじゃあそのままでいいかそういえば値段が高いのから安いのまでごちゃごちゃにおいてたのはよくなかったかもしれないねそうだねサイズ別に分けてそれをさらに値段の順番で並べてみるお客さんにしたらそのほうがいいかなじゃ明日の朝早めに来て取り掛かろう二人はあした新たに何をすることにしましたか",
+      "sentences": [
+        {
+          "text": "フリーマーケットの会場で女の学生と男の学生が話しています",
+          "source_text": "フリーマーケットの会場で、女の学生と男の学生が話しています。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 26,
+          "start_char": 0,
+          "end_char": 28
+        },
+        {
+          "text": "二人はあした新たに何をすることにしましたか",
+          "source_text": "二人はあした新たに何をすることにしましたか。",
+          "role": "question",
+          "speaker": null,
+          "source_line": 26,
+          "start_char": 28,
+          "end_char": 49
+        },
+        {
+          "text": "フリーマーケット一日目お疲れ様",
+          "source_text": "フリーマーケット一日目、お疲れ様。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 27,
+          "start_char": 49,
+          "end_char": 64
+        },
+        {
+          "text": "服予想以上に売れたね",
+          "source_text": "服予想以上に売れたね。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 27,
+          "start_char": 64,
+          "end_char": 74
+        },
+        {
+          "text": "うん",
+          "source_text": "うん。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 27,
+          "start_char": 74,
+          "end_char": 76
+        },
+        {
+          "text": "シャツとかズボンとか服の種類サイズ別に分けて見やすく並べたのがよかったんじゃない",
+          "source_text": "シャツとかズボンとか、服の種類サイズ別に分けて見やすく並べたのが、よかったんじゃない。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 27,
+          "start_char": 76,
+          "end_char": 116
+        },
+        {
+          "text": "そうだね",
+          "source_text": "そうだね。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 27,
+          "start_char": 116,
+          "end_char": 120
+        },
+        {
+          "text": "あしたはどうしようか",
+          "source_text": "あしたはどうしようか。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 27,
+          "start_char": 120,
+          "end_char": 130
+        },
+        {
+          "text": "今日隣の店が色ごとに分けてたのを見て見た目きれいだからあんな並べ方するのもいいかなって思ったんだ",
+          "source_text": "今日、隣の店が色ごとに分けてたのを見て、見た目きれいだから、あんな並べ方するのもいいかなって思ったんだ。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 27,
+          "start_char": 130,
+          "end_char": 178
+        },
+        {
+          "text": "うーん色の種類がそんなにあるわけじゃないしそこまでしなくていいよ",
+          "source_text": "うーん、色の種類がそんなにあるわけじゃないし、そこまでしなくていいよ。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 27,
+          "start_char": 178,
+          "end_char": 210
+        },
+        {
+          "text": "それより値段もうすこし高い設定でもよかったかも",
+          "source_text": "それより、値段もうすこし高い設定でもよかったかも。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 27,
+          "start_char": 210,
+          "end_char": 233
+        },
+        {
+          "text": "でもお客さん喜んでくれてたよ",
+          "source_text": "でも、お客さん喜んでくれてたよ。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 27,
+          "start_char": 233,
+          "end_char": 247
+        },
+        {
+          "text": "値札は変えなくていいんじゃない",
+          "source_text": "値札は変えなくていいんじゃない。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 27,
+          "start_char": 247,
+          "end_char": 262
+        },
+        {
+          "text": "じゃあそのままでいいか",
+          "source_text": "じゃあ、そのままでいいか。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 27,
+          "start_char": 262,
+          "end_char": 273
+        },
+        {
+          "text": "そういえば値段が高いのから安いのまでごちゃごちゃにおいてたのはよくなかったかもしれないね",
+          "source_text": "そういえば、値段が高いのから安いのまでごちゃごちゃにおいてたのはよくなかったかもしれないね。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 27,
+          "start_char": 273,
+          "end_char": 317
+        },
+        {
+          "text": "そうだね",
+          "source_text": "そうだね。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 27,
+          "start_char": 317,
+          "end_char": 321
+        },
+        {
+          "text": "サイズ別に分けてそれをさらに値段の順番で並べてみる",
+          "source_text": "サイズ別に分けて、それをさらに値段の順番で並べてみる？",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 27,
+          "start_char": 321,
+          "end_char": 346
+        },
+        {
+          "text": "お客さんにしたらそのほうがいいかな",
+          "source_text": "お客さんにしたら、そのほうがいいかな。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 27,
+          "start_char": 346,
+          "end_char": 363
+        },
+        {
+          "text": "じゃ明日の朝早めに来て取り掛かろう",
+          "source_text": "じゃ、明日の朝、早めに来て取り掛かろう。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 27,
+          "start_char": 363,
+          "end_char": 380
+        },
+        {
+          "text": "二人はあした新たに何をすることにしましたか",
+          "source_text": "二人はあした新たに何をすることにしましたか。",
+          "role": "question",
+          "speaker": "男",
+          "source_line": 27,
+          "start_char": 380,
+          "end_char": 401
+        }
+      ],
+      "boundaries": [
+        {
+          "after_char": 28,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 49,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 64,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 74,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 76,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 116,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 120,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 130,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 178,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 210,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 233,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 247,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 262,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 273,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 317,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 321,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 346,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 363,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 380,
+          "types": [
+            "terminal_punctuation"
+          ]
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "id": "2021-12-n2-010",
+      "source_lines": [
+        30,
+        32
+      ],
+      "input_text": "ラジオでアナウンサーが店の紹介をしていますこの店で売っている箱には何が入っていますかええ今朝は最近話題になっているお店に来ていますお店に入りますとまるでカフェのような落ち着いた雰囲気です店内にはプレゼント用の箱が並んでいますお菓子が入っていそうな箱や宝石箱のようなものもあります私もまさかこの箱に花が入っているとは思いませんでしたカフェのような店ですし箱にはコーヒーが入っていると思われる方も多いそうですこの店で売っている箱には何が入っていますか",
+      "sentences": [
+        {
+          "text": "ラジオでアナウンサーが店の紹介をしています",
+          "source_text": "ラジオでアナウンサーが店の紹介をしています。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 30,
+          "start_char": 0,
+          "end_char": 21
+        },
+        {
+          "text": "この店で売っている箱には何が入っていますか",
+          "source_text": "この店で売っている箱には何が入っていますか。",
+          "role": "question",
+          "speaker": null,
+          "source_line": 30,
+          "start_char": 21,
+          "end_char": 42
+        },
+        {
+          "text": "ええ今朝は最近話題になっているお店に来ています",
+          "source_text": "ええ、今朝は最近話題になっているお店に来ています。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 31,
+          "start_char": 42,
+          "end_char": 65
+        },
+        {
+          "text": "お店に入りますとまるでカフェのような落ち着いた雰囲気です",
+          "source_text": "お店に入りますと、まるでカフェのような落ち着いた雰囲気です。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 31,
+          "start_char": 65,
+          "end_char": 93
+        },
+        {
+          "text": "店内にはプレゼント用の箱が並んでいます",
+          "source_text": "店内には、プレゼント用の箱が並んでいます。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 31,
+          "start_char": 93,
+          "end_char": 112
+        },
+        {
+          "text": "お菓子が入っていそうな箱や宝石箱のようなものもあります",
+          "source_text": "お菓子が入っていそうな箱や、宝石箱のようなものもあります。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 31,
+          "start_char": 112,
+          "end_char": 139
+        },
+        {
+          "text": "私もまさかこの箱に花が入っているとは思いませんでした",
+          "source_text": "私もまさかこの箱に花が入っているとは思いませんでした。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 31,
+          "start_char": 139,
+          "end_char": 165
+        },
+        {
+          "text": "カフェのような店ですし箱にはコーヒーが入っていると思われる方も多いそうです",
+          "source_text": "カフェのような店ですし、箱にはコーヒーが入っていると思われる方も多いそうです。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 31,
+          "start_char": 165,
+          "end_char": 202
+        },
+        {
+          "text": "この店で売っている箱には何が入っていますか",
+          "source_text": "この店で売っている箱には何が入っていますか。",
+          "role": "question",
+          "speaker": null,
+          "source_line": 32,
+          "start_char": 202,
+          "end_char": 223
+        }
+      ],
+      "boundaries": [
+        {
+          "after_char": 21,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 42,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 65,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 93,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 112,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 139,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 165,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 202,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "id": "2021-12-n2-011",
+      "source_lines": [
+        35,
+        37
+      ],
+      "input_text": "ラジオで女のアナウンサーと社長が話しています社長は今どうやってストレスを解消していますか田中社長経営者という立場はストレスが多いと伺いますがどうやってストレスを解消していらっしゃるんですかそうですね若い頃は仲間と一緒にサッカーをして一杯やって翌朝にはスッキリストレス解消していましたがああサッカーですか最近は友人がランニングを始めて体にもいいし汗も流してストレス解消にもなるからって勧められたんですけどなかなかで毎日一時間ほど歩くことにしてみたんですそうですか家内も一緒に始めたんですよ体を動かしながらいろいろ話をするようになってそれがけっこう楽しくてねたいていの嫌なことは忘れられるんです今では家族と旅行に行ったときも旅行先で楽しんでいます社長は今どうやってストレスを解消していますか",
+      "sentences": [
+        {
+          "text": "ラジオで女のアナウンサーと社長が話しています",
+          "source_text": "ラジオで女のアナウンサーと社長が話しています。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 35,
+          "start_char": 0,
+          "end_char": 22
+        },
+        {
+          "text": "社長は今どうやってストレスを解消していますか",
+          "source_text": "社長は今どうやってストレスを解消していますか。",
+          "role": "question",
+          "speaker": null,
+          "source_line": 35,
+          "start_char": 22,
+          "end_char": 44
+        },
+        {
+          "text": "田中社長経営者という立場はストレスが多いと伺いますがどうやってストレスを解消していらっしゃるんですか",
+          "source_text": "田中社長、経営者という立場は、ストレスが多いと伺いますが、どうやってストレスを解消していらっしゃるんですか。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 36,
+          "start_char": 44,
+          "end_char": 94
+        },
+        {
+          "text": "そうですね",
+          "source_text": "そうですね。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 36,
+          "start_char": 94,
+          "end_char": 99
+        },
+        {
+          "text": "若い頃は仲間と一緒にサッカーをして一杯やって翌朝にはスッキリストレス解消していましたが",
+          "source_text": "若い頃は、仲間と一緒にサッカーをして一杯やって、翌朝にはスッキリストレス解消していましたが。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 36,
+          "start_char": 99,
+          "end_char": 142
+        },
+        {
+          "text": "ああサッカーですか",
+          "source_text": "ああ、サッカーですか。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 36,
+          "start_char": 142,
+          "end_char": 151
+        },
+        {
+          "text": "最近は友人がランニングを始めて体にもいいし汗も流してストレス解消にもなるからって勧められたんですけどなかなかで毎日一時間ほど歩くことにしてみたんです",
+          "source_text": "最近は、友人がランニングを始めて、体にもいいし、汗も流して、ストレス解消にもなるからって、勧められたんですけど、なかなか… で、毎日一時間ほど歩くことにしてみたんです。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 36,
+          "start_char": 151,
+          "end_char": 225
+        },
+        {
+          "text": "そうですか",
+          "source_text": "そうですか。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 36,
+          "start_char": 225,
+          "end_char": 230
+        },
+        {
+          "text": "家内も一緒に始めたんですよ",
+          "source_text": "家内も一緒に始めたんですよ。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 36,
+          "start_char": 230,
+          "end_char": 243
+        },
+        {
+          "text": "体を動かしながらいろいろ話をするようになってそれがけっこう楽しくてね",
+          "source_text": "体を動かしながら、いろいろ話をするようになって、それがけっこう楽しくてね。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 36,
+          "start_char": 243,
+          "end_char": 277
+        },
+        {
+          "text": "たいていの嫌なことは忘れられるんです",
+          "source_text": "たいていの嫌なことは忘れられるんです。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 36,
+          "start_char": 277,
+          "end_char": 295
+        },
+        {
+          "text": "今では家族と旅行に行ったときも旅行先で楽しんでいます",
+          "source_text": "今では家族と旅行に行ったときも、旅行先で楽しんでいます。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 36,
+          "start_char": 295,
+          "end_char": 321
+        },
+        {
+          "text": "社長は今どうやってストレスを解消していますか",
+          "source_text": "社長は今どうやってストレスを解消していますか。",
+          "role": "question",
+          "speaker": null,
+          "source_line": 37,
+          "start_char": 321,
+          "end_char": 343
+        }
+      ],
+      "boundaries": [
+        {
+          "after_char": 22,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 44,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 94,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 99,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 142,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 151,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 225,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 230,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 243,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 277,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 295,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 321,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "id": "2021-12-n2-012",
+      "source_lines": [
+        40,
+        46
+      ],
+      "input_text": "学校の事務室で事務の人と学生が話していますあのジョンです事務に来るようにという掲示を見てきましたあはいジョンさんですねあのうなんでしょうか授業料は先日支払いましたけどそれとも奨学金のことですか奨学金はまだなんですけどあはいあのジョンさん金曜日の佐藤先生の授業を取っていますよねはいその先生が明後日の金曜日急にご都合が悪くなり日程を変更したいというご連絡があったんですがあはいあの来週の金曜日に三時間続けて授業をなさりたいそうなんですが大丈夫ですかあはい金曜日は先生の授業だけですからそうですか他の学生も問題ないそうですからじゃあそういうことでお願いしますはい事務の人の話の内容は何でしたか1担当教師の変更について2奨学金の結果について3授業料の支払いについて4授業の日程の変更について",
+      "sentences": [
+        {
+          "text": "学校の事務室で事務の人と学生が話しています",
+          "source_text": "学校の事務室で事務の人と学生が話しています。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 40,
+          "start_char": 0,
+          "end_char": 21
+        },
+        {
+          "text": "あのジョンです",
+          "source_text": "あの、ジョンです。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 41,
+          "start_char": 21,
+          "end_char": 28
+        },
+        {
+          "text": "事務に来るようにという掲示を見てきました",
+          "source_text": "事務に来るようにという掲示を見てきました。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 41,
+          "start_char": 28,
+          "end_char": 48
+        },
+        {
+          "text": "あはいジョンさんですね",
+          "source_text": "あ、はい、ジョンさんですね。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 41,
+          "start_char": 48,
+          "end_char": 59
+        },
+        {
+          "text": "あのうなんでしょうか",
+          "source_text": "あのう、なんでしょうか？",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 41,
+          "start_char": 59,
+          "end_char": 69
+        },
+        {
+          "text": "授業料は先日支払いましたけど",
+          "source_text": "授業料は先日支払いましたけど。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 41,
+          "start_char": 69,
+          "end_char": 83
+        },
+        {
+          "text": "それとも奨学金のことですか",
+          "source_text": "それとも奨学金のことですか？",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 41,
+          "start_char": 83,
+          "end_char": 96
+        },
+        {
+          "text": "奨学金はまだなんですけど",
+          "source_text": "奨学金はまだなんですけど。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 41,
+          "start_char": 96,
+          "end_char": 108
+        },
+        {
+          "text": "あはい",
+          "source_text": "あ、はい。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 41,
+          "start_char": 108,
+          "end_char": 111
+        },
+        {
+          "text": "あのジョンさん金曜日の佐藤先生の授業を取っていますよね",
+          "source_text": "あの、ジョンさん、金曜日の佐藤先生の授業を取っていますよね。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 41,
+          "start_char": 111,
+          "end_char": 138
+        },
+        {
+          "text": "はい",
+          "source_text": "はい。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 41,
+          "start_char": 138,
+          "end_char": 140
+        },
+        {
+          "text": "その先生が明後日の金曜日急にご都合が悪くなり日程を変更したいというご連絡があったんですが",
+          "source_text": "その、先生が明後日の金曜日、急にご都合が悪くなり、日程を変更したいというご連絡があったんですが。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 41,
+          "start_char": 140,
+          "end_char": 184
+        },
+        {
+          "text": "あはい",
+          "source_text": "あ、はい。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 41,
+          "start_char": 184,
+          "end_char": 187
+        },
+        {
+          "text": "あの来週の金曜日に三時間続けて授業をなさりたいそうなんですが大丈夫ですか",
+          "source_text": "あの、来週の金曜日に三時間続けて授業をなさりたいそうなんですが、大丈夫ですか？",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 41,
+          "start_char": 187,
+          "end_char": 223
+        },
+        {
+          "text": "あはい金曜日は先生の授業だけですから",
+          "source_text": "あ、はい、金曜日は、先生の授業だけですから。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 41,
+          "start_char": 223,
+          "end_char": 241
+        },
+        {
+          "text": "そうですか他の学生も問題ないそうですからじゃあそういうことでお願いします",
+          "source_text": "そうですか、他の学生も問題ないそうですから、じゃあそういうことでお願いします。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 41,
+          "start_char": 241,
+          "end_char": 277
+        },
+        {
+          "text": "はい",
+          "source_text": "はい。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 41,
+          "start_char": 277,
+          "end_char": 279
+        },
+        {
+          "text": "事務の人の話の内容は何でしたか",
+          "source_text": "事務の人の話の内容は何でしたか？",
+          "role": "question",
+          "speaker": null,
+          "source_line": 42,
+          "start_char": 279,
+          "end_char": 294
+        },
+        {
+          "text": "1担当教師の変更について",
+          "source_text": "1 担当教師の変更について",
+          "role": "option",
+          "speaker": null,
+          "source_line": 43,
+          "start_char": 294,
+          "end_char": 306
+        },
+        {
+          "text": "2奨学金の結果について",
+          "source_text": "2 奨学金の結果について",
+          "role": "option",
+          "speaker": null,
+          "source_line": 44,
+          "start_char": 306,
+          "end_char": 317
+        },
+        {
+          "text": "3授業料の支払いについて",
+          "source_text": "3 授業料の支払いについて",
+          "role": "option",
+          "speaker": null,
+          "source_line": 45,
+          "start_char": 317,
+          "end_char": 329
+        },
+        {
+          "text": "4授業の日程の変更について",
+          "source_text": "4 授業の日程の変更について",
+          "role": "option",
+          "speaker": null,
+          "source_line": 46,
+          "start_char": 329,
+          "end_char": 342
+        }
+      ],
+      "boundaries": [
+        {
+          "after_char": 21,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 28,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 48,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 59,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 69,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 83,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 96,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 108,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 111,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 138,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 140,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 184,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 187,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 223,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 241,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 277,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 279,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 294,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 306,
+          "types": [
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 317,
+          "types": [
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 329,
+          "types": [
+            "source_line_break"
+          ]
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "id": "2021-12-n2-013",
+      "source_lines": [
+        49,
+        55
+      ],
+      "input_text": "女の人と男の人が映画を見た後で感想を話していますいい映画だったねうんそうねよくなかったのいやそういうわけじゃないんだけどそうなんかいい映画見ると気持ちが暗くなることってないえーそんなことないよあそう僕は自分の人生ってなんなんだろうとか考えちゃうんだよねでこう気分がねうーんそうなんだじゃあ良くない映画だったらどうそれは無駄な時間使ったなって暗くなっちゃうよなんだじゃあよくも悪くもない映画見るしかないねいやそれはやっぱりいい映画見たいよ男の人はこの映画を見てどう感じましたか1映画が良かったので気分が沈んだ2映画は良くなかったけれど楽しかった3映画が良くなかったので暗い気持ちになった4映画が良くも悪くもなかったので楽しくない",
+      "sentences": [
+        {
+          "text": "女の人と男の人が映画を見た後で感想を話しています",
+          "source_text": "女の人と男の人が、映画を見た後で感想を話しています。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 49,
+          "start_char": 0,
+          "end_char": 24
+        },
+        {
+          "text": "いい映画だったね",
+          "source_text": "いい映画だったね。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 50,
+          "start_char": 24,
+          "end_char": 32
+        },
+        {
+          "text": "うんそうね",
+          "source_text": "うん、そうね。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 50,
+          "start_char": 32,
+          "end_char": 37
+        },
+        {
+          "text": "よくなかったの",
+          "source_text": "よくなかったの？",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 50,
+          "start_char": 37,
+          "end_char": 44
+        },
+        {
+          "text": "いやそういうわけじゃないんだけど",
+          "source_text": "いや、そういうわけじゃないんだけど。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 50,
+          "start_char": 44,
+          "end_char": 60
+        },
+        {
+          "text": "そう",
+          "source_text": "そう。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 50,
+          "start_char": 60,
+          "end_char": 62
+        },
+        {
+          "text": "なんかいい映画見ると気持ちが暗くなることってない",
+          "source_text": "なんかいい映画見ると気持ちが暗くなることってない？",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 50,
+          "start_char": 62,
+          "end_char": 86
+        },
+        {
+          "text": "えーそんなことないよ",
+          "source_text": "えー、そんなことないよ！",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 50,
+          "start_char": 86,
+          "end_char": 96
+        },
+        {
+          "text": "あそう",
+          "source_text": "あ、そう？",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 50,
+          "start_char": 96,
+          "end_char": 99
+        },
+        {
+          "text": "僕は自分の人生ってなんなんだろうとか考えちゃうんだよね",
+          "source_text": "僕は自分の人生ってなんなんだろうとか考えちゃうんだよね。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 50,
+          "start_char": 99,
+          "end_char": 126
+        },
+        {
+          "text": "でこう気分がね",
+          "source_text": "で、こう気分がね。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 50,
+          "start_char": 126,
+          "end_char": 133
+        },
+        {
+          "text": "うーん",
+          "source_text": "うーん。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 50,
+          "start_char": 133,
+          "end_char": 136
+        },
+        {
+          "text": "そうなんだ",
+          "source_text": "そうなんだ。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 50,
+          "start_char": 136,
+          "end_char": 141
+        },
+        {
+          "text": "じゃあ良くない映画だったらどう",
+          "source_text": "じゃあ良くない映画だったらどう？",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 50,
+          "start_char": 141,
+          "end_char": 156
+        },
+        {
+          "text": "それは無駄な時間使ったなって暗くなっちゃうよ",
+          "source_text": "それは、無駄な時間使ったなって、暗くなっちゃうよ。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 50,
+          "start_char": 156,
+          "end_char": 178
+        },
+        {
+          "text": "なんだ",
+          "source_text": "なんだ。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 50,
+          "start_char": 178,
+          "end_char": 181
+        },
+        {
+          "text": "じゃあよくも悪くもない映画見るしかないね",
+          "source_text": "じゃあ、よくも悪くもない映画見るしかないね。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 50,
+          "start_char": 181,
+          "end_char": 201
+        },
+        {
+          "text": "いやそれはやっぱりいい映画見たいよ",
+          "source_text": "いや、それはやっぱりいい映画見たいよ。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 50,
+          "start_char": 201,
+          "end_char": 218
+        },
+        {
+          "text": "男の人はこの映画を見てどう感じましたか",
+          "source_text": "男の人はこの映画を見て、どう感じましたか。",
+          "role": "question",
+          "speaker": null,
+          "source_line": 51,
+          "start_char": 218,
+          "end_char": 237
+        },
+        {
+          "text": "1映画が良かったので気分が沈んだ",
+          "source_text": "1.映画が良かったので、気分が沈んだ。",
+          "role": "option",
+          "speaker": null,
+          "source_line": 52,
+          "start_char": 237,
+          "end_char": 253
+        },
+        {
+          "text": "2映画は良くなかったけれど楽しかった",
+          "source_text": "2.映画は良くなかったけれど、楽しかった。",
+          "role": "option",
+          "speaker": null,
+          "source_line": 53,
+          "start_char": 253,
+          "end_char": 271
+        },
+        {
+          "text": "3映画が良くなかったので暗い気持ちになった",
+          "source_text": "3.映画が良くなかったので、暗い気持ちになった。",
+          "role": "option",
+          "speaker": null,
+          "source_line": 54,
+          "start_char": 271,
+          "end_char": 292
+        },
+        {
+          "text": "4映画が良くも悪くもなかったので楽しくない",
+          "source_text": "4.映画が良くも悪くもなかったので楽しくない。",
+          "role": "option",
+          "speaker": null,
+          "source_line": 55,
+          "start_char": 292,
+          "end_char": 313
+        }
+      ],
+      "boundaries": [
+        {
+          "after_char": 24,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 32,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 37,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 44,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 60,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 62,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 86,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 96,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 99,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 126,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 133,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 136,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 141,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 156,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 178,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 181,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 201,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 218,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 237,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 253,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 271,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 292,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "id": "2021-12-n2-014",
+      "source_lines": [
+        58,
+        64
+      ],
+      "input_text": "テレビ番組でスポーツジムの指導員が話していますスポーツジムなどで体を鍛えて筋肉をつけようという方からトレーニングをしても思うように筋肉がつかないという声を聞くことがありますおそらくやり方が適切でないのでしょう運動量が多ければいいというものではありませんどのトレーニングも基本的なやり方としては一セット十回間に二分程度の休憩を挟みつつ二三セットやるのが効果的ですやり過ぎは体に疲労が蓄積され逆効果ですまた一度トレーニングをしたら四十八時間ほど時間を置いて筋肉を休ませることも大切ですスポーツジムの指導員は何について話していますか1トレーニングを続けることのメリット2トレーニングの効果的な方法3一日のうちでトレーニングに適した時間4トレーニングを行う重要性",
+      "sentences": [
+        {
+          "text": "テレビ番組でスポーツジムの指導員が話しています",
+          "source_text": "テレビ番組でスポーツジムの指導員が話しています。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 58,
+          "start_char": 0,
+          "end_char": 23
+        },
+        {
+          "text": "スポーツジムなどで体を鍛えて筋肉をつけようという方からトレーニングをしても思うように筋肉がつかないという声を聞くことがあります",
+          "source_text": "スポーツジムなどで体を鍛えて筋肉をつけようという方から、トレーニングをしても思うように筋肉がつかないという声を聞くことがあります。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 59,
+          "start_char": 23,
+          "end_char": 86
+        },
+        {
+          "text": "おそらくやり方が適切でないのでしょう",
+          "source_text": "おそらくやり方が適切でないのでしょう。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 59,
+          "start_char": 86,
+          "end_char": 104
+        },
+        {
+          "text": "運動量が多ければいいというものではありません",
+          "source_text": "運動量が多ければいいというものではありません。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 59,
+          "start_char": 104,
+          "end_char": 126
+        },
+        {
+          "text": "どのトレーニングも基本的なやり方としては一セット十回間に二分程度の休憩を挟みつつ二三セットやるのが効果的です",
+          "source_text": "どのトレーニングも基本的なやり方としては、一セット十回間に二分程度の休憩を挟みつつ、二三セットやるのが効果的です。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 59,
+          "start_char": 126,
+          "end_char": 180
+        },
+        {
+          "text": "やり過ぎは体に疲労が蓄積され逆効果です",
+          "source_text": "やり過ぎは体に疲労が蓄積され逆効果です。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 59,
+          "start_char": 180,
+          "end_char": 199
+        },
+        {
+          "text": "また一度トレーニングをしたら四十八時間ほど時間を置いて筋肉を休ませることも大切です",
+          "source_text": "また一度トレーニングをしたら四十八時間ほど時間を置いて筋肉を休ませることも大切です。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 59,
+          "start_char": 199,
+          "end_char": 240
+        },
+        {
+          "text": "スポーツジムの指導員は何について話していますか",
+          "source_text": "スポーツジムの指導員は何について話していますか。",
+          "role": "question",
+          "speaker": null,
+          "source_line": 60,
+          "start_char": 240,
+          "end_char": 263
+        },
+        {
+          "text": "1トレーニングを続けることのメリット",
+          "source_text": "1 トレーニングを続けることのメリット",
+          "role": "option",
+          "speaker": null,
+          "source_line": 61,
+          "start_char": 263,
+          "end_char": 281
+        },
+        {
+          "text": "2トレーニングの効果的な方法",
+          "source_text": "2 トレーニングの効果的な方法",
+          "role": "option",
+          "speaker": null,
+          "source_line": 62,
+          "start_char": 281,
+          "end_char": 295
+        },
+        {
+          "text": "3一日のうちでトレーニングに適した時間",
+          "source_text": "3 一日のうちでトレーニングに適した時間",
+          "role": "option",
+          "speaker": null,
+          "source_line": 63,
+          "start_char": 295,
+          "end_char": 314
+        },
+        {
+          "text": "4トレーニングを行う重要性",
+          "source_text": "4 トレーニングを行う重要性",
+          "role": "option",
+          "speaker": null,
+          "source_line": 64,
+          "start_char": 314,
+          "end_char": 327
+        }
+      ],
+      "boundaries": [
+        {
+          "after_char": 23,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 86,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 104,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 126,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 180,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 199,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 240,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 263,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 281,
+          "types": [
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 295,
+          "types": [
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 314,
+          "types": [
+            "source_line_break"
+          ]
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "id": "2021-12-n2-015",
+      "source_lines": [
+        66,
+        71
+      ],
+      "input_text": "ラジオでアナウンサーが作文コンクールについて話しています桜新聞が毎年行っている小学生作文コンクールが今年も行われました今年のテーマは家族です多数の応募がありその中から大好きなおじいさんとの交流を書いた小学五年生の小林健太さんの作文が最優秀賞に輝きましたおじいさんと交わした会話や一緒に遊んだ時の様子が目に浮かぶように鮮やかに描かれおじいさんがどんな人なのかがよくわかると評価されました作品は桜新聞のホームページに掲載されていますので是非ご覧くださいアナウンサーはこの作文コンクールの何について話していますか1開催している目的2受賞者のコメント3最優秀賞に選ばれた作品4次回の応募方法",
+      "sentences": [
+        {
+          "text": "ラジオでアナウンサーが作文コンクールについて話しています",
+          "source_text": "ラジオでアナウンサーが作文コンクールについて話しています。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 66,
+          "start_char": 0,
+          "end_char": 28
+        },
+        {
+          "text": "桜新聞が毎年行っている小学生作文コンクールが今年も行われました",
+          "source_text": "桜新聞が毎年行っている小学生作文コンクールが今年も行われました。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 66,
+          "start_char": 28,
+          "end_char": 59
+        },
+        {
+          "text": "今年のテーマは家族です",
+          "source_text": "今年のテーマは家族です。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 66,
+          "start_char": 59,
+          "end_char": 70
+        },
+        {
+          "text": "多数の応募がありその中から大好きなおじいさんとの交流を書いた小学五年生の小林健太さんの作文が最優秀賞に輝きました",
+          "source_text": "多数の応募があり、その中から大好きなおじいさんとの交流を書いた小学五年生の小林健太さんの作文が最優秀賞に輝きました。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 66,
+          "start_char": 70,
+          "end_char": 126
+        },
+        {
+          "text": "おじいさんと交わした会話や一緒に遊んだ時の様子が目に浮かぶように鮮やかに描かれおじいさんがどんな人なのかがよくわかると評価されました",
+          "source_text": "おじいさんと交わした会話や、一緒に遊んだ時の様子が、目に浮かぶように鮮やかに描かれ、おじいさんがどんな人なのかがよくわかると評価されました。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 66,
+          "start_char": 126,
+          "end_char": 192
+        },
+        {
+          "text": "作品は桜新聞のホームページに掲載されていますので是非ご覧ください",
+          "source_text": "作品は桜新聞のホームページに掲載されていますので、是非ご覧ください。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 66,
+          "start_char": 192,
+          "end_char": 224
+        },
+        {
+          "text": "アナウンサーはこの作文コンクールの何について話していますか",
+          "source_text": "アナウンサーはこの作文コンクールの何について話していますか？",
+          "role": "question",
+          "speaker": null,
+          "source_line": 67,
+          "start_char": 224,
+          "end_char": 253
+        },
+        {
+          "text": "1開催している目的",
+          "source_text": "1.開催している目的",
+          "role": "option",
+          "speaker": null,
+          "source_line": 68,
+          "start_char": 253,
+          "end_char": 262
+        },
+        {
+          "text": "2受賞者のコメント",
+          "source_text": "2.受賞者のコメント",
+          "role": "option",
+          "speaker": null,
+          "source_line": 69,
+          "start_char": 262,
+          "end_char": 271
+        },
+        {
+          "text": "3最優秀賞に選ばれた作品",
+          "source_text": "3.最優秀賞に選ばれた作品",
+          "role": "option",
+          "speaker": null,
+          "source_line": 70,
+          "start_char": 271,
+          "end_char": 283
+        },
+        {
+          "text": "4次回の応募方法",
+          "source_text": "4.次回の応募方法",
+          "role": "option",
+          "speaker": null,
+          "source_line": 71,
+          "start_char": 283,
+          "end_char": 291
+        }
+      ],
+      "boundaries": [
+        {
+          "after_char": 28,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 59,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 70,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 126,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 192,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 224,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 253,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 262,
+          "types": [
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 271,
+          "types": [
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 283,
+          "types": [
+            "source_line_break"
+          ]
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "id": "2021-12-n2-016",
+      "source_lines": [
+        73,
+        79
+      ],
+      "input_text": "テレビで女のアナウンサーと動物学者がある鳥について話しています本日は鳥の研究がご専門の伊藤先生にお越しいただきましたよろしくお願いします先生ペットとして飼われている鳥の中にはこんにちはと言うとこんにちはと返してくるような鳥がいますよねええそれは話しているように聞こえるんですが話しているわけではないんですよそうなんですかそれらの鳥のメスは自分と似た声のオスとカップルになろうとするためオスはメスの声を真似して相手にアピールするんですああそしてカップルになった後もお世話関係を深めるためにさらに似た声で鳴くようになりますペットの鳥の行動についてもこれと同じように考えられます飼い主に愛情を示しているのだと思います動物学者はこの鳥の何について話していますか1人の言葉を理解する能力2記憶力の良さ3飼い主との共通点4人の言葉を真似する理由",
+      "sentences": [
+        {
+          "text": "テレビで女のアナウンサーと動物学者がある鳥について話しています",
+          "source_text": "テレビで、女のアナウンサーと動物学者がある鳥について話しています。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 73,
+          "start_char": 0,
+          "end_char": 31
+        },
+        {
+          "text": "本日は鳥の研究がご専門の伊藤先生にお越しいただきました",
+          "source_text": "本日は、鳥の研究がご専門の伊藤先生にお越しいただきました。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 74,
+          "start_char": 31,
+          "end_char": 58
+        },
+        {
+          "text": "よろしくお願いします",
+          "source_text": "よろしくお願いします。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 74,
+          "start_char": 58,
+          "end_char": 68
+        },
+        {
+          "text": "先生ペットとして飼われている鳥の中にはこんにちはと言うとこんにちはと返してくるような鳥がいますよね",
+          "source_text": "先生、ペットとして飼われている鳥の中には「こんにちは」と言うと、「こんにちは」と返してくるような鳥がいますよね。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 74,
+          "start_char": 68,
+          "end_char": 117
+        },
+        {
+          "text": "ええ",
+          "source_text": "ええ。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 74,
+          "start_char": 117,
+          "end_char": 119
+        },
+        {
+          "text": "それは話しているように聞こえるんですが話しているわけではないんですよ",
+          "source_text": "それは話しているように聞こえるんですが、話しているわけではないんですよ。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 74,
+          "start_char": 119,
+          "end_char": 153
+        },
+        {
+          "text": "そうなんですか",
+          "source_text": "そうなんですか。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 74,
+          "start_char": 153,
+          "end_char": 160
+        },
+        {
+          "text": "それらの鳥のメスは自分と似た声のオスとカップルになろうとするためオスはメスの声を真似して相手にアピールするんです",
+          "source_text": "それらの鳥のメスは、自分と似た声のオスとカップルになろうとするため、オスはメスの声を真似して相手にアピールするんです。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 74,
+          "start_char": 160,
+          "end_char": 216
+        },
+        {
+          "text": "ああ",
+          "source_text": "ああ。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 74,
+          "start_char": 216,
+          "end_char": 218
+        },
+        {
+          "text": "そしてカップルになった後もお世話関係を深めるためにさらに似た声で鳴くようになります",
+          "source_text": "そしてカップルになった後もお世話関係を深めるために、さらに似た声で鳴くようになります。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 74,
+          "start_char": 218,
+          "end_char": 259
+        },
+        {
+          "text": "ペットの鳥の行動についてもこれと同じように考えられます",
+          "source_text": "ペットの鳥の行動についても、これと同じように考えられます。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 74,
+          "start_char": 259,
+          "end_char": 286
+        },
+        {
+          "text": "飼い主に愛情を示しているのだと思います",
+          "source_text": "飼い主に愛情を示しているのだと思います。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 74,
+          "start_char": 286,
+          "end_char": 305
+        },
+        {
+          "text": "動物学者はこの鳥の何について話していますか",
+          "source_text": "動物学者はこの鳥の何について話していますか？",
+          "role": "question",
+          "speaker": null,
+          "source_line": 75,
+          "start_char": 305,
+          "end_char": 326
+        },
+        {
+          "text": "1人の言葉を理解する能力",
+          "source_text": "1 人の言葉を、理解する能力",
+          "role": "option",
+          "speaker": null,
+          "source_line": 76,
+          "start_char": 326,
+          "end_char": 338
+        },
+        {
+          "text": "2記憶力の良さ",
+          "source_text": "2 記憶力の良さ",
+          "role": "option",
+          "speaker": null,
+          "source_line": 77,
+          "start_char": 338,
+          "end_char": 345
+        },
+        {
+          "text": "3飼い主との共通点",
+          "source_text": "3 飼い主との共通点",
+          "role": "option",
+          "speaker": null,
+          "source_line": 78,
+          "start_char": 345,
+          "end_char": 354
+        },
+        {
+          "text": "4人の言葉を真似する理由",
+          "source_text": "4 人の言葉を真似する理由",
+          "role": "option",
+          "speaker": null,
+          "source_line": 79,
+          "start_char": 354,
+          "end_char": 366
+        }
+      ],
+      "boundaries": [
+        {
+          "after_char": 31,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 58,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 68,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 117,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 119,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 153,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 160,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 216,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 218,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 259,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 286,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 305,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 326,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 338,
+          "types": [
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 345,
+          "types": [
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 354,
+          "types": [
+            "source_line_break"
+          ]
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "id": "2021-12-n2-017",
+      "source_lines": [
+        82,
+        86
+      ],
+      "input_text": "1番金曜日締切りのレポート間に合いそう1やっぱり書くことになったよ2日本文学についてまとめたら3徹夜で頑張るしかないよ",
+      "sentences": [
+        {
+          "text": "1番",
+          "source_text": "1番",
+          "role": "instruction",
+          "speaker": null,
+          "source_line": 82,
+          "start_char": 0,
+          "end_char": 2
+        },
+        {
+          "text": "金曜日締切りのレポート間に合いそう",
+          "source_text": "金曜日締切りのレポート、間に合いそう？",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 83,
+          "start_char": 2,
+          "end_char": 19
+        },
+        {
+          "text": "1やっぱり書くことになったよ",
+          "source_text": "1 やっぱり書くことになったよ。",
+          "role": "option",
+          "speaker": null,
+          "source_line": 84,
+          "start_char": 19,
+          "end_char": 33
+        },
+        {
+          "text": "2日本文学についてまとめたら",
+          "source_text": "2 日本文学についてまとめたら。",
+          "role": "option",
+          "speaker": null,
+          "source_line": 85,
+          "start_char": 33,
+          "end_char": 47
+        },
+        {
+          "text": "3徹夜で頑張るしかないよ",
+          "source_text": "3 徹夜で頑張るしかないよ。",
+          "role": "option",
+          "speaker": null,
+          "source_line": 86,
+          "start_char": 47,
+          "end_char": 59
+        }
+      ],
+      "boundaries": [
+        {
+          "after_char": 2,
+          "types": [
+            "source_line_break",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 19,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 33,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 47,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "id": "2021-12-n2-018",
+      "source_lines": [
+        88,
+        92
+      ],
+      "input_text": "2番ゼミの発表うまく行かなかったからってそんなに落ち込むことないよ1落ち着いてるように見える2ありがとう気持ちを切り替えなきゃね3不満を言われても困るよ",
+      "sentences": [
+        {
+          "text": "2番",
+          "source_text": "2番",
+          "role": "instruction",
+          "speaker": null,
+          "source_line": 88,
+          "start_char": 0,
+          "end_char": 2
+        },
+        {
+          "text": "ゼミの発表うまく行かなかったからってそんなに落ち込むことないよ",
+          "source_text": "ゼミの発表、うまく行かなかったからって、そんなに落ち込むことないよ。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 89,
+          "start_char": 2,
+          "end_char": 33
+        },
+        {
+          "text": "1落ち着いてるように見える",
+          "source_text": "1 落ち着いてるように見える？",
+          "role": "option",
+          "speaker": null,
+          "source_line": 90,
+          "start_char": 33,
+          "end_char": 46
+        },
+        {
+          "text": "2ありがとう気持ちを切り替えなきゃね",
+          "source_text": "2 ありがとう、気持ちを切り替えなきゃね。",
+          "role": "option",
+          "speaker": null,
+          "source_line": 91,
+          "start_char": 46,
+          "end_char": 64
+        },
+        {
+          "text": "3不満を言われても困るよ",
+          "source_text": "3 不満を言われても困るよ。",
+          "role": "option",
+          "speaker": null,
+          "source_line": 92,
+          "start_char": 64,
+          "end_char": 76
+        }
+      ],
+      "boundaries": [
+        {
+          "after_char": 2,
+          "types": [
+            "source_line_break",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 33,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 46,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 64,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "id": "2021-12-n2-019",
+      "source_lines": [
+        94,
+        98
+      ],
+      "input_text": "3番漢字のテスト明日なのにまだ全然覚えてないよテスト来週になったらいいのに1テストの日来週に変わるの2来週にはならないでしょう3来週になってよかったよね",
+      "sentences": [
+        {
+          "text": "3番",
+          "source_text": "3番",
+          "role": "instruction",
+          "speaker": null,
+          "source_line": 94,
+          "start_char": 0,
+          "end_char": 2
+        },
+        {
+          "text": "漢字のテスト明日なのにまだ全然覚えてないよ",
+          "source_text": "漢字のテスト、明日なのに、まだ全然覚えてないよ。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 95,
+          "start_char": 2,
+          "end_char": 23
+        },
+        {
+          "text": "テスト来週になったらいいのに",
+          "source_text": "テスト、来週になったらいいのに。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 95,
+          "start_char": 23,
+          "end_char": 37
+        },
+        {
+          "text": "1テストの日来週に変わるの",
+          "source_text": "1 テストの日、来週に変わるの？",
+          "role": "option",
+          "speaker": null,
+          "source_line": 96,
+          "start_char": 37,
+          "end_char": 50
+        },
+        {
+          "text": "2来週にはならないでしょう",
+          "source_text": "2 来週にはならないでしょう。",
+          "role": "option",
+          "speaker": null,
+          "source_line": 97,
+          "start_char": 50,
+          "end_char": 63
+        },
+        {
+          "text": "3来週になってよかったよね",
+          "source_text": "3 来週になってよかったよね。",
+          "role": "option",
+          "speaker": null,
+          "source_line": 98,
+          "start_char": 63,
+          "end_char": 76
+        }
+      ],
+      "boundaries": [
+        {
+          "after_char": 2,
+          "types": [
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 23,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 37,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 50,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 63,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "id": "2021-12-n2-020",
+      "source_lines": [
+        100,
+        104
+      ],
+      "input_text": "4番先週メールでお送りした出張の報告書課長ご覧いただけましたか1見てもらえたんだよかったね2急いでるから早めに出して3ごめんまだ見てないんだ",
+      "sentences": [
+        {
+          "text": "4番",
+          "source_text": "4番",
+          "role": "instruction",
+          "speaker": null,
+          "source_line": 100,
+          "start_char": 0,
+          "end_char": 2
+        },
+        {
+          "text": "先週メールでお送りした出張の報告書課長ご覧いただけましたか",
+          "source_text": "先週メールでお送りした出張の報告書、課長、ご覧いただけましたか。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 101,
+          "start_char": 2,
+          "end_char": 31
+        },
+        {
+          "text": "1見てもらえたんだよかったね",
+          "source_text": "1 見てもらえたんだ、よかったね。",
+          "role": "option",
+          "speaker": null,
+          "source_line": 102,
+          "start_char": 31,
+          "end_char": 45
+        },
+        {
+          "text": "2急いでるから早めに出して",
+          "source_text": "2 急いでるから、早めに出して。",
+          "role": "option",
+          "speaker": null,
+          "source_line": 103,
+          "start_char": 45,
+          "end_char": 58
+        },
+        {
+          "text": "3ごめんまだ見てないんだ",
+          "source_text": "3 ごめん、まだ見てないんだ。",
+          "role": "option",
+          "speaker": null,
+          "source_line": 104,
+          "start_char": 58,
+          "end_char": 70
+        }
+      ],
+      "boundaries": [
+        {
+          "after_char": 2,
+          "types": [
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 31,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 45,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 58,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "id": "2021-12-n2-021",
+      "source_lines": [
+        106,
+        110
+      ],
+      "input_text": "5番あ佐藤さんこんにちはこんなところでお会いするとは1本当偶然ですね2わざわざ会いに来てくれたんですか3あじゃここじゃないところにしましょう",
+      "sentences": [
+        {
+          "text": "5番",
+          "source_text": "5番",
+          "role": "instruction",
+          "speaker": null,
+          "source_line": 106,
+          "start_char": 0,
+          "end_char": 2
+        },
+        {
+          "text": "あ佐藤さんこんにちはこんなところでお会いするとは",
+          "source_text": "あ、佐藤さん、こんにちは、こんなところでお会いするとは。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 107,
+          "start_char": 2,
+          "end_char": 26
+        },
+        {
+          "text": "1本当偶然ですね",
+          "source_text": "1 本当、偶然ですね。",
+          "role": "option",
+          "speaker": null,
+          "source_line": 108,
+          "start_char": 26,
+          "end_char": 34
+        },
+        {
+          "text": "2わざわざ会いに来てくれたんですか",
+          "source_text": "2 わざわざ会いに来てくれたんですか。",
+          "role": "option",
+          "speaker": null,
+          "source_line": 109,
+          "start_char": 34,
+          "end_char": 51
+        },
+        {
+          "text": "3あじゃここじゃないところにしましょう",
+          "source_text": "3 あ、じゃ、ここじゃないところにしましょう。",
+          "role": "option",
+          "speaker": null,
+          "source_line": 110,
+          "start_char": 51,
+          "end_char": 70
+        }
+      ],
+      "boundaries": [
+        {
+          "after_char": 2,
+          "types": [
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 26,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 34,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 51,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "id": "2021-12-n2-022",
+      "source_lines": [
+        112,
+        116
+      ],
+      "input_text": "6番文化祭での僕たちのイベント森先輩のアドバイスなしには成功しなかったよね1森先輩はアドバイスしてくれたよ2本当森先輩に感謝しなくちゃね3だから成功しなかったんだね",
+      "sentences": [
+        {
+          "text": "6番",
+          "source_text": "6番",
+          "role": "instruction",
+          "speaker": null,
+          "source_line": 112,
+          "start_char": 0,
+          "end_char": 2
+        },
+        {
+          "text": "文化祭での僕たちのイベント森先輩のアドバイスなしには成功しなかったよね",
+          "source_text": "文化祭での僕たちのイベント、森先輩のアドバイスなしには成功しなかったよね。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 113,
+          "start_char": 2,
+          "end_char": 37
+        },
+        {
+          "text": "1森先輩はアドバイスしてくれたよ",
+          "source_text": "1 森先輩はアドバイスしてくれたよ。",
+          "role": "option",
+          "speaker": null,
+          "source_line": 114,
+          "start_char": 37,
+          "end_char": 53
+        },
+        {
+          "text": "2本当森先輩に感謝しなくちゃね",
+          "source_text": "2 本当、森先輩に感謝しなくちゃね。",
+          "role": "option",
+          "speaker": null,
+          "source_line": 115,
+          "start_char": 53,
+          "end_char": 68
+        },
+        {
+          "text": "3だから成功しなかったんだね",
+          "source_text": "3 だから成功しなかったんだね。",
+          "role": "option",
+          "speaker": null,
+          "source_line": 116,
+          "start_char": 68,
+          "end_char": 82
+        }
+      ],
+      "boundaries": [
+        {
+          "after_char": 2,
+          "types": [
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 37,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 53,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 68,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "id": "2021-12-n2-023",
+      "source_lines": [
+        118,
+        122
+      ],
+      "input_text": "7番村田さん部長がこの前の村田さんのプレゼン見て大したもんだって言ってたよ1ああ部長厳しいですね2え部長が褒めてくれたんですか3曖昧だったのはどこですか",
+      "sentences": [
+        {
+          "text": "7番",
+          "source_text": "7番",
+          "role": "instruction",
+          "speaker": null,
+          "source_line": 118,
+          "start_char": 0,
+          "end_char": 2
+        },
+        {
+          "text": "村田さん部長がこの前の村田さんのプレゼン見て大したもんだって言ってたよ",
+          "source_text": "村田さん、部長が、この前の村田さんのプレゼン見て、大したもんだって言ってたよ。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 119,
+          "start_char": 2,
+          "end_char": 37
+        },
+        {
+          "text": "1ああ部長厳しいですね",
+          "source_text": "1 ああ、部長、厳しいですね。",
+          "role": "option",
+          "speaker": null,
+          "source_line": 120,
+          "start_char": 37,
+          "end_char": 48
+        },
+        {
+          "text": "2え部長が褒めてくれたんですか",
+          "source_text": "2 え、部長が褒めてくれたんですか。",
+          "role": "option",
+          "speaker": null,
+          "source_line": 121,
+          "start_char": 48,
+          "end_char": 63
+        },
+        {
+          "text": "3曖昧だったのはどこですか",
+          "source_text": "3 曖昧だったのはどこですか",
+          "role": "option",
+          "speaker": null,
+          "source_line": 122,
+          "start_char": 63,
+          "end_char": 76
+        }
+      ],
+      "boundaries": [
+        {
+          "after_char": 2,
+          "types": [
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 37,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 48,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 63,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "id": "2021-12-n2-024",
+      "source_lines": [
+        124,
+        128
+      ],
+      "input_text": "8番急なんだけど明後日の出張小野さんの代わりに行ってくれる1小野さんどうかされたんですか2小野さんと一緒に行けばいいんですね3小野さんどなたと代わるんですか",
+      "sentences": [
+        {
+          "text": "8番",
+          "source_text": "8番",
+          "role": "instruction",
+          "speaker": null,
+          "source_line": 124,
+          "start_char": 0,
+          "end_char": 2
+        },
+        {
+          "text": "急なんだけど明後日の出張小野さんの代わりに行ってくれる",
+          "source_text": "急なんだけど、明後日の出張、小野さんの代わりに行ってくれる？",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 125,
+          "start_char": 2,
+          "end_char": 29
+        },
+        {
+          "text": "1小野さんどうかされたんですか",
+          "source_text": "1 小野さん、どうかされたんですか。",
+          "role": "option",
+          "speaker": null,
+          "source_line": 126,
+          "start_char": 29,
+          "end_char": 44
+        },
+        {
+          "text": "2小野さんと一緒に行けばいいんですね",
+          "source_text": "2 小野さんと一緒に行けばいいんですね。",
+          "role": "option",
+          "speaker": null,
+          "source_line": 127,
+          "start_char": 44,
+          "end_char": 62
+        },
+        {
+          "text": "3小野さんどなたと代わるんですか",
+          "source_text": "3 小野さん、どなたと代わるんですか",
+          "role": "option",
+          "speaker": null,
+          "source_line": 128,
+          "start_char": 62,
+          "end_char": 78
+        }
+      ],
+      "boundaries": [
+        {
+          "after_char": 2,
+          "types": [
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 29,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 44,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 62,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "id": "2021-12-n2-025",
+      "source_lines": [
+        130,
+        134
+      ],
+      "input_text": "9番先生希望の会社に就職できるかどうか不安でしたがなんとかなりました1それは心配ですね2そうですかよかったですね3まだ諦めちゃだめですよ",
+      "sentences": [
+        {
+          "text": "9番",
+          "source_text": "9番",
+          "role": "instruction",
+          "speaker": null,
+          "source_line": 130,
+          "start_char": 0,
+          "end_char": 2
+        },
+        {
+          "text": "先生希望の会社に就職できるかどうか不安でしたがなんとかなりました",
+          "source_text": "先生、希望の会社に就職できるかどうか不安でしたが、なんとかなりました。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 131,
+          "start_char": 2,
+          "end_char": 34
+        },
+        {
+          "text": "1それは心配ですね",
+          "source_text": "1 それは心配ですね",
+          "role": "option",
+          "speaker": null,
+          "source_line": 132,
+          "start_char": 34,
+          "end_char": 43
+        },
+        {
+          "text": "2そうですか",
+          "source_text": "2 そうですか。",
+          "role": "option",
+          "speaker": null,
+          "source_line": 133,
+          "start_char": 43,
+          "end_char": 49
+        },
+        {
+          "text": "よかったですね",
+          "source_text": "よかったですね。",
+          "role": "option",
+          "speaker": null,
+          "source_line": 133,
+          "start_char": 49,
+          "end_char": 56
+        },
+        {
+          "text": "3まだ諦めちゃだめですよ",
+          "source_text": "3 まだ諦めちゃだめですよ。",
+          "role": "option",
+          "speaker": null,
+          "source_line": 134,
+          "start_char": 56,
+          "end_char": 68
+        }
+      ],
+      "boundaries": [
+        {
+          "after_char": 2,
+          "types": [
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 34,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 43,
+          "types": [
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 49,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 56,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "id": "2021-12-n2-026",
+      "source_lines": [
+        136,
+        140
+      ],
+      "input_text": "10番君の企画書興味深く読ませてもらったよ1何かご意見いただければ嬉しいです2すぐに書き直してお持ちします3ぜひご覧になってみてください",
+      "sentences": [
+        {
+          "text": "10番",
+          "source_text": "10番",
+          "role": "instruction",
+          "speaker": null,
+          "source_line": 136,
+          "start_char": 0,
+          "end_char": 3
+        },
+        {
+          "text": "君の企画書興味深く読ませてもらったよ",
+          "source_text": "君の企画書、興味深く読ませてもらったよ。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 137,
+          "start_char": 3,
+          "end_char": 21
+        },
+        {
+          "text": "1何かご意見いただければ嬉しいです",
+          "source_text": "1 何か、ご意見いただければ嬉しいです。",
+          "role": "option",
+          "speaker": null,
+          "source_line": 138,
+          "start_char": 21,
+          "end_char": 38
+        },
+        {
+          "text": "2すぐに書き直してお持ちします",
+          "source_text": "2 すぐに書き直してお持ちします。",
+          "role": "option",
+          "speaker": null,
+          "source_line": 139,
+          "start_char": 38,
+          "end_char": 53
+        },
+        {
+          "text": "3ぜひご覧になってみてください",
+          "source_text": "3 ぜひご覧になってみてください。",
+          "role": "option",
+          "speaker": null,
+          "source_line": 140,
+          "start_char": 53,
+          "end_char": 68
+        }
+      ],
+      "boundaries": [
+        {
+          "after_char": 3,
+          "types": [
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 21,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 38,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 53,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "id": "2021-12-n2-027",
+      "source_lines": [
+        142,
+        146
+      ],
+      "input_text": "11番あのうすいませんサンドイッチ頼んでからだいぶ経ってるんですけど1すみませんただいま聞いてまいります2すみませんすぐご注文をお伺いたします3すみませんもう結構です",
+      "sentences": [
+        {
+          "text": "11番",
+          "source_text": "11番",
+          "role": "instruction",
+          "speaker": null,
+          "source_line": 142,
+          "start_char": 0,
+          "end_char": 3
+        },
+        {
+          "text": "あのうすいません",
+          "source_text": "あのう、すいません。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 143,
+          "start_char": 3,
+          "end_char": 11
+        },
+        {
+          "text": "サンドイッチ頼んでからだいぶ経ってるんですけど",
+          "source_text": "サンドイッチ頼んでから、だいぶ経ってるんですけど。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 143,
+          "start_char": 11,
+          "end_char": 34
+        },
+        {
+          "text": "1すみませんただいま聞いてまいります",
+          "source_text": "1 すみません、ただいま聞いてまいります。",
+          "role": "option",
+          "speaker": null,
+          "source_line": 144,
+          "start_char": 34,
+          "end_char": 52
+        },
+        {
+          "text": "2すみませんすぐご注文をお伺いたします",
+          "source_text": "2 すみません、すぐご注文をお伺いたします。",
+          "role": "option",
+          "speaker": null,
+          "source_line": 145,
+          "start_char": 52,
+          "end_char": 71
+        },
+        {
+          "text": "3すみませんもう結構です",
+          "source_text": "3 すみません、もう結構です。",
+          "role": "option",
+          "speaker": null,
+          "source_line": 146,
+          "start_char": 71,
+          "end_char": 83
+        }
+      ],
+      "boundaries": [
+        {
+          "after_char": 3,
+          "types": [
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 11,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 34,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 52,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 71,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "id": "2021-12-n2-028",
+      "source_lines": [
+        148,
+        167
+      ],
+      "input_text": "問題51番市の図書館で館長と職員二人が図書館のサービスについて話しています最近図書館の利用者数が伸び悩んでいるので市民にもっと利用してもらえるよう何かできることはないか考えてみたいと思います今ポイントカードを発行して貸し出し数に応じてポイントを付けてますよねポイントが貯まったら文房具をあげてるんですけどあまり喜ばれていないように思うんです品物を変えてみてはどうでしょうかそうですね他に何か案はありますか後はもっと楽しく本を借りてもらえるように二三冊袋に入れて貸し出すのはどうですか本のタイトルを秘密にしてえどういうことですか恋愛とか冒険とかテーマに沿って本を集めて数冊袋に入れておくんですどんな本が入っているか袋を開けるまで分からないようにしてなるほどでもそれだと読んだことがある本が入ってるってこともありますよねその時は交換できるようにしたらいいですよあのまずは今やっている館内の見学会をホームページとかでもっと宣伝するのはどうですかうんこれまでもホームページやチラシで十分宣伝してきてますからねそれなら親子で参加できるイベントを増やしたらどうですか今定期的にやってる工作や折り紙の教室いつも人気で定員いっぱいですよねうんーそうするとイベント当日は職員の数を増やす必要が出てくるし準備の負担も増えますねポイントカードの制度は経費がかかるからこの際やめてもいいかなって思ってるんです今回は手間も経費も少なくて済みそうなさっきのユニークな案試してみましょう図書館の利用者を増やすために何をすることにしましたか1ポイントと交換する品物を変える2テーマごとに本を袋に入れて貸し出す3見学会の宣伝に力を入れる4親子で参加できるイベントを増やす",
+      "sentences": [
+        {
+          "text": "問題5",
+          "source_text": "問題５",
+          "role": "instruction",
+          "speaker": null,
+          "source_line": 148,
+          "start_char": 0,
+          "end_char": 3
+        },
+        {
+          "text": "1番",
+          "source_text": "1番",
+          "role": "instruction",
+          "speaker": null,
+          "source_line": 149,
+          "start_char": 3,
+          "end_char": 5
+        },
+        {
+          "text": "市の図書館で館長と職員二人が図書館のサービスについて話しています",
+          "source_text": "市の図書館で、館長と職員二人が図書館のサービスについて話しています。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 150,
+          "start_char": 5,
+          "end_char": 37
+        },
+        {
+          "text": "最近図書館の利用者数が伸び悩んでいるので市民にもっと利用してもらえるよう何かできることはないか考えてみたいと思います",
+          "source_text": "最近、図書館の利用者数が伸び悩んでいるので、市民にもっと利用してもらえるよう、何かできることはないか考えてみたいと思います。",
+          "role": "dialogue",
+          "speaker": "女1",
+          "source_line": 151,
+          "start_char": 37,
+          "end_char": 95
+        },
+        {
+          "text": "今ポイントカードを発行して貸し出し数に応じてポイントを付けてますよね",
+          "source_text": "今ポイントカードを発行して、貸し出し数に応じてポイントを付けてますよね？",
+          "role": "dialogue",
+          "speaker": "女2",
+          "source_line": 151,
+          "start_char": 95,
+          "end_char": 129
+        },
+        {
+          "text": "ポイントが貯まったら文房具をあげてるんですけどあまり喜ばれていないように思うんです",
+          "source_text": "ポイントが貯まったら文房具をあげてるんですけど、あまり喜ばれていないように思うんです。",
+          "role": "dialogue",
+          "speaker": "女2",
+          "source_line": 151,
+          "start_char": 129,
+          "end_char": 170
+        },
+        {
+          "text": "品物を変えてみてはどうでしょうか",
+          "source_text": "品物を変えてみてはどうでしょうか。",
+          "role": "dialogue",
+          "speaker": "女2",
+          "source_line": 151,
+          "start_char": 170,
+          "end_char": 186
+        },
+        {
+          "text": "そうですね他に何か案はありますか",
+          "source_text": "そうですね、他に何か案はありますか？",
+          "role": "dialogue",
+          "speaker": "女1",
+          "source_line": 152,
+          "start_char": 186,
+          "end_char": 202
+        },
+        {
+          "text": "後はもっと楽しく本を借りてもらえるように二三冊袋に入れて貸し出すのはどうですか",
+          "source_text": "後はもっと楽しく本を借りてもらえるように、二、三冊袋に入れて貸し出すのはどうですか？",
+          "role": "dialogue",
+          "speaker": "女2",
+          "source_line": 153,
+          "start_char": 202,
+          "end_char": 241
+        },
+        {
+          "text": "本のタイトルを秘密にして",
+          "source_text": "本のタイトルを秘密にして。",
+          "role": "dialogue",
+          "speaker": "女2",
+          "source_line": 153,
+          "start_char": 241,
+          "end_char": 253
+        },
+        {
+          "text": "え",
+          "source_text": "え？",
+          "role": "dialogue",
+          "speaker": "女1",
+          "source_line": 154,
+          "start_char": 253,
+          "end_char": 254
+        },
+        {
+          "text": "どういうことですか",
+          "source_text": "どういうことですか？",
+          "role": "dialogue",
+          "speaker": "女1",
+          "source_line": 154,
+          "start_char": 254,
+          "end_char": 263
+        },
+        {
+          "text": "恋愛とか冒険とかテーマに沿って本を集めて数冊袋に入れておくんです",
+          "source_text": "恋愛とか冒険とかテーマに沿って本を集めて、数冊袋に入れておくんです。",
+          "role": "dialogue",
+          "speaker": "女2",
+          "source_line": 155,
+          "start_char": 263,
+          "end_char": 295
+        },
+        {
+          "text": "どんな本が入っているか袋を開けるまで分からないようにして",
+          "source_text": "どんな本が入っているか袋を開けるまで分からないようにして。",
+          "role": "dialogue",
+          "speaker": "女2",
+          "source_line": 155,
+          "start_char": 295,
+          "end_char": 323
+        },
+        {
+          "text": "なるほど",
+          "source_text": "なるほど。",
+          "role": "dialogue",
+          "speaker": "女1",
+          "source_line": 156,
+          "start_char": 323,
+          "end_char": 327
+        },
+        {
+          "text": "でもそれだと読んだことがある本が入ってるってこともありますよね",
+          "source_text": "でも、それだと読んだことがある本が入ってるってこともありますよね。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 157,
+          "start_char": 327,
+          "end_char": 358
+        },
+        {
+          "text": "その時は交換できるようにしたらいいですよ",
+          "source_text": "その時は交換できるようにしたらいいですよ。",
+          "role": "dialogue",
+          "speaker": "女2",
+          "source_line": 158,
+          "start_char": 358,
+          "end_char": 378
+        },
+        {
+          "text": "あのまずは今やっている館内の見学会をホームページとかでもっと宣伝するのはどうですか",
+          "source_text": "あの、まずは今やっている館内の見学会をホームページとかでもっと宣伝するのはどうですか？",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 159,
+          "start_char": 378,
+          "end_char": 419
+        },
+        {
+          "text": "うんこれまでもホームページやチラシで十分宣伝してきてますからね",
+          "source_text": "うん、これまでもホームページやチラシで十分宣伝してきてますからね。",
+          "role": "dialogue",
+          "speaker": "女1",
+          "source_line": 160,
+          "start_char": 419,
+          "end_char": 450
+        },
+        {
+          "text": "それなら親子で参加できるイベントを増やしたらどうですか",
+          "source_text": "それなら親子で参加できるイベントを増やしたらどうですか？",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 161,
+          "start_char": 450,
+          "end_char": 477
+        },
+        {
+          "text": "今定期的にやってる工作や折り紙の教室いつも人気で定員いっぱいですよね",
+          "source_text": "今定期的にやってる工作や折り紙の教室いつも人気で定員いっぱいですよね。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 161,
+          "start_char": 477,
+          "end_char": 511
+        },
+        {
+          "text": "うんーそうするとイベント当日は職員の数を増やす必要が出てくるし準備の負担も増えますね",
+          "source_text": "うんー、そうすると、イベント当日は職員の数を増やす必要が出てくるし、準備の負担も増えますね。",
+          "role": "dialogue",
+          "speaker": "女1",
+          "source_line": 162,
+          "start_char": 511,
+          "end_char": 553
+        },
+        {
+          "text": "ポイントカードの制度は経費がかかるからこの際やめてもいいかなって思ってるんです今回は手間も経費も少なくて済みそうなさっきのユニークな案試してみましょう",
+          "source_text": "ポイントカードの制度は経費がかかるからこの際やめてもいいかなって思ってるんです、今回は手間も経費も少なくて、済みそうな、さっきのユニークな案試してみましょう。",
+          "role": "dialogue",
+          "speaker": "女1",
+          "source_line": 162,
+          "start_char": 553,
+          "end_char": 628
+        },
+        {
+          "text": "図書館の利用者を増やすために何をすることにしましたか",
+          "source_text": "図書館の利用者を増やすために何をすることにしましたか？",
+          "role": "question",
+          "speaker": null,
+          "source_line": 163,
+          "start_char": 628,
+          "end_char": 654
+        },
+        {
+          "text": "1ポイントと交換する品物を変える",
+          "source_text": "1 ポイントと交換する品物を変える。",
+          "role": "option",
+          "speaker": null,
+          "source_line": 164,
+          "start_char": 654,
+          "end_char": 670
+        },
+        {
+          "text": "2テーマごとに本を袋に入れて貸し出す",
+          "source_text": "2 テーマごとに本を袋に入れて貸し出す。",
+          "role": "option",
+          "speaker": null,
+          "source_line": 165,
+          "start_char": 670,
+          "end_char": 688
+        },
+        {
+          "text": "3見学会の宣伝に力を入れる",
+          "source_text": "3 見学会の宣伝に力を入れる。",
+          "role": "option",
+          "speaker": null,
+          "source_line": 166,
+          "start_char": 688,
+          "end_char": 701
+        },
+        {
+          "text": "4親子で参加できるイベントを増やす",
+          "source_text": "4 親子で参加できるイベントを増やす。",
+          "role": "option",
+          "speaker": null,
+          "source_line": 167,
+          "start_char": 701,
+          "end_char": 718
+        }
+      ],
+      "boundaries": [
+        {
+          "after_char": 3,
+          "types": [
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 5,
+          "types": [
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 37,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 95,
+          "types": [
+            "terminal_punctuation",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 129,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 170,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 186,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 202,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 241,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 253,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 254,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 263,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 295,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 323,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 327,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 358,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 378,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 419,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 450,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 477,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 511,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 553,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 628,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 654,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 670,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 688,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 701,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "id": "2021-12-n2-029",
+      "source_lines": [
+        169,
+        179
+      ],
+      "input_text": "2番市民運動公園で係の人がイベントの説明をしています本日の防災フェアは四つの会場に分かれています第一会場の体育館では災害時怪我をした際の応急手当を実際に体験できます第二会場の運動場ではヘリコプターの離陸訓練をご覧いただけます先着10名の方は実際にヘリコプターに乗ることもできますただし18歳以上の方に限りますえーそれから第三会場の駐車場では消防車を展示しており運転席に座ってみることができます第四会場のプールでは午後1時より服を着たまま泳ぐ訓練をご覧いただけます各会場での体験や見学を通して防災について学んでいただきたいと思いますへー色々あるんだねヘリコプターなんてなかなか乗れないから乗ってみたいなぁ行ってみない私は高いところが苦手だから下で見てるねえじゃ消防車にしようかせっかくだから乗りたいのに乗ったら先着順だから急いで行こう分かった他にどこか行きたいところある服を着たまま泳ぐっていうのに興味あるけどあと3時間もあるから応急手当はどう役立ちそうだしそうだねじゃあ次はそれに行こう質問1二人はまずどこへ行きますか",
+      "sentences": [
+        {
+          "text": "2番",
+          "source_text": "2番",
+          "role": "instruction",
+          "speaker": null,
+          "source_line": 169,
+          "start_char": 0,
+          "end_char": 2
+        },
+        {
+          "text": "市民運動公園で係の人がイベントの説明をしています",
+          "source_text": "市民運動公園で係の人がイベントの説明をしています。",
+          "role": "dialogue",
+          "speaker": null,
+          "source_line": 170,
+          "start_char": 2,
+          "end_char": 26
+        },
+        {
+          "text": "本日の防災フェアは四つの会場に分かれています",
+          "source_text": "本日の防災フェアは、四つの会場に分かれています。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 171,
+          "start_char": 26,
+          "end_char": 48
+        },
+        {
+          "text": "第一会場の体育館では災害時怪我をした際の応急手当を実際に体験できます",
+          "source_text": "第一会場の体育館では、災害時、怪我をした際の応急手当を実際に体験できます。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 171,
+          "start_char": 48,
+          "end_char": 82
+        },
+        {
+          "text": "第二会場の運動場ではヘリコプターの離陸訓練をご覧いただけます",
+          "source_text": "第二会場の運動場では、ヘリコプターの離陸訓練をご覧いただけます。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 171,
+          "start_char": 82,
+          "end_char": 112
+        },
+        {
+          "text": "先着10名の方は実際にヘリコプターに乗ることもできます",
+          "source_text": "先着10名の方は、実際にヘリコプターに乗ることもできます。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 171,
+          "start_char": 112,
+          "end_char": 139
+        },
+        {
+          "text": "ただし18歳以上の方に限ります",
+          "source_text": "ただし、18歳以上の方に限ります。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 171,
+          "start_char": 139,
+          "end_char": 154
+        },
+        {
+          "text": "えーそれから第三会場の駐車場では消防車を展示しており運転席に座ってみることができます",
+          "source_text": "えー、それから、第三会場の駐車場では、消防車を展示しており、運転席に座ってみることができます。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 171,
+          "start_char": 154,
+          "end_char": 196
+        },
+        {
+          "text": "第四会場のプールでは午後1時より服を着たまま泳ぐ訓練をご覧いただけます",
+          "source_text": "第四会場のプールでは、午後1時より服を着たまま泳ぐ訓練をご覧いただけます。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 171,
+          "start_char": 196,
+          "end_char": 231
+        },
+        {
+          "text": "各会場での体験や見学を通して防災について学んでいただきたいと思います",
+          "source_text": "各会場での体験や見学を通して、防災について学んでいただきたいと思います。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 171,
+          "start_char": 231,
+          "end_char": 265
+        },
+        {
+          "text": "へー色々あるんだね",
+          "source_text": "へー、色々あるんだね。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 172,
+          "start_char": 265,
+          "end_char": 274
+        },
+        {
+          "text": "ヘリコプターなんてなかなか乗れないから乗ってみたいなぁ",
+          "source_text": "ヘリコプターなんてなかなか乗れないから、乗ってみたいなぁ。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 172,
+          "start_char": 274,
+          "end_char": 301
+        },
+        {
+          "text": "行ってみない",
+          "source_text": "行ってみない？",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 172,
+          "start_char": 301,
+          "end_char": 307
+        },
+        {
+          "text": "私は高いところが苦手だから下で見てるね",
+          "source_text": "私は高いところが苦手だから、下で見てるね。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 173,
+          "start_char": 307,
+          "end_char": 326
+        },
+        {
+          "text": "えじゃ消防車にしようか",
+          "source_text": "え、じゃ消防車にしようか。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 174,
+          "start_char": 326,
+          "end_char": 337
+        },
+        {
+          "text": "せっかくだから乗りたいのに乗ったら",
+          "source_text": "せっかくだから、乗りたいのに乗ったら？",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 175,
+          "start_char": 337,
+          "end_char": 354
+        },
+        {
+          "text": "先着順だから急いで行こう",
+          "source_text": "先着順だから、急いで行こう。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 175,
+          "start_char": 354,
+          "end_char": 366
+        },
+        {
+          "text": "分かった",
+          "source_text": "分かった。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 176,
+          "start_char": 366,
+          "end_char": 370
+        },
+        {
+          "text": "他にどこか行きたいところある",
+          "source_text": "他にどこか行きたいところある？",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 176,
+          "start_char": 370,
+          "end_char": 384
+        },
+        {
+          "text": "服を着たまま泳ぐっていうのに興味あるけどあと3時間もあるから応急手当はどう",
+          "source_text": "服を着たまま泳ぐっていうのに興味あるけど、あと3時間もあるから、応急手当はどう？",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 177,
+          "start_char": 384,
+          "end_char": 421
+        },
+        {
+          "text": "役立ちそうだし",
+          "source_text": "役立ちそうだし。",
+          "role": "dialogue",
+          "speaker": "女",
+          "source_line": 177,
+          "start_char": 421,
+          "end_char": 428
+        },
+        {
+          "text": "そうだねじゃあ次はそれに行こう",
+          "source_text": "そうだね、じゃあ、次はそれに行こう。",
+          "role": "dialogue",
+          "speaker": "男",
+          "source_line": 178,
+          "start_char": 428,
+          "end_char": 443
+        },
+        {
+          "text": "質問1二人はまずどこへ行きますか",
+          "source_text": "質問1 二人はまずどこへ行きますか。",
+          "role": "question",
+          "speaker": null,
+          "source_line": 179,
+          "start_char": 443,
+          "end_char": 459
+        }
+      ],
+      "boundaries": [
+        {
+          "after_char": 2,
+          "types": [
+            "source_line_break"
+          ]
+        },
+        {
+          "after_char": 26,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 48,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 82,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 112,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 139,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 154,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 196,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 231,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 265,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 274,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 301,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 307,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 326,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 337,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 354,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 366,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 370,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 384,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 421,
+          "types": [
+            "terminal_punctuation"
+          ]
+        },
+        {
+          "after_char": 428,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break",
+            "speaker_turn"
+          ]
+        },
+        {
+          "after_char": 443,
+          "types": [
+            "terminal_punctuation",
+            "source_line_break"
+          ]
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "id": "2021-12-n2-030",
+      "source_lines": [
+        181,
+        181
+      ],
+      "input_text": "質問2二人は次にどこへ行きますか",
+      "sentences": [
+        {
+          "text": "質問2二人は次にどこへ行きますか",
+          "source_text": "質問2 二人は次にどこへ行きますか。",
+          "role": "question",
+          "speaker": null,
+          "source_line": 181,
+          "start_char": 0,
+          "end_char": 16
+        }
+      ],
+      "boundaries": [],
+      "needs_review": false
+    }
+  ]
+}

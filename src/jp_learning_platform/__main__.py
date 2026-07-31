@@ -120,7 +120,7 @@ def build_parser() -> ArgumentParser:
     transcribe_parser.add_argument(
         "--model-size",
         default=DEFAULT_WHISPER_MODEL_SIZE,
-        help="faster-whisper model size. Defaults to large-v3.",
+        help="faster-whisper model size. Defaults to turbo.",
     )
     transcribe_parser.add_argument(
         "--device",

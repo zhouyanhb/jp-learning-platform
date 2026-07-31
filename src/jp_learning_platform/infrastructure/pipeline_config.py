@@ -9,8 +9,12 @@ from dataclasses import dataclass
 class WhisperTranscriptionConfig:
     """Default faster-whisper transcription settings."""
 
-    model_size: str = "large-v3"
+    model_size: str = "turbo"
     language: str = "ja"
+    initial_prompt: str = (
+        "これは日本語学習教材の書き起こしです。"
+        "自然な日本語の句読点を使用します。"
+    )
     device: str = "cpu"
     compute_type: str = "int8"
     beam_size: int = 5

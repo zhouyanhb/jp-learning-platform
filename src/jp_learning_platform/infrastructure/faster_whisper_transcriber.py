@@ -17,6 +17,7 @@ from jp_learning_platform.workflow.whisper_stage import (
 
 DEFAULT_WHISPER_MODEL_SIZE = DEFAULT_WHISPER_TRANSCRIPTION_CONFIG.model_size
 DEFAULT_WHISPER_LANGUAGE = DEFAULT_WHISPER_TRANSCRIPTION_CONFIG.language
+DEFAULT_WHISPER_INITIAL_PROMPT = DEFAULT_WHISPER_TRANSCRIPTION_CONFIG.initial_prompt
 DEFAULT_WHISPER_DEVICE = DEFAULT_WHISPER_TRANSCRIPTION_CONFIG.device
 DEFAULT_WHISPER_COMPUTE_TYPE = DEFAULT_WHISPER_TRANSCRIPTION_CONFIG.compute_type
 DEFAULT_WHISPER_BEAM_SIZE = DEFAULT_WHISPER_TRANSCRIPTION_CONFIG.beam_size
@@ -63,6 +64,7 @@ class FasterWhisperTranscriber:
 
     model_size: str = DEFAULT_WHISPER_MODEL_SIZE
     language: str = DEFAULT_WHISPER_LANGUAGE
+    initial_prompt: str = DEFAULT_WHISPER_INITIAL_PROMPT
     device: str = DEFAULT_WHISPER_DEVICE
     compute_type: str = DEFAULT_WHISPER_COMPUTE_TYPE
     beam_size: int = DEFAULT_WHISPER_BEAM_SIZE
@@ -115,6 +117,7 @@ class FasterWhisperTranscriber:
     def _transcription_options(self) -> dict[str, object]:
         return {
             "language": self.language,
+            "initial_prompt": self.initial_prompt,
             "beam_size": self.beam_size,
             "best_of": self.best_of,
             "temperature": self.temperature,
@@ -186,7 +189,7 @@ class FasterWhisperTranscriber:
                     float(getattr(segment, "start")),
                     float(getattr(segment, "end")),
                 ],
-                "initial_prompt": reliable_context or None,
+                "initial_prompt": reliable_context or self.initial_prompt,
                 "condition_on_previous_text": False,
             }
         )

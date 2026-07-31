@@ -43,6 +43,10 @@ def test_faster_whisper_transcriber_uses_centralized_default_options(
     assert model.source_path == str(source_path)
     assert model.options == {
         "language": "ja",
+        "initial_prompt": (
+            "これは日本語学習教材の書き起こしです。"
+            "自然な日本語の句読点を使用します。"
+        ),
         "beam_size": 5,
         "best_of": 5,
         "temperature": 0.0,
@@ -102,7 +106,10 @@ def test_retries_only_low_confidence_segments_with_reliable_audio_context(
 
     assert tuple(segment.text for segment in result.segments) == ("今日は", "日本語")
     assert len(model.calls) == 2
-    assert "initial_prompt" not in model.calls[0]
+    assert model.calls[0]["initial_prompt"] == (
+        "これは日本語学習教材の書き起こしです。"
+        "自然な日本語の句読点を使用します。"
+    )
     assert model.calls[1]["initial_prompt"] == "今日は"
     assert model.calls[1]["clip_timestamps"] == [1.1, 2.0]
 

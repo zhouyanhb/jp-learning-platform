@@ -96,7 +96,7 @@ python -m jp_learning_platform transcribe audio.mp3 --model-size small --device 
 
 Defaults are:
 
-- `--model-size large-v3`
+- `--model-size turbo`
 - `--device cpu`
 - `--compute-type int8`
 

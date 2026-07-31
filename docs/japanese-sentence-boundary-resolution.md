@@ -5,6 +5,26 @@ It uses aligned word timing, terminal punctuation, sentence-final expressions,
 timing evidence and Japanese dependent continuations to preserve grammatical
 sentence units.
 
+## Boundary evaluation dataset
+
+`data/sentence_boundaries/2021_12_n2.json` is the first punctuation-free
+sentence-boundary evaluation set. It is generated from
+`input/2021年12月N2听力.md` with:
+
+```console
+python3.12 -m jp_learning_platform.boundary_dataset \
+  "input/2021年12月N2听力.md" \
+  "data/sentence_boundaries/2021_12_n2.json"
+```
+
+Each sample stores punctuation-free `input_text`, ordered sentence spans and
+the character offset after which each semantic boundary occurs. Every sentence
+also records its source line, speaker and one of four roles: `instruction`,
+`dialogue`, `question` or `option`. The generated annotations are marked
+`silver`: terminal punctuation, speaker turns, source line breaks and explicit
+exam-item structure provide the initial labels. Structurally inconsistent
+items are marked `needs_review` for manual verification.
+
 ## Alignment-held silence
 
 Some forced aligners represent a pause by extending the preceding word until

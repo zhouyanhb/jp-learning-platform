@@ -16,8 +16,12 @@ from jp_learning_platform.infrastructure import (
 def test_pipeline_config_centralizes_asr_defaults() -> None:
     config = DEFAULT_WHISPER_TRANSCRIPTION_CONFIG
 
-    assert config.model_size == "large-v3"
+    assert config.model_size == "turbo"
     assert config.language == "ja"
+    assert config.initial_prompt == (
+        "これは日本語学習教材の書き起こしです。"
+        "自然な日本語の句読点を使用します。"
+    )
     assert config.device == "cpu"
     assert config.compute_type == "int8"
     assert config.beam_size == 5
