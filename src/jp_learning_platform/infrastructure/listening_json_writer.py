@@ -48,6 +48,7 @@ def _learning_word_payload(word: LearningWord) -> Mapping[str, object]:
         "end_char": word.end_char,
         "aligned_word_indexes": list(word.aligned_word_indexes),
         "timing_estimated": word.timing_estimated,
+        **({"is_structure": True} if word.is_structure else {}),
         **_time_range_payload(word.time_range),
     }
 

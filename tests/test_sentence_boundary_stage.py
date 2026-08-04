@@ -75,7 +75,11 @@ def test_sentence_boundary_stage_updates_document_segments(tmp_path: Path) -> No
     result = stage.run(_context(source_path, (_segment(),)))
 
     assert result.context.document.segments == (resolved_segment,)
-    assert result.data == {"decisions": (decision,)}
+    assert result.data == {
+        "decisions": (decision,),
+        "speaker_turn_candidates": (),
+        "cross_segment_merges": (),
+    }
     assert resolver.requests == [
         SentenceBoundaryResolutionRequest(
             source_path=source_path,

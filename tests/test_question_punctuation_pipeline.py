@@ -15,7 +15,12 @@ from jp_learning_platform.workflow import (
 )
 
 
-def _context(question: str, punctuation: str) -> PipelineContext:
+def _context(
+    question: str,
+    punctuation: str,
+    *,
+    is_question: bool = True,
+) -> PipelineContext:
     question_word = Word(question, TimeRange(0.0, 1.0))
     punctuation_word = Word(punctuation, TimeRange(1.0, 1.1))
     sentences = (
@@ -23,7 +28,7 @@ def _context(question: str, punctuation: str) -> PipelineContext:
             question,
             question_word.time_range,
             words=(question_word,),
-            is_question=True,
+            is_question=is_question,
         ),
         Sentence(punctuation, punctuation_word.time_range, words=(punctuation_word,)),
     )
@@ -47,6 +52,37 @@ def test_punctuation_attribution_preserves_raw_words() -> None:
     assert tuple(word.text for word in sentence.words) == ("そうですか", '。」')
     assert sentence.is_question
     assert result.data["decisions"][0].attributed_text == '。」'
+
+
+def test_punctuation_attribution_attaches_period_to_statement() -> None:
+    result = PunctuationAttributionStage().run(
+        _context("みなさんこんにちは", "。", is_question=False)
+    )
+
+    sentences = result.context.document.segments[0].sentences
+    assert len(sentences) == 1
+    assert sentences[0].text == "みなさんこんにちは。"
+    assert tuple(word.text for word in sentences[0].words) == (
+        "みなさんこんにちは",
+        "。",
+    )
+    assert not sentences[0].is_question
+    decision = result.data["decisions"][0]
+    assert decision.original_sentence_text == "みなさんこんにちは"
+    assert decision.resulting_sentence_text == "みなさんこんにちは。"
+    assert not decision.is_question
+
+
+def test_punctuation_attribution_does_not_attach_opening_punctuation() -> None:
+    result = PunctuationAttributionStage().run(
+        _context("前の文。", "「", is_question=False)
+    )
+
+    assert tuple(
+        sentence.text
+        for sentence in result.context.document.segments[0].sentences
+    ) == ("前の文。", "「")
+    assert not result.data["decisions"]
 
 
 def test_display_normalization_replaces_period_before_closing_quote() -> None:

@@ -16,7 +16,7 @@ def test_generated_n2_boundary_dataset_is_current_and_self_consistent() -> None:
     stored = json.loads(DATASET_PATH.read_text(encoding="utf-8"))
 
     assert stored == expected
-    assert stored["schema_version"] == 2
+    assert stored["schema_version"] == 3
     assert stored["annotation_status"] == "silver"
     assert len(stored["samples"]) >= 20
 
@@ -37,6 +37,12 @@ def test_generated_n2_boundary_dataset_is_current_and_self_consistent() -> None:
         )
         assert all(
             0 < boundary["after_char"] < len(sample["input_text"])
+            for boundary in boundaries
+        )
+        assert all(
+            set(boundary["dimensions"]).issubset(
+                {"language_sentence", "speaker_turn", "content_structure"}
+            )
             for boundary in boundaries
         )
 

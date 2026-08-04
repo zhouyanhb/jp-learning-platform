@@ -68,6 +68,12 @@ def _normalize_seconds(value: float, field_name: str) -> float:
     return seconds
 
 
+def _normalize_score(value: int, field_name: str) -> int:
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise TypeError(f"{field_name} must be an integer.")
+    return value
+
+
 @dataclass(frozen=True, slots=True)
 class SentenceBoundaryResolutionRequest:
     """Input passed to sentence boundary resolvers."""
@@ -131,12 +137,135 @@ class SentenceBoundaryDecision:
 
 
 @dataclass(frozen=True, slots=True)
+class SpeakerTurnCandidate:
+    """Independent evidence that a token boundary may change speaker."""
+
+    segment_position: int
+    sentence_index: int
+    word_index: int
+    gap_seconds: float
+    reason: str
+    left_text: str
+    right_text: str
+    boundary_accepted: bool
+
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            "segment_position",
+            _normalize_position(self.segment_position, "segment_position"),
+        )
+        object.__setattr__(
+            self,
+            "sentence_index",
+            _normalize_position(self.sentence_index, "sentence_index"),
+        )
+        object.__setattr__(
+            self,
+            "word_index",
+            _normalize_position(self.word_index, "word_index"),
+        )
+        object.__setattr__(
+            self,
+            "gap_seconds",
+            _normalize_seconds(self.gap_seconds, "gap_seconds"),
+        )
+        object.__setattr__(self, "reason", _normalize_name(self.reason, "reason"))
+        object.__setattr__(self, "left_text", _normalize_name(self.left_text, "left_text"))
+        object.__setattr__(
+            self,
+            "right_text",
+            _normalize_name(self.right_text, "right_text"),
+        )
+        if not isinstance(self.boundary_accepted, bool):
+            raise TypeError("boundary_accepted must be a bool.")
+
+
+@dataclass(frozen=True, slots=True)
+class CrossSegmentMergeEvidence:
+    """One scored signal used to merge an ASR segment boundary."""
+
+    name: str
+    score: int
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "name", _normalize_name(self.name, "name"))
+        object.__setattr__(self, "score", _normalize_score(self.score, "score"))
+
+
+@dataclass(frozen=True, slots=True)
+class CrossSegmentMergeDecision:
+    """Auditable high-confidence removal of one ASR segment boundary."""
+
+    left_segment_position: int
+    right_segment_position: int
+    word_index: int
+    left_end_seconds: float
+    right_start_seconds: float
+    gap_seconds: float
+    score: int
+    reason: str
+    left_text: str
+    right_text: str
+    evidence: tuple[CrossSegmentMergeEvidence, ...]
+
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            "left_segment_position",
+            _normalize_position(self.left_segment_position, "left_segment_position"),
+        )
+        object.__setattr__(
+            self,
+            "right_segment_position",
+            _normalize_position(self.right_segment_position, "right_segment_position"),
+        )
+        object.__setattr__(
+            self,
+            "word_index",
+            _normalize_position(self.word_index, "word_index"),
+        )
+        object.__setattr__(
+            self,
+            "left_end_seconds",
+            _normalize_seconds(self.left_end_seconds, "left_end_seconds"),
+        )
+        object.__setattr__(
+            self,
+            "right_start_seconds",
+            _normalize_seconds(self.right_start_seconds, "right_start_seconds"),
+        )
+        object.__setattr__(
+            self,
+            "gap_seconds",
+            _normalize_seconds(self.gap_seconds, "gap_seconds"),
+        )
+        object.__setattr__(self, "score", _normalize_score(self.score, "score"))
+        object.__setattr__(self, "reason", _normalize_name(self.reason, "reason"))
+        object.__setattr__(self, "left_text", _normalize_name(self.left_text, "left_text"))
+        object.__setattr__(self, "right_text", _normalize_name(self.right_text, "right_text"))
+        object.__setattr__(
+            self,
+            "evidence",
+            _tuple_of_type(
+                self.evidence,
+                CrossSegmentMergeEvidence,
+                "evidence",
+            ),
+        )
+        if not self.evidence:
+            raise ValueError("evidence must not be empty.")
+
+
+@dataclass(frozen=True, slots=True)
 class SentenceBoundaryResolution:
     """Transcript segments after sentence boundary resolution."""
 
     source_path: Path
     segments: tuple[Segment, ...]
     decisions: tuple[SentenceBoundaryDecision, ...] = ()
+    speaker_turn_candidates: tuple[SpeakerTurnCandidate, ...] = ()
+    cross_segment_merges: tuple[CrossSegmentMergeDecision, ...] = ()
 
     def __post_init__(self) -> None:
         segments = _tuple_of_type(self.segments, Segment, "segments")
@@ -152,6 +281,24 @@ class SentenceBoundaryResolution:
                 self.decisions,
                 SentenceBoundaryDecision,
                 "decisions",
+            ),
+        )
+        object.__setattr__(
+            self,
+            "speaker_turn_candidates",
+            _tuple_of_type(
+                self.speaker_turn_candidates,
+                SpeakerTurnCandidate,
+                "speaker_turn_candidates",
+            ),
+        )
+        object.__setattr__(
+            self,
+            "cross_segment_merges",
+            _tuple_of_type(
+                self.cross_segment_merges,
+                CrossSegmentMergeDecision,
+                "cross_segment_merges",
             ),
         )
 
@@ -242,11 +389,17 @@ class SentenceBoundaryResolutionStage:
         return StageResult(
             stage_name=self.name,
             context=next_context,
-            data={"decisions": resolution.decisions},
+            data={
+                "decisions": resolution.decisions,
+                "speaker_turn_candidates": resolution.speaker_turn_candidates,
+                "cross_segment_merges": resolution.cross_segment_merges,
+            },
         )
 
 
 __all__ = [
+    "CrossSegmentMergeDecision",
+    "CrossSegmentMergeEvidence",
     "InvalidSentenceBoundaryResolutionError",
     "InvalidSentenceBoundaryResolverError",
     "MissingSentenceBoundarySegmentsError",
@@ -257,4 +410,5 @@ __all__ = [
     "SentenceBoundaryResolutionStage",
     "SentenceBoundaryResolver",
     "SentenceBoundaryStageError",
+    "SpeakerTurnCandidate",
 ]

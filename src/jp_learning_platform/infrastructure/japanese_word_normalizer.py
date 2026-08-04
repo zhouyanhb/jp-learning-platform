@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import unicodedata
 from dataclasses import dataclass
 from typing import Protocol
@@ -16,6 +17,9 @@ from jp_learning_platform.domain import (
 from jp_learning_platform.workflow.word_normalization_stage import (
     WordNormalization,
     WordNormalizationRequest,
+)
+from jp_learning_platform.infrastructure.pipeline_config import (
+    DEFAULT_SENTENCE_BOUNDARY_CONFIG,
 )
 
 DEFAULT_LOCAL_REANALYSIS_MAX_MORPHEMES = 3
@@ -74,6 +78,12 @@ class _LearningUnit:
     prefixed: bool = False
     suffixed: bool = False
     auxiliary_stem: bool = False
+    is_structure: bool = False
+
+
+@dataclass(frozen=True, slots=True)
+class _LearningWordStructureContext:
+    numbered_sentence_keys: frozenset[tuple[int, int]] = frozenset()
 
 
 class JapaneseLearningWordNormalizer:
@@ -83,25 +93,44 @@ class JapaneseLearningWordNormalizer:
         self._analyzer = analyzer or SudachiMorphologicalAnalyzer()
 
     def normalize(self, request: WordNormalizationRequest) -> WordNormalization:
+        structure_context = self._structure_context(request.segments)
         return WordNormalization(
             source_path=request.source_path,
-            segments=tuple(self._normalize_segment(segment) for segment in request.segments),
+            segments=tuple(
+                self._normalize_segment(segment, structure_context)
+                for segment in request.segments
+            ),
         )
 
-    def _normalize_segment(self, segment: Segment) -> Segment:
+    def _normalize_segment(
+        self,
+        segment: Segment,
+        structure_context: _LearningWordStructureContext,
+    ) -> Segment:
         return Segment(
             position=segment.position,
             text=segment.text,
             time_range=segment.time_range,
-            sentences=tuple(self._normalize_sentence(item) for item in segment.sentences),
+            sentences=tuple(
+                self._normalize_sentence(
+                    item,
+                    (segment.position, index)
+                    in structure_context.numbered_sentence_keys,
+                )
+                for index, item in enumerate(segment.sentences)
+            ),
         )
 
-    def _normalize_sentence(self, sentence: Sentence) -> Sentence:
+    def _normalize_sentence(
+        self,
+        sentence: Sentence,
+        has_structural_number: bool,
+    ) -> Sentence:
         morphemes = self._analyzer.analyze(sentence.text)
-        units = self._learning_units(morphemes)
+        units = self._learning_units(morphemes, has_structural_number)
         if not units:
             return sentence
-        total_chars = max(units[-1].end, 1)
+        total_chars = max(sum(len(item.surface) for item in morphemes), 1)
         learning_words = tuple(
             self._make_learning_word(unit, sentence, total_chars) for unit in units
         )
@@ -114,7 +143,62 @@ class JapaneseLearningWordNormalizer:
             asr_boundary_word_indexes=sentence.asr_boundary_word_indexes,
         )
 
-    def _learning_units(self, morphemes: tuple[JapaneseMorpheme, ...]) -> tuple[_LearningUnit, ...]:
+    @staticmethod
+    def _structure_context(
+        segments: tuple[Segment, ...],
+    ) -> _LearningWordStructureContext:
+        numbered: list[tuple[tuple[int, int], int, float]] = []
+        pattern = re.compile(r"^\s*([1-9]\d{0,2})")
+        for segment in segments:
+            for index, sentence in enumerate(segment.sentences):
+                match = pattern.match(sentence.text)
+                has_structural_boundary = bool(
+                    match
+                    and sentence.words
+                    and sentence.asr_boundary_word_indexes
+                    and sentence.asr_boundary_word_indexes[0] == 1
+                    and sentence.words[0].text.strip().isdecimal()
+                )
+                has_explicit_separator = bool(
+                    match
+                    and match.end() < len(sentence.text)
+                    and (
+                        sentence.text[match.end()].isspace()
+                        or unicodedata.category(sentence.text[match.end()]).startswith("P")
+                    )
+                )
+                if match and (has_structural_boundary or has_explicit_separator):
+                    numbered.append(
+                        (
+                            (segment.position, index),
+                            int(match.group(1)),
+                            sentence.time_range.start_seconds,
+                        )
+                    )
+
+        structural_keys: set[tuple[int, int]] = set()
+        run: list[tuple[tuple[int, int], int, float]] = []
+        for item in (*numbered, None):
+            if item is not None and (
+                not run
+                or (
+                    item[1] == run[-1][1] + 1
+                    and item[2] - run[-1][2]
+                    <= DEFAULT_SENTENCE_BOUNDARY_CONFIG.numbering_region_max_item_gap_seconds
+                )
+            ):
+                run.append(item)
+                continue
+            if len(run) >= 2 and run[0][1] == 1:
+                structural_keys.update(key for key, _value, _start in run)
+            run = [item] if item is not None else []
+        return _LearningWordStructureContext(frozenset(structural_keys))
+
+    def _learning_units(
+        self,
+        morphemes: tuple[JapaneseMorpheme, ...],
+        has_structural_number: bool = False,
+    ) -> tuple[_LearningUnit, ...]:
         raw: list[_LearningUnit] = []
         cursor = 0
         for item in morphemes:
@@ -136,6 +220,18 @@ class JapaneseLearningWordNormalizer:
             elif self._continues_compound_particle(item, raw):
                 previous = raw.pop()
                 raw.append(_LearningUnit("でも", previous.start, end, item.part_of_speech))
+            # 名詞性語基＋非独立の「なさる」命令形は一つの学習表現にする。
+            elif self._continues_dependent_imperative(item, raw):
+                previous = raw.pop()
+                raw.append(
+                    _LearningUnit(
+                        previous.text + item.surface,
+                        previous.start,
+                        end,
+                        item.part_of_speech,
+                        prefixed=previous.prefixed,
+                    )
+                )
             # サ変可能名詞＋「する」の活用を一つの主要動詞にする。
             elif self._continues_sahen_verb(item, raw):
                 previous = raw.pop()
@@ -145,6 +241,7 @@ class JapaneseLearningWordNormalizer:
                         previous.start,
                         end,
                         item.part_of_speech,
+                        prefixed=previous.prefixed,
                     )
                 )
             # 接続助詞の「て/で」は直前の活用語に付ける（聞いて、話して）。
@@ -181,11 +278,22 @@ class JapaneseLearningWordNormalizer:
                 raw.append(_LearningUnit(previous.text + item.surface, previous.start, end, previous.pos))
             elif self._is_numeric_enumeration_separator(item, raw):
                 raw.append(_LearningUnit(item.surface, start, end, item.part_of_speech))
-            elif item.part_of_speech[0] == "補助記号" and raw:
-                previous = raw.pop()
-                raw.append(_LearningUnit(previous.text + item.surface, previous.start, end, previous.pos))
-            else:
+            elif item.part_of_speech[0] == "補助記号":
                 raw.append(_LearningUnit(item.surface, start, end, item.part_of_speech))
+            else:
+                raw.append(
+                    _LearningUnit(
+                        item.surface,
+                        start,
+                        end,
+                        item.part_of_speech,
+                        is_structure=(
+                            has_structural_number
+                            and not raw
+                            and item.surface.isdecimal()
+                        ),
+                    )
+                )
         structural = self._merge_structural_units(raw)
         merged = self._merge_reanalyzed_nominals(structural)
         return tuple(unit for unit in merged if not self._is_pure_punctuation(unit))
@@ -231,6 +339,8 @@ class JapaneseLearningWordNormalizer:
         right: _LearningUnit,
         following: _LearningUnit | None,
     ) -> bool:
+        if left.is_structure or right.is_structure:
+            return False
         return (
             cls._forms_ascii_identifier(left.text, right.text)
             or (
@@ -387,6 +497,8 @@ class JapaneseLearningWordNormalizer:
             )
             for size in range(maximum_size, 1, -1):
                 candidates = units[index : index + size]
+                if any(item.is_structure for item in candidates):
+                    continue
                 if not all(self._is_nominal_unit(item) for item in candidates):
                     continue
                 combined_text = "".join(item.text for item in candidates)
@@ -433,12 +545,12 @@ class JapaneseLearningWordNormalizer:
             and analysis[0].part_of_speech[0] == "名詞"
         )
 
-    @staticmethod
     def _continues_prefix(
+        self,
         item: JapaneseMorpheme,
         units: list[_LearningUnit],
     ) -> bool:
-        return bool(
+        if not (
             units
             and units[-1].pos
             and units[-1].pos[0] == "接頭辞"
@@ -450,6 +562,26 @@ class JapaneseLearningWordNormalizer:
                 "形容詞",
                 "形状詞",
             }
+        ):
+            return False
+        try:
+            local = self._analyzer.analyze(f"{units[-1].text}{item.surface}")
+        except LookupError:
+            # Minimal test or plugin analyzers may only support whole inputs.
+            return True
+        combined_text = f"{units[-1].text}{item.surface}"
+        if (
+            len(local) == 1
+            and local[0].surface == combined_text
+            and local[0].part_of_speech
+            and local[0].part_of_speech[0] != "補助記号"
+        ):
+            return True
+        return bool(
+            local
+            and local[0].surface == units[-1].text
+            and local[0].part_of_speech
+            and local[0].part_of_speech[0] == "接頭辞"
         )
 
     @staticmethod
@@ -469,13 +601,49 @@ class JapaneseLearningWordNormalizer:
         item: JapaneseMorpheme,
         units: list[_LearningUnit],
     ) -> bool:
-        return (
-            bool(units)
+        if not (
+            units
+            and item.part_of_speech
             and item.part_of_speech[0] == "動詞"
             and item.dictionary_form == "する"
-            and len(units[-1].pos) > 2
-            and units[-1].pos[0] == "名詞"
-            and units[-1].pos[2] == "サ変可能"
+        ):
+            return False
+        previous = units[-1]
+        return bool(
+            (
+                len(previous.pos) > 2
+                and previous.pos[0] == "名詞"
+                and previous.pos[2] == "サ変可能"
+            )
+            or (
+                previous.prefixed
+                and previous.pos
+                and previous.pos[0] == "動詞"
+            )
+        )
+
+    @staticmethod
+    def _continues_dependent_imperative(
+        item: JapaneseMorpheme,
+        units: list[_LearningUnit],
+    ) -> bool:
+        if not units or not item.part_of_speech or not units[-1].pos:
+            return False
+        previous = units[-1]
+        return bool(
+            item.part_of_speech[0] == "動詞"
+            and len(item.part_of_speech) > 1
+            and item.part_of_speech[1] == "非自立可能"
+            and item.dictionary_form == "なさる"
+            and "命令形" in item.conjugation_form
+            and (
+                previous.pos[0] in {"名詞", "形状詞"}
+                or (
+                    previous.pos[0] == "動詞"
+                    and len(previous.pos) > 5
+                    and "連用形" in previous.pos[5]
+                )
+            )
         )
 
     @staticmethod
@@ -580,6 +748,7 @@ class JapaneseLearningWordNormalizer:
             aligned_word_indexes=aligned_indexes,
             time_range=TimeRange(start, end),
             timing_estimated=timing_estimated,
+            is_structure=unit.is_structure,
         )
 
     @staticmethod

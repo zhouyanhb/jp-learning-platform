@@ -1,0 +1,242 @@
+{
+  "schema_version": 1,
+  "source_artifact": "output/.work/20260801_112159_574736/中日双语_日本高温中心西移_这次是真的要破纪录了/05_sentence_boundary_resolution.json",
+  "prediction_artifact": "output/evaluations/cross_asr_20260801/04_中日双语_日本高温中心西移_这次是真的要破纪录了.json",
+  "source_path": "input/source/【中日双语】日本高温中心西移，这次是真的要破纪录了.mp4",
+  "settings": {
+    "max_gap_seconds": 4.0
+  },
+  "labels": {
+    "merge": "Both sides belong to one language sentence.",
+    "keep": "The boundary must remain between language sentences.",
+    "uncertain": "Human review cannot confidently choose merge or keep."
+  },
+  "samples": [
+    {
+      "id": "cross-asr-0001-f5e6d4e9",
+      "origin": "adjacent_sentence_boundary",
+      "segment_index": 0,
+      "sentence_index": 1,
+      "left_end_seconds": 4.872,
+      "right_start_seconds": 4.872,
+      "gap_seconds": 0.0,
+      "left_context": "きょうは西日本で危険な暑さが予想されています。",
+      "right_context": "九州で40度を観測すれば、統計史上初めてのこととなります",
+      "predicted_label": "keep",
+      "prediction": null,
+      "gold_label": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "cross-asr-0002-978c8417",
+      "origin": "adjacent_sentence_boundary",
+      "segment_index": 0,
+      "sentence_index": 2,
+      "left_end_seconds": 11.494,
+      "right_start_seconds": 11.494,
+      "gap_seconds": 0.0,
+      "left_context": "九州で40度を観測すれば、統計史上初めてのこととなります",
+      "right_context": "。",
+      "predicted_label": "keep",
+      "prediction": null,
+      "gold_label": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "cross-asr-0003-2bbe7224",
+      "origin": "adjacent_sentence_boundary",
+      "segment_index": 0,
+      "sentence_index": 3,
+      "left_end_seconds": 11.654,
+      "right_start_seconds": 11.654,
+      "gap_seconds": 0.0,
+      "left_context": "。",
+      "right_context": "暑さをもたらす太平洋高気圧の中心が次第に西へと移動し、九州方面に移ってきています。",
+      "predicted_label": "keep",
+      "prediction": null,
+      "gold_label": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "cross-asr-0004-663dd919",
+      "origin": "adjacent_sentence_boundary",
+      "segment_index": 0,
+      "sentence_index": 4,
+      "left_end_seconds": 19.397,
+      "right_start_seconds": 19.397,
+      "gap_seconds": 0.0,
+      "left_context": "暑さをもたらす太平洋高気圧の中心が次第に西へと移動し、九州方面に移ってきています。",
+      "right_context": "先週は東海地方で40度以上の酷暑日が続出しましたが、きょうは九州で40度に迫る暑さとなるおそれがあります。",
+      "predicted_label": "keep",
+      "prediction": null,
+      "gold_label": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "cross-asr-0005-86f965cc",
+      "origin": "segment_boundary",
+      "segment_index": 1,
+      "sentence_index": 0,
+      "left_end_seconds": 27.96,
+      "right_start_seconds": 29.281,
+      "gap_seconds": 1.320999999999998,
+      "left_context": "先週は東海地方で40度以上の酷暑日が続出しましたが、きょうは九州で40度に迫る暑さとなるおそれがあります。",
+      "right_context": "予想最高気温は大分県の日田と福岡県の久留米で40度",
+      "predicted_label": "keep",
+      "prediction": null,
+      "gold_label": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "cross-asr-0006-958e2f9d",
+      "origin": "segment_boundary",
+      "segment_index": 2,
+      "sentence_index": 0,
+      "left_end_seconds": 34.2,
+      "right_start_seconds": 35.002,
+      "gap_seconds": 0.8019999999999996,
+      "left_context": "予想最高気温は大分県の日田と福岡県の久留米で40度",
+      "right_context": "熊本で38度などとなっています",
+      "predicted_label": "keep",
+      "prediction": null,
+      "gold_label": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "cross-asr-0007-a41c8ece",
+      "origin": "segment_boundary",
+      "segment_index": 3,
+      "sentence_index": 0,
+      "left_end_seconds": 37.34,
+      "right_start_seconds": 38.661,
+      "gap_seconds": 1.320999999999998,
+      "left_context": "熊本で38度などとなっています",
+      "right_context": "これまで九州で40度を観測したことはなく、記録的な暑さになる可能性があります",
+      "predicted_label": "keep",
+      "prediction": null,
+      "gold_label": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "cross-asr-0008-0ef00616",
+      "origin": "asr_token_boundary",
+      "segment_index": 3,
+      "sentence_index": 0,
+      "left_end_seconds": 41.6,
+      "right_start_seconds": 42.103,
+      "gap_seconds": 0.5030000000000001,
+      "left_context": "く、",
+      "right_context": "記",
+      "predicted_label": "merge",
+      "prediction": {
+        "score": 4,
+        "reason": "cross_asr_syntactic_continuation",
+        "evidence": [
+          {
+            "name": "incomplete_predicate_chain",
+            "score": 4
+          }
+        ]
+      },
+      "gold_label": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "cross-asr-0009-e8f3be90",
+      "origin": "segment_boundary",
+      "segment_index": 4,
+      "sentence_index": 0,
+      "left_end_seconds": 44.3,
+      "right_start_seconds": 45.621,
+      "gap_seconds": 1.321000000000005,
+      "left_context": "これまで九州で40度を観測したことはなく、記録的な暑さになる可能性があります",
+      "right_context": "熱中症警戒アラートは九州のすべての県を含む23の都府県に発表されています",
+      "predicted_label": "keep",
+      "prediction": null,
+      "gold_label": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "cross-asr-0010-aa1fc3ef",
+      "origin": "asr_token_boundary",
+      "segment_index": 4,
+      "sentence_index": 0,
+      "left_end_seconds": 49.34,
+      "right_start_seconds": 49.783,
+      "gap_seconds": 0.44299999999999784,
+      "left_context": "む",
+      "right_context": "2",
+      "predicted_label": "keep",
+      "prediction": null,
+      "gold_label": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "cross-asr-0011-f941d84e",
+      "origin": "segment_boundary",
+      "segment_index": 5,
+      "sentence_index": 0,
+      "left_end_seconds": 52.08,
+      "right_start_seconds": 53.312,
+      "gap_seconds": 1.2319999999999993,
+      "left_context": "熱中症警戒アラートは九州のすべての県を含む23の都府県に発表されています",
+      "right_context": "こまめに水分や塩分の補給を行いエアコンを適切に使用するなど熱中症を予防してください",
+      "predicted_label": "keep",
+      "prediction": null,
+      "gold_label": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "cross-asr-0012-bb836f47",
+      "origin": "asr_token_boundary",
+      "segment_index": 5,
+      "sentence_index": 0,
+      "left_end_seconds": 55.91,
+      "right_start_seconds": 56.293,
+      "gap_seconds": 0.38300000000000267,
+      "left_context": "い",
+      "right_context": "エ",
+      "predicted_label": "merge",
+      "prediction": {
+        "score": 4,
+        "reason": "cross_asr_syntactic_continuation",
+        "evidence": [
+          {
+            "name": "incomplete_predicate_chain",
+            "score": 4
+          }
+        ]
+      },
+      "gold_label": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "cross-asr-0013-c3fb463d",
+      "origin": "asr_token_boundary",
+      "segment_index": 5,
+      "sentence_index": 0,
+      "left_end_seconds": 58.169,
+      "right_start_seconds": 58.493,
+      "gap_seconds": 0.3240000000000052,
+      "left_context": "ど",
+      "right_context": "熱",
+      "predicted_label": "keep",
+      "prediction": null,
+      "gold_label": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    }
+  ]
+}

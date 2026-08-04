@@ -148,12 +148,15 @@ class LearningWord:
     aligned_word_indexes: tuple[int, ...]
     time_range: TimeRange
     timing_estimated: bool = False
+    is_structure: bool = False
 
     def __post_init__(self) -> None:
         if not isinstance(self.time_range, TimeRange):
             raise TypeError("time_range must be a TimeRange.")
         if not isinstance(self.timing_estimated, bool):
             raise TypeError("timing_estimated must be a bool.")
+        if not isinstance(self.is_structure, bool):
+            raise TypeError("is_structure must be a bool.")
 
         start_char = _normalize_position(self.start_char, "start_char", 0)
         end_char = _normalize_position(self.end_char, "end_char", 1)

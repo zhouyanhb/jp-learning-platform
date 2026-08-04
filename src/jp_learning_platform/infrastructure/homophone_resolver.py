@@ -39,6 +39,20 @@ _MIN_CONTEXT_SCORE_DENOMINATOR = 1e-12
 _DEFAULT_SUDACHI_SPLIT_MODE = "C"
 _CONTENT_POS = {"名詞", "動詞", "形容詞", "副詞"}
 _SKIPPED_SURFACES = {"する", "した", "して", "ある", "いる", "ます", "です"}
+_PLACE_NAME_CONTINUATIONS = (
+    "駅",
+    "湖",
+    "山",
+    "川",
+    "市",
+    "町",
+    "村",
+    "区",
+    "県",
+    "府",
+    "都",
+    "線",
+)
 _DOCUMENT_PROPAGATION_REASONS = {
     "asr_confidence_too_high",
     "high_asr_confidence_requires_stronger_context",
@@ -690,7 +704,10 @@ class BertHomophoneResolver:
             resolved_segments.append(resolved_segment)
             decisions.extend(segment_decisions)
 
-        confirmed = _unambiguous_confirmed_replacements(tuple(decisions))
+        confirmed = _unambiguous_confirmed_replacements(
+            tuple(decisions),
+            min_score_ratio=self.high_confidence_min_score_ratio,
+        )
         propagated_decisions = tuple(
             self._propagate_decision(decision, confirmed)
             for decision in decisions
@@ -964,6 +981,7 @@ class BertHomophoneResolver:
         )
 
         scored_candidates: list[HomophoneCandidateScore] = []
+        candidate_part_of_speech: dict[str, tuple[str, ...]] = {}
         for candidate in language_model_candidates:
             analyzed_candidate = self.analyzer.analyze_single_token(candidate.text)
             if analyzed_candidate is None:
@@ -986,6 +1004,9 @@ class BertHomophoneResolver:
                     reading=analyzed_candidate.reading,
                     score=candidate.score,
                 )
+            )
+            candidate_part_of_speech[analyzed_candidate.surface] = (
+                analyzed_candidate.part_of_speech
             )
 
         original_score = prefetched_original_score
@@ -1020,11 +1041,18 @@ class BertHomophoneResolver:
             sentence_words,
             morpheme.surface,
         )
-        accepted, reason = self._accept_candidate(
-            original_score=original_score,
-            selected_score=selected_score,
-            asr_confidence=asr_confidence,
-        )
+        if _requires_external_person_name_evidence(
+            sentence_text,
+            morpheme,
+            candidate_part_of_speech.get(selected.text, ()),
+        ):
+            accepted, reason = False, "person_name_requires_external_evidence"
+        else:
+            accepted, reason = self._accept_candidate(
+                original_score=original_score,
+                selected_score=selected_score,
+                asr_confidence=asr_confidence,
+            )
         return HomophoneResolutionDecision(
             segment_position=segment_position,
             sentence_index=sentence_index,
@@ -1119,10 +1147,23 @@ def _apply_text_changes(
 
 def _unambiguous_confirmed_replacements(
     decisions: tuple[HomophoneResolutionDecision, ...],
+    *,
+    min_score_ratio: float | None = None,
 ) -> dict[str, str]:
     candidates: dict[str, set[str]] = {}
     for decision in decisions:
         if not decision.accepted or decision.selected_text == decision.original_text:
+            continue
+        score_ratio = decision.score_ratio
+        if score_ratio is None:
+            score_ratio = _score_ratio(
+                decision.selected_score,
+                decision.original_score,
+            )
+        if (
+            min_score_ratio is not None
+            and (score_ratio is None or score_ratio < min_score_ratio)
+        ):
             continue
         candidates.setdefault(decision.original_text, set()).add(
             decision.selected_text
@@ -1132,6 +1173,29 @@ def _unambiguous_confirmed_replacements(
         for original, replacements in candidates.items()
         if len(replacements) == 1
     }
+
+
+def _is_person_name(part_of_speech: tuple[str, ...]) -> bool:
+    return bool(
+        len(part_of_speech) > 2
+        and part_of_speech[0] == "名詞"
+        and part_of_speech[1] == "固有名詞"
+        and part_of_speech[2] == "人名"
+    )
+
+
+def _requires_external_person_name_evidence(
+    sentence_text: str,
+    morpheme: _AnalyzedMorpheme,
+    candidate_part_of_speech: tuple[str, ...],
+) -> bool:
+    if not (
+        _is_person_name(morpheme.part_of_speech)
+        or _is_person_name(candidate_part_of_speech)
+    ):
+        return False
+    following_text = sentence_text[morpheme.end :]
+    return not following_text.startswith(_PLACE_NAME_CONTINUATIONS)
 
 
 def _apply_accepted_decisions(

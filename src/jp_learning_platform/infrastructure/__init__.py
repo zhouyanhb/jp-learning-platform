@@ -56,6 +56,9 @@ from jp_learning_platform.infrastructure.overlap_text_cleaner import (
 from jp_learning_platform.infrastructure.repeated_text_cleaner import (
     AuditableRepeatedTextCleaner,
 )
+from jp_learning_platform.infrastructure.transcript_anomaly_detector import (
+    ConservativeTranscriptAnomalyDetector,
+)
 from jp_learning_platform.infrastructure.japanese_word_normalizer import (
     JapaneseLearningWordNormalizer,
     JapaneseMorpheme,

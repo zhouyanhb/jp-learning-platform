@@ -14,9 +14,12 @@ from jp_learning_platform.infrastructure.japanese_word_normalizer import (
     JapaneseMorphologicalAnalyzer,
 )
 from jp_learning_platform.workflow.sentence_boundary_stage import (
+    CrossSegmentMergeDecision,
+    CrossSegmentMergeEvidence,
     SentenceBoundaryDecision,
     SentenceBoundaryResolution,
     SentenceBoundaryResolutionRequest,
+    SpeakerTurnCandidate,
 )
 
 DEFAULT_SENTENCE_BOUNDARY_MIN_PAUSE_SECONDS = (
@@ -32,6 +35,23 @@ DEFAULT_SENTENCE_BOUNDARY_FINAL_SUFFIXES = (
 _CLOSING_QUOTES = frozenset(("」", "』", "）", ")", "】", "］", "]", "〉", "》"))
 _STRONG_PAUSE_SECONDS = 1.5
 _SENTENCE_FINAL_PARTICLES = frozenset(("か", "ね", "よ", "な"))
+_INDEPENDENT_DISCOURSE_STARTS = (
+    "でも",
+    "しかし",
+    "けれども",
+    "ところで",
+)
+_RESPONSE_STARTS = (
+    "はい",
+    "うん",
+    "そうですか",
+    "そうですね",
+    "なるほど",
+    "ごめんなさい",
+    "すみません",
+)
+_SHORT_RESPONSE_UTTERANCES = frozenset(_RESPONSE_STARTS)
+_ELLIPTICAL_TURN_ENDS = ("て", "で", "し", "から", "けど", "が", "ので")
 
 
 @dataclass(frozen=True, slots=True)
@@ -54,6 +74,15 @@ class JapaneseSentenceBoundaryResolver:
             request.segments,
             self.morphological_analyzer,
         )
+        segments, early_cross_segment_merges = (
+            _merge_high_confidence_cross_segment_continuations(
+                segments,
+                self.morphological_analyzer,
+                max_fragment_gap_seconds=(
+                    DEFAULT_SENTENCE_BOUNDARY_CONFIG.max_cross_segment_grammar_gap_seconds
+                ),
+            )
+        )
         segments = _merge_adjacent_dependent_continuations(
             segments,
             self.morphological_analyzer,
@@ -64,10 +93,40 @@ class JapaneseSentenceBoundaryResolver:
         )
         resolved_segments: list[Segment] = []
         decisions: list[SentenceBoundaryDecision] = []
+        speaker_turn_candidates: list[SpeakerTurnCandidate] = []
+        internal_cross_segment_merges: list[CrossSegmentMergeDecision] = []
         for segment in segments:
-            resolved_segment, segment_decisions = self._resolve_segment(segment)
+            (
+                resolved_segment,
+                segment_decisions,
+                segment_turn_candidates,
+                segment_cross_merges,
+            ) = self._resolve_segment(segment)
             resolved_segments.append(resolved_segment)
             decisions.extend(segment_decisions)
+            speaker_turn_candidates.extend(segment_turn_candidates)
+            internal_cross_segment_merges.extend(segment_cross_merges)
+
+        resolved_segments, late_cross_segment_merges = (
+            _merge_high_confidence_cross_segment_continuations(
+                tuple(resolved_segments),
+                self.morphological_analyzer,
+            )
+        )
+        resolved_segments, adjacent_sentence_merges = (
+            _merge_high_confidence_adjacent_sentences(
+                resolved_segments,
+                self.morphological_analyzer,
+            )
+        )
+        cross_segment_merges = _deduplicate_cross_segment_merges(
+            (
+                *early_cross_segment_merges,
+                *internal_cross_segment_merges,
+                *late_cross_segment_merges,
+                *adjacent_sentence_merges,
+            )
+        )
 
         resolved_segments, cross_segment_decisions = (
             _resolve_cross_segment_numbering_bodies(
@@ -88,12 +147,19 @@ class JapaneseSentenceBoundaryResolver:
             source_path=request.source_path,
             segments=tuple(resolved_segments),
             decisions=tuple(decisions),
+            speaker_turn_candidates=tuple(speaker_turn_candidates),
+            cross_segment_merges=cross_segment_merges,
         )
 
     def _resolve_segment(
         self,
         segment: Segment,
-    ) -> tuple[Segment, tuple[SentenceBoundaryDecision, ...]]:
+    ) -> tuple[
+        Segment,
+        tuple[SentenceBoundaryDecision, ...],
+        tuple[SpeakerTurnCandidate, ...],
+        tuple[CrossSegmentMergeDecision, ...],
+    ]:
         sentences = segment.sentences or (
             Sentence(
                 text=segment.text,
@@ -104,17 +170,27 @@ class JapaneseSentenceBoundaryResolver:
 
         resolved_sentences: list[Sentence] = []
         decisions: list[SentenceBoundaryDecision] = []
+        speaker_turn_candidates: list[SpeakerTurnCandidate] = []
+        cross_segment_merges: list[CrossSegmentMergeDecision] = []
         for sentence_index, sentence in enumerate(sentences):
-            sentence_parts, sentence_decisions = self._split_sentence(
-                segment.position,
-                sentence_index,
-                sentence,
-            )
+            (
+                sentence_parts,
+                sentence_decisions,
+                sentence_turn_candidates,
+                sentence_cross_merges,
+            ) = self._split_sentence(segment.position, sentence_index, sentence)
             resolved_sentences.extend(sentence_parts)
             decisions.extend(sentence_decisions)
+            speaker_turn_candidates.extend(sentence_turn_candidates)
+            cross_segment_merges.extend(sentence_cross_merges)
 
         if tuple(resolved_sentences) == sentences:
-            return segment, tuple(decisions)
+            return (
+                segment,
+                tuple(decisions),
+                tuple(speaker_turn_candidates),
+                tuple(cross_segment_merges),
+            )
 
         return (
             Segment(
@@ -124,6 +200,8 @@ class JapaneseSentenceBoundaryResolver:
                 sentences=tuple(resolved_sentences),
             ),
             tuple(decisions),
+            tuple(speaker_turn_candidates),
+            tuple(cross_segment_merges),
         )
 
     def _split_sentence(
@@ -131,9 +209,14 @@ class JapaneseSentenceBoundaryResolver:
         segment_position: int,
         sentence_index: int,
         sentence: Sentence,
-    ) -> tuple[tuple[Sentence, ...], tuple[SentenceBoundaryDecision, ...]]:
+    ) -> tuple[
+        tuple[Sentence, ...],
+        tuple[SentenceBoundaryDecision, ...],
+        tuple[SpeakerTurnCandidate, ...],
+        tuple[CrossSegmentMergeDecision, ...],
+    ]:
         if len(sentence.words) < 2:
-            return (sentence,), ()
+            return (sentence,), (), (), ()
 
         boundaries: list[int] = []
         asr_boundaries = _asr_boundary_word_indexes(sentence)
@@ -143,9 +226,28 @@ class JapaneseSentenceBoundaryResolver:
             asr_boundaries,
         )
         decisions: list[SentenceBoundaryDecision] = []
+        speaker_turn_candidates: list[SpeakerTurnCandidate] = []
+        cross_segment_merges: list[CrossSegmentMergeDecision] = []
         chunk_start = 0
         for word_index in range(len(sentence.words) - 1):
-            if word_index + 1 in structured_numbering_starts:
+            turn_reason = _speaker_turn_candidate_reason(
+                sentence.words,
+                chunk_start,
+                word_index,
+                word_index + 1 in asr_boundaries,
+                self.morphological_analyzer,
+            )
+            cross_merge = self._internal_asr_merge_decision(
+                segment_position,
+                sentence,
+                chunk_start,
+                word_index,
+                word_index + 1 in asr_boundaries,
+            )
+            if cross_merge is not None:
+                reason = None
+                cross_segment_merges.append(cross_merge)
+            elif word_index + 1 in structured_numbering_starts:
                 reason = "structured_numbering_sequence"
             else:
                 reason = self._boundary_reason(
@@ -153,19 +255,33 @@ class JapaneseSentenceBoundaryResolver:
                     chunk_start,
                     word_index,
                     word_index + 1 in asr_boundaries,
+                    turn_reason,
                 )
-            if reason is None:
-                continue
-
             left_text = _words_text(sentence.words[chunk_start : word_index + 1])
             right_text = _words_text(sentence.words[word_index + 1 :])
-            if not left_text or not right_text:
-                continue
-
             gap_seconds = _effective_word_gap_seconds(
                 sentence.words[word_index],
                 sentence.words[word_index + 1],
             )
+            if turn_reason is not None and left_text and right_text:
+                speaker_turn_candidates.append(
+                    SpeakerTurnCandidate(
+                        segment_position=segment_position,
+                        sentence_index=sentence_index,
+                        word_index=word_index,
+                        gap_seconds=max(gap_seconds, 0.0),
+                        reason=turn_reason,
+                        left_text=left_text,
+                        right_text=right_text,
+                        boundary_accepted=reason is not None,
+                    )
+                )
+            if reason is None:
+                continue
+
+            if not left_text or not right_text:
+                continue
+
             boundaries.append(word_index)
             decisions.append(
                 SentenceBoundaryDecision(
@@ -181,7 +297,12 @@ class JapaneseSentenceBoundaryResolver:
             chunk_start = word_index + 1
 
         if not boundaries:
-            return (sentence,), ()
+            return (
+                (sentence,),
+                (),
+                tuple(speaker_turn_candidates),
+                tuple(cross_segment_merges),
+            )
 
         parts: list[Sentence] = []
         start_index = 0
@@ -219,7 +340,68 @@ class JapaneseSentenceBoundaryResolver:
                 ),
             )
         )
-        return tuple(parts), tuple(decisions)
+        return (
+            tuple(parts),
+            tuple(decisions),
+            tuple(speaker_turn_candidates),
+            tuple(cross_segment_merges),
+        )
+
+    def _internal_asr_merge_decision(
+        self,
+        segment_position: int,
+        sentence: Sentence,
+        chunk_start: int,
+        word_index: int,
+        is_asr_boundary: bool,
+    ) -> CrossSegmentMergeDecision | None:
+        if not is_asr_boundary or self.morphological_analyzer is None:
+            return None
+        left = _sentence_from_words(sentence.words[chunk_start : word_index + 1])
+        right = _sentence_from_words(sentence.words[word_index + 1 :])
+        gap_seconds = _effective_word_gap_seconds(
+            sentence.words[word_index],
+            sentence.words[word_index + 1],
+        )
+        score, evidence, has_fragment = _cross_segment_merge_score(
+            left,
+            right,
+            gap_seconds,
+            self.morphological_analyzer,
+        )
+        config = DEFAULT_SENTENCE_BOUNDARY_CONFIG
+        allowed_gap = (
+            config.max_cross_segment_fragment_gap_seconds
+            if has_fragment
+            else config.max_cross_segment_grammar_gap_seconds
+        )
+        if (
+            gap_seconds > allowed_gap
+            or score < config.cross_segment_merge_score_threshold
+            or _starts_independent_discourse(right.text)
+            or _starts_cross_segment_response(
+                right.text,
+                self.morphological_analyzer.analyze(_compact_text(right.text)),
+            )
+        ):
+            return None
+        return CrossSegmentMergeDecision(
+            left_segment_position=segment_position,
+            right_segment_position=segment_position,
+            word_index=word_index,
+            left_end_seconds=left.time_range.end_seconds,
+            right_start_seconds=right.time_range.start_seconds,
+            gap_seconds=max(gap_seconds, 0.0),
+            score=score,
+            reason=(
+                "cross_asr_word_fragment_reconstruction"
+                if has_fragment
+                else "cross_asr_syntactic_continuation"
+            ),
+            left_text=left.text,
+            right_text=right.text,
+            evidence=evidence,
+        )
 
     def _boundary_reason(
         self,
@@ -227,6 +409,7 @@ class JapaneseSentenceBoundaryResolver:
         chunk_start: int,
         word_index: int,
         is_asr_boundary: bool = False,
+        speaker_turn_reason: str | None = None,
     ) -> str | None:
         current_text = _word_text(words[word_index])
         left_text = _words_text(words[chunk_start : word_index + 1])
@@ -259,10 +442,34 @@ class JapaneseSentenceBoundaryResolver:
         ):
             return None
 
+        has_trusted_asr_restart = bool(
+            self.morphological_analyzer is not None
+            and is_asr_boundary
+            and _word_gap_seconds(words[word_index], words[word_index + 1])
+            < self.min_pause_seconds
+            and _has_high_confidence_clause_restart(
+                left_text,
+                right_text,
+                self.morphological_analyzer,
+                self.sentence_final_suffixes,
+            )
+        )
+        has_speaker_turn_boundary = bool(
+            speaker_turn_reason is not None
+            and self.morphological_analyzer is not None
+            and _speaker_turn_supports_sentence_boundary(
+                left_text,
+                right_text,
+                speaker_turn_reason,
+                self.morphological_analyzer,
+            )
+        )
         if (
             self.morphological_analyzer is not None
             and gap_seconds
             <= DEFAULT_SENTENCE_BOUNDARY_CONFIG.max_syntactic_dependency_gap_seconds
+            and not has_trusted_asr_restart
+            and not has_speaker_turn_boundary
             and _has_cross_boundary_morphological_dependency(
                 left_text,
                 right_text,
@@ -328,6 +535,9 @@ class JapaneseSentenceBoundaryResolver:
                 if _is_question_clause(left) and _is_strong_independent_start(right[0]):
                     return "asr_question_answer_transition"
                 return "asr_complete_clause_independent_start"
+
+        if has_speaker_turn_boundary:
+            return "speaker_turn_supported_boundary"
 
         return None
 
@@ -430,6 +640,14 @@ class _OwnedSentence:
     sentence: Sentence
 
 
+@dataclass(frozen=True, slots=True)
+class _EmbeddedNumberingCandidate:
+    entry_index: int
+    word_index: int
+    value: int
+    start_seconds: float
+
+
 def _structured_numbering_start_indexes(
     words: tuple[Word, ...],
     analyzer: JapaneseMorphologicalAnalyzer | None,
@@ -440,7 +658,15 @@ def _structured_numbering_start_indexes(
     all_candidates = tuple(
         candidate
         for index, word in enumerate(words)
-        if (candidate := _numbering_candidate(words, index, word, analyzer))
+        if (
+            candidate := _numbering_candidate(
+                words,
+                index,
+                word,
+                analyzer,
+                asr_boundaries,
+            )
+        )
         is not None
     )
     candidates = tuple(
@@ -486,6 +712,7 @@ def _numbering_candidate(
     index: int,
     word: Word,
     analyzer: JapaneseMorphologicalAnalyzer,
+    blocked_host_boundaries: frozenset[int] = frozenset(),
 ) -> _NumberingCandidate | None:
     normalized = _compact_text(_word_text(word))
     digits = "".join(character for character in normalized if character.isdecimal())
@@ -502,7 +729,12 @@ def _numbering_candidate(
         index,
         value,
         word.time_range.start_seconds,
-        _number_has_lexical_host(words, index, analyzer),
+        _number_has_lexical_host(
+            words,
+            index,
+            analyzer,
+            blocked_host_boundaries,
+        ),
     )
 
 
@@ -510,24 +742,58 @@ def _number_has_lexical_host(
     words: tuple[Word, ...],
     index: int,
     analyzer: JapaneseMorphologicalAnalyzer,
+    blocked_host_boundaries: frozenset[int] = frozenset(),
 ) -> bool:
-    lookahead = _compact_text(_words_text(words[index : index + 4]))
-    analyzed = analyzer.analyze(lookahead)
-    if len(analyzed) < 2 or not _is_numeric_morpheme(analyzed[0]):
+    if index + 1 in blocked_host_boundaries:
         return False
-    following = analyzed[1]
-    if not following.part_of_speech:
+    number_text = _compact_text(_word_text(words[index]))
+    max_lookahead_words = 8
+    for end in range(index + 1, min(len(words), index + max_lookahead_words) + 1):
+        analyzed = analyzer.analyze(
+            _compact_text(_words_text(words[index:end]))
+        )
+        host = _number_host_morpheme(analyzed, number_text)
+        if host is not None:
+            return _is_quantity_host(host)
+    return False
+
+
+def _number_host_morpheme(
+    morphemes: tuple[JapaneseMorpheme, ...],
+    number_text: str,
+) -> JapaneseMorpheme | None:
+    if not morphemes:
+        return None
+    first = morphemes[0]
+    if _is_numeric_morpheme(first):
+        return morphemes[1] if len(morphemes) > 1 else None
+
+    # Sudachi can analyze compact quantities such as "1人" as one noun.
+    if first.surface.startswith(number_text) and first.surface != number_text:
+        return first
+    return None
+
+
+def _is_quantity_host(morpheme: JapaneseMorpheme) -> bool:
+    if not morpheme.part_of_speech:
         return False
-    major = following.part_of_speech[0]
-    minor = following.part_of_speech[1] if len(following.part_of_speech) > 1 else ""
+    major = morpheme.part_of_speech[0]
+    minor = morpheme.part_of_speech[1] if len(morpheme.part_of_speech) > 1 else ""
+    detail = morpheme.part_of_speech[2] if len(morpheme.part_of_speech) > 2 else ""
     return bool(
-        major in {"助詞", "助動詞"}
-        or (
+        (
             major == "接尾辞"
             and minor == "名詞的"
-            and "助数詞" in following.part_of_speech
+            and detail in {"助数詞", "一般"}
         )
-        or (major == "名詞" and "助数詞可能" in following.part_of_speech)
+        or (major == "名詞" and "助数詞可能" in morpheme.part_of_speech)
+        or (
+            major == "名詞"
+            and minor == "普通名詞"
+            and detail in {"副詞可能", "助数詞可能"}
+            and any(character.isdecimal() for character in morpheme.surface)
+            and not morpheme.surface.isdecimal()
+        )
     )
 
 
@@ -585,11 +851,29 @@ def _resolve_cross_segment_numbering_bodies(
         for sentence in segment.sentences
     ]
     decisions: list[SentenceBoundaryDecision] = []
+    entries, quantity_decisions = _merge_cross_sentence_quantities(
+        entries,
+        segments,
+        analyzer,
+    )
+    decisions.extend(quantity_decisions)
+    entries, embedded_decisions = _split_confirmed_embedded_numbering(
+        entries,
+        segments,
+        analyzer,
+    )
+    decisions.extend(embedded_decisions)
+    entries, retrospective_decisions = _attach_confirmed_numbering_bodies(
+        entries,
+        segments,
+        analyzer,
+    )
+    decisions.extend(retrospective_decisions)
     run: list[int] = []
     index = 0
     while index < len(entries):
         current = entries[index]
-        numbered = _leading_number_and_body(current.sentence.text)
+        numbered = _leading_structural_number_and_body(current.sentence, analyzer)
         if numbered is None:
             run.clear()
             index += 1
@@ -658,6 +942,237 @@ def _resolve_cross_segment_numbering_bodies(
     return _rebuild_owned_segments(entries), tuple(decisions)
 
 
+def _merge_cross_sentence_quantities(
+    entries: list[_OwnedSentence],
+    segments: tuple[Segment, ...],
+    analyzer: JapaneseMorphologicalAnalyzer,
+) -> tuple[list[_OwnedSentence], tuple[SentenceBoundaryDecision, ...]]:
+    decisions: list[SentenceBoundaryDecision] = []
+    index = 0
+    while index + 1 < len(entries):
+        left = entries[index]
+        right = entries[index + 1]
+        numbered = _leading_number_and_body(left.sentence.text)
+        gap_seconds = (
+            right.sentence.time_range.start_seconds
+            - left.sentence.time_range.end_seconds
+        )
+        if (
+            numbered is None
+            or numbered[1]
+            or len(left.sentence.words) != 1
+            or not right.sentence.words
+            or gap_seconds
+            > DEFAULT_SENTENCE_BOUNDARY_CONFIG.max_cross_segment_grammar_gap_seconds
+        ):
+            index += 1
+            continue
+
+        combined_words = (*left.sentence.words, *right.sentence.words)
+        if not _number_has_lexical_host(combined_words, 0, analyzer):
+            index += 1
+            continue
+
+        decisions.append(
+            _cross_numbering_decision(
+                segments,
+                left,
+                right.sentence,
+                "cross_sentence_quantity_unit",
+            )
+        )
+        entries[index] = _OwnedSentence(
+            left.owner,
+            _join_numbering_sentences(left.sentence, right.sentence),
+        )
+        del entries[index + 1]
+    return entries, tuple(decisions)
+
+
+def _split_confirmed_embedded_numbering(
+    entries: list[_OwnedSentence],
+    segments: tuple[Segment, ...],
+    analyzer: JapaneseMorphologicalAnalyzer,
+) -> tuple[list[_OwnedSentence], tuple[SentenceBoundaryDecision, ...]]:
+    candidates = tuple(
+        _EmbeddedNumberingCandidate(
+            entry_index,
+            word_index,
+            candidate.value,
+            candidate.start_seconds,
+        )
+        for entry_index, entry in enumerate(entries)
+        for word_index, word in enumerate(entry.sentence.words)
+        if (
+            candidate := _numbering_candidate(
+                entry.sentence.words,
+                word_index,
+                word,
+                analyzer,
+                _asr_boundary_word_indexes(entry.sentence),
+            )
+        ) is not None
+        and not candidate.has_lexical_host
+    )
+    confirmed: set[tuple[int, int]] = set()
+    run: list[_EmbeddedNumberingCandidate] = []
+    config = DEFAULT_SENTENCE_BOUNDARY_CONFIG
+    for item in (*candidates, None):
+        continues = bool(
+            item is not None
+            and run
+            and item.value == run[-1].value + 1
+            and item.start_seconds - run[-1].start_seconds
+            <= config.numbering_region_max_item_gap_seconds
+            and len(_text_between_numbering_candidates(entries, run[-1], item))
+            >= config.numbering_region_min_body_characters
+        )
+        if item is not None and (not run or continues):
+            run.append(item)
+            continue
+        if len(run) >= config.numbering_region_min_sequence_length and run[0].value == 1:
+            confirmed.update(
+                (candidate.entry_index, candidate.word_index)
+                for candidate in run
+                if candidate.word_index > 0
+            )
+        run = [item] if item is not None else []
+
+    decisions: list[SentenceBoundaryDecision] = []
+    for entry_index, word_index in sorted(confirmed, reverse=True):
+        entry = entries[entry_index]
+        prefix = entry.sentence.words[:word_index]
+        remainder = entry.sentence.words[word_index:]
+        if not prefix or not remainder:
+            continue
+        if entry_index > 0 and _can_move_numbering_prefix(
+            entries[entry_index - 1].sentence,
+            entry.sentence,
+            word_index,
+            analyzer,
+        ):
+            previous = entries[entry_index - 1]
+            decisions.append(
+                _cross_numbering_decision(
+                    segments,
+                    previous,
+                    _sentence_from_words(remainder),
+                    "cross_asr_numbering_prefix",
+                )
+            )
+            entries[entry_index - 1] = _OwnedSentence(
+                previous.owner,
+                _join_numbering_sentences(
+                    previous.sentence,
+                    _sentence_from_words(prefix),
+                ),
+            )
+            entries[entry_index] = _OwnedSentence(
+                entry.owner,
+                _sentence_from_words(remainder),
+            )
+            continue
+        entries[entry_index : entry_index + 1] = (
+            _OwnedSentence(entry.owner, _sentence_from_words(prefix)),
+            _OwnedSentence(entry.owner, _sentence_from_words(remainder)),
+        )
+    decisions.reverse()
+    return entries, tuple(decisions)
+
+
+def _text_between_numbering_candidates(
+    entries: list[_OwnedSentence],
+    left: _EmbeddedNumberingCandidate,
+    right: _EmbeddedNumberingCandidate,
+) -> str:
+    if left.entry_index == right.entry_index:
+        words = entries[left.entry_index].sentence.words[
+            left.word_index + 1 : right.word_index
+        ]
+        return _compact_text(_words_text(words))
+    parts = [
+        _words_text(
+            entries[left.entry_index].sentence.words[left.word_index + 1 :]
+        )
+    ]
+    parts.extend(
+        entries[index].sentence.text
+        for index in range(left.entry_index + 1, right.entry_index)
+    )
+    parts.append(
+        _words_text(entries[right.entry_index].sentence.words[: right.word_index])
+    )
+    return _compact_text("".join(parts))
+
+
+def _attach_confirmed_numbering_bodies(
+    entries: list[_OwnedSentence],
+    segments: tuple[Segment, ...],
+    analyzer: JapaneseMorphologicalAnalyzer,
+) -> tuple[list[_OwnedSentence], tuple[SentenceBoundaryDecision, ...]]:
+    candidates: list[tuple[int, int, bool]] = []
+    index = 0
+    while index < len(entries):
+        numbered = _leading_structural_number_and_body(
+            entries[index].sentence,
+            analyzer,
+        )
+        if numbered is None:
+            index += 1
+            continue
+        value, body = numbered
+        standalone = not body
+        candidates.append((index, value, standalone))
+        has_separate_body = bool(
+            standalone
+            and index + 1 < len(entries)
+            and _leading_number_and_body(entries[index + 1].sentence.text) is None
+        )
+        index += 2 if has_separate_body else 1
+
+    confirmed_indexes: set[int] = set()
+    run: list[tuple[int, int, bool]] = []
+    for item in (*candidates, None):
+        if item is not None and (not run or item[1] == run[-1][1] + 1):
+            run.append(item)
+            continue
+        if (
+            len(run)
+            >= DEFAULT_SENTENCE_BOUNDARY_CONFIG.numbering_region_min_sequence_length
+            and run[0][1] == 1
+        ):
+            confirmed_indexes.update(
+                candidate_index
+                for candidate_index, _value, standalone in run
+                if standalone
+            )
+        run = [item] if item is not None else []
+
+    decisions: list[SentenceBoundaryDecision] = []
+    for candidate_index in sorted(confirmed_indexes, reverse=True):
+        if candidate_index + 1 >= len(entries):
+            continue
+        number = entries[candidate_index]
+        body = entries[candidate_index + 1]
+        if not _can_attach_numbering_body(number.sentence, body.sentence, analyzer):
+            continue
+        entries[candidate_index] = _OwnedSentence(
+            number.owner,
+            _join_numbering_sentences(number.sentence, body.sentence),
+        )
+        decisions.append(
+            _cross_numbering_decision(
+                segments,
+                number,
+                body.sentence,
+                "cross_asr_numbering_body",
+            )
+        )
+        del entries[candidate_index + 1]
+    decisions.reverse()
+    return entries, tuple(decisions)
+
+
 def _leading_number_and_body(text: str) -> tuple[int, str] | None:
     normalized = _compact_text(text)
     end = 0
@@ -669,6 +1184,23 @@ def _leading_number_and_body(text: str) -> tuple[int, str] | None:
     while body and unicodedata.category(body[0]).startswith("P"):
         body = body[1:]
     return int(normalized[:end]), body
+
+
+def _leading_structural_number_and_body(
+    sentence: Sentence,
+    analyzer: JapaneseMorphologicalAnalyzer,
+) -> tuple[int, str] | None:
+    numbered = _leading_number_and_body(sentence.text)
+    if numbered is None:
+        return None
+    number_text = str(numbered[0])
+    host = _number_host_morpheme(
+        analyzer.analyze(_compact_text(sentence.text)),
+        number_text,
+    )
+    if host is not None and _is_quantity_host(host):
+        return None
+    return numbered
 
 
 def _can_attach_numbering_body(
@@ -898,6 +1430,177 @@ def _trim_extended_boundary_word(words: tuple[Word, ...]) -> tuple[Word, ...]:
     )
 
 
+def _speaker_turn_candidate_reason(
+    words: tuple[Word, ...],
+    chunk_start: int,
+    word_index: int,
+    is_asr_boundary: bool,
+    analyzer: JapaneseMorphologicalAnalyzer | None,
+) -> str | None:
+    if analyzer is None:
+        return None
+    left_text = _words_text(words[chunk_start : word_index + 1])
+    right_text = _words_text(words[word_index + 1 :])
+    if not left_text or not right_text:
+        return None
+    left = analyzer.analyze(_compact_text(left_text))
+    right = analyzer.analyze(_compact_text(right_text))
+    if not left or not right:
+        return None
+    combined_text = _compact_text(f"{left_text}{right_text}")
+    if not _has_morpheme_boundary_at(
+        combined_text,
+        len(_compact_text(left_text)),
+        analyzer,
+    ):
+        return None
+
+    normalized_right = _compact_text(right_text)
+    if normalized_right.startswith(_RESPONSE_STARTS):
+        return "independent_response_start"
+    if _is_short_response(left_text, left) and _starts_independent_clause(right):
+        return "response_handoff"
+
+    gap_seconds = _effective_word_gap_seconds(
+        words[word_index],
+        words[word_index + 1],
+    )
+    if (
+        _is_interrogative_clause(left)
+        and _starts_independent_clause(right)
+        and (is_asr_boundary or gap_seconds >= 0.3)
+    ):
+        return "question_answer_transition"
+    if (
+        gap_seconds >= 0.6
+        and _starts_independent_clause(right)
+    ):
+        return "pause_supported_turn"
+    return None
+
+
+def _speaker_turn_supports_sentence_boundary(
+    left_text: str,
+    right_text: str,
+    reason: str,
+    analyzer: JapaneseMorphologicalAnalyzer,
+) -> bool:
+    left = analyzer.analyze(_compact_text(left_text))
+    right = analyzer.analyze(_compact_text(right_text))
+    if not left or not right or not _starts_independent_clause(right):
+        return False
+    has_dependency = _has_cross_boundary_morphological_dependency(
+        left_text,
+        right_text,
+        analyzer,
+    )
+    if reason == "response_handoff":
+        return bool(
+            _is_short_response(left_text, left)
+            and _starts_topic_restart(right_text, right)
+            and _is_complete_clause(right)
+        )
+    if reason == "question_answer_transition":
+        return not has_dependency
+    if reason == "independent_response_start":
+        return bool(
+            not has_dependency
+            and (
+                _is_complete_clause(left)
+                or _compact_text(left_text).endswith(_ELLIPTICAL_TURN_ENDS)
+            )
+        )
+    if reason == "pause_supported_turn":
+        left_last = left[-1]
+        is_terminal_particle = bool(
+            len(left_last.part_of_speech) > 1
+            and left_last.part_of_speech[0] == "助詞"
+            and left_last.part_of_speech[1] == "終助詞"
+        )
+        return bool(
+            is_terminal_particle
+            or _compact_text(left_text).endswith(_ELLIPTICAL_TURN_ENDS)
+        )
+    return False
+
+
+def _is_short_response(
+    text: str,
+    analyzed: tuple[JapaneseMorpheme, ...],
+) -> bool:
+    normalized = _compact_text(text)
+    del analyzed
+    return normalized in _SHORT_RESPONSE_UTTERANCES
+
+
+def _starts_topic_restart(
+    text: str,
+    analyzed: tuple[JapaneseMorpheme, ...],
+) -> bool:
+    normalized = _compact_text(text)
+    if (
+        not analyzed
+        or not analyzed[0].part_of_speech
+        or analyzed[0].part_of_speech[0] != "接続詞"
+    ):
+        return False
+    if normalized.startswith(f"{analyzed[0].surface}、"):
+        return True
+    following = next(
+        (
+            morpheme
+            for morpheme in analyzed[1:]
+            if not (
+                morpheme.part_of_speech
+                and morpheme.part_of_speech[0] == "補助記号"
+            )
+        ),
+        None,
+    )
+    return bool(
+        following
+        and following.part_of_speech
+        and following.part_of_speech[0] in {"副詞", "感動詞"}
+    )
+
+
+def _has_high_confidence_clause_restart(
+    left_text: str,
+    right_text: str,
+    analyzer: JapaneseMorphologicalAnalyzer,
+    sentence_final_suffixes: tuple[str, ...],
+) -> bool:
+    left = analyzer.analyze(_compact_text(left_text))
+    right = analyzer.analyze(_compact_text(right_text))
+    if not left or not right or not _starts_independent_clause(right):
+        return False
+
+    left_last = left[-1]
+    is_terminal_particle = bool(
+        len(left_last.part_of_speech) > 1
+        and left_last.part_of_speech[0] == "助詞"
+        and left_last.part_of_speech[1] == "終助詞"
+    )
+    is_terminal_auxiliary = bool(
+        left_last.part_of_speech
+        and left_last.part_of_speech[0] == "助動詞"
+        and any(
+            form in left_last.conjugation_form
+            for form in ("終止形", "意志推量形")
+        )
+    )
+    if _looks_sentence_final(left_text, sentence_final_suffixes) or is_terminal_particle:
+        return True
+    return bool(
+        is_terminal_auxiliary
+        and not _forms_contextual_adnominal_dependency(
+            left_text,
+            right_text,
+            analyzer,
+        )
+    )
+
+
 def _looks_sentence_final(text: str, suffixes: tuple[str, ...]) -> bool:
     normalized = _trim_closing_quotes(_compact_text(text))
     if not normalized:
@@ -1121,6 +1824,573 @@ def _contextual_right_morpheme(
     return None
 
 
+def _merge_high_confidence_cross_segment_continuations(
+    segments: tuple[Segment, ...],
+    analyzer: JapaneseMorphologicalAnalyzer | None,
+    *,
+    max_fragment_gap_seconds: float | None = None,
+) -> tuple[tuple[Segment, ...], tuple[CrossSegmentMergeDecision, ...]]:
+    """Remove only ASR boundaries with strong lexical or grammatical evidence."""
+    if analyzer is None:
+        return segments, ()
+
+    config = DEFAULT_SENTENCE_BOUNDARY_CONFIG
+    merged: list[Segment] = []
+    decisions: list[CrossSegmentMergeDecision] = []
+    for segment in segments:
+        if not merged or not segment.sentences:
+            merged.append(segment)
+            continue
+        previous = merged[-1]
+        if not previous.sentences:
+            merged.append(segment)
+            continue
+
+        left = previous.sentences[-1]
+        right = segment.sentences[0]
+        gap_seconds = right.time_range.start_seconds - left.time_range.end_seconds
+        left_analysis = (
+            analyzer.analyze(_compact_text(left.text))
+            if analyzer is not None
+            else ()
+        )
+        right_analysis = (
+            analyzer.analyze(_compact_text(right.text))
+            if analyzer is not None
+            else ()
+        )
+        has_fragment_reconstruction = bool(
+            left_analysis
+            and right_analysis
+            and _reconstructs_cross_segment_fragment(
+                _compact_text(left.text),
+                _compact_text(right.text),
+                left_analysis,
+                analyzer,
+            )
+        )
+        expected_number = _expected_numbering_restart(left, analyzer)
+        has_dependent_quotative_right = _starts_dependent_quotative_continuation(
+            right.text
+        )
+        has_coordinated_condition = _forms_coordinated_condition(
+            left_analysis,
+            right_analysis,
+            right.text,
+        )
+        if (
+            not left_analysis
+            or not right_analysis
+            or _ends_with_terminal_mark(
+                left.text,
+                (*config.terminal_marks, "?", "!"),
+            )
+            or (
+                _starts_independent_discourse(right.text)
+                and not has_coordinated_condition
+            )
+            or _starts_cross_segment_response(right.text, right_analysis)
+            or (
+                _is_functional_continuation(right_analysis[0])
+                and not has_fragment_reconstruction
+                and not has_dependent_quotative_right
+            )
+            or (
+                expected_number is not None
+                and _embedded_expected_number_index(
+                    right.words,
+                    expected_number,
+                    analyzer,
+                )
+                is not None
+            )
+        ):
+            merged.append(segment)
+            continue
+        score, evidence, has_fragment_reconstruction = _cross_segment_merge_score(
+            left,
+            right,
+            gap_seconds,
+            analyzer,
+        )
+        allowed_gap = (
+            (
+                max_fragment_gap_seconds
+                if max_fragment_gap_seconds is not None
+                else config.max_cross_segment_fragment_gap_seconds
+            )
+            if has_fragment_reconstruction
+            else config.max_cross_segment_grammar_gap_seconds
+        )
+        if (
+            gap_seconds < 0
+            or gap_seconds > allowed_gap
+            or score < config.cross_segment_merge_score_threshold
+        ):
+            merged.append(segment)
+            continue
+
+        prefix_count = _minimal_dependent_prefix_length(left, right, analyzer)
+        merge_right = right
+        remainder: Sentence | None = None
+        if prefix_count and prefix_count < len(right.words):
+            merge_right = _sentence_from_words(
+                right.words[:prefix_count],
+                asr_boundary_word_indexes=tuple(
+                    boundary
+                    for boundary in right.asr_boundary_word_indexes
+                    if boundary < prefix_count
+                ),
+            )
+            remainder = _sentence_from_words(
+                right.words[prefix_count:],
+                asr_boundary_word_indexes=tuple(
+                    boundary - prefix_count
+                    for boundary in right.asr_boundary_word_indexes
+                    if boundary > prefix_count
+                ),
+            )
+
+        combined = _sentence_from_words(
+            (*left.words, *merge_right.words),
+            asr_boundary_word_indexes=(
+                *left.asr_boundary_word_indexes,
+                len(left.words),
+                *(
+                    len(left.words) + boundary
+                    for boundary in merge_right.asr_boundary_word_indexes
+                ),
+            ),
+        )
+        sentences = (
+            *previous.sentences[:-1],
+            combined,
+            *((remainder,) if remainder is not None else ()),
+            *segment.sentences[1:],
+        )
+        merged[-1] = Segment(
+            position=previous.position,
+            text="".join(sentence.text for sentence in sentences),
+            time_range=TimeRange(
+                previous.time_range.start_seconds,
+                max(previous.time_range.end_seconds, segment.time_range.end_seconds),
+            ),
+            sentences=sentences,
+        )
+        decisions.append(
+            CrossSegmentMergeDecision(
+                left_segment_position=previous.position,
+                right_segment_position=segment.position,
+                word_index=max(len(left.words) - 1, 0),
+                left_end_seconds=left.time_range.end_seconds,
+                right_start_seconds=right.time_range.start_seconds,
+                gap_seconds=gap_seconds,
+                score=score,
+                reason=(
+                    "cross_asr_word_fragment_reconstruction"
+                    if has_fragment_reconstruction
+                    else "cross_asr_syntactic_continuation"
+                ),
+                left_text=left.text,
+                right_text=merge_right.text,
+                evidence=evidence,
+            )
+        )
+
+    return (
+        tuple(
+            Segment(
+                position=position,
+                text=segment.text,
+                time_range=segment.time_range,
+                sentences=segment.sentences,
+            )
+            for position, segment in enumerate(merged)
+        ),
+        tuple(decisions),
+    )
+
+
+def _deduplicate_cross_segment_merges(
+    decisions: tuple[CrossSegmentMergeDecision, ...],
+) -> tuple[CrossSegmentMergeDecision, ...]:
+    unique: list[CrossSegmentMergeDecision] = []
+    seen: set[tuple[str, str, str, float]] = set()
+    for decision in decisions:
+        key = (
+            decision.left_text,
+            decision.right_text,
+            decision.reason,
+            round(decision.gap_seconds, 6),
+        )
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(decision)
+    return tuple(unique)
+
+
+def _merge_high_confidence_adjacent_sentences(
+    segments: tuple[Segment, ...],
+    analyzer: JapaneseMorphologicalAnalyzer | None,
+) -> tuple[tuple[Segment, ...], tuple[CrossSegmentMergeDecision, ...]]:
+    """Repair false language boundaries already materialized inside a segment."""
+    if analyzer is None:
+        return segments, ()
+    config = DEFAULT_SENTENCE_BOUNDARY_CONFIG
+    adjusted: list[Segment] = []
+    decisions: list[CrossSegmentMergeDecision] = []
+    for segment in segments:
+        sentences: list[Sentence] = []
+        for sentence in segment.sentences:
+            if not sentences:
+                sentences.append(sentence)
+                continue
+            left = sentences[-1]
+            right_analysis = analyzer.analyze(_compact_text(sentence.text))
+            gap_seconds = sentence.time_range.start_seconds - left.time_range.end_seconds
+            score, evidence, has_fragment = _cross_segment_merge_score(
+                left,
+                sentence,
+                gap_seconds,
+                analyzer,
+            )
+            allowed_gap = (
+                config.max_cross_segment_fragment_gap_seconds
+                if has_fragment
+                else config.max_cross_segment_grammar_gap_seconds
+            )
+            if (
+                not right_analysis
+                or gap_seconds < 0
+                or gap_seconds > allowed_gap
+                or score < config.cross_segment_merge_score_threshold
+                or _ends_with_terminal_mark(
+                    left.text,
+                    (*config.terminal_marks, "?", "!"),
+                )
+                or _starts_independent_discourse(sentence.text)
+                or _starts_cross_segment_response(sentence.text, right_analysis)
+            ):
+                sentences.append(sentence)
+                continue
+
+            sentences[-1] = _sentence_from_words(
+                (*left.words, *sentence.words),
+                asr_boundary_word_indexes=(
+                    *left.asr_boundary_word_indexes,
+                    len(left.words),
+                    *(
+                        len(left.words) + boundary
+                        for boundary in sentence.asr_boundary_word_indexes
+                    ),
+                ),
+            )
+            decisions.append(
+                CrossSegmentMergeDecision(
+                    left_segment_position=segment.position,
+                    right_segment_position=segment.position,
+                    word_index=max(len(left.words) - 1, 0),
+                    left_end_seconds=left.time_range.end_seconds,
+                    right_start_seconds=sentence.time_range.start_seconds,
+                    gap_seconds=gap_seconds,
+                    score=score,
+                    reason=(
+                        "cross_asr_word_fragment_reconstruction"
+                        if has_fragment
+                        else "cross_asr_syntactic_continuation"
+                    ),
+                    left_text=left.text,
+                    right_text=sentence.text,
+                    evidence=evidence,
+                )
+            )
+        adjusted.append(
+            Segment(
+                position=segment.position,
+                text="".join(sentence.text for sentence in sentences),
+                time_range=segment.time_range,
+                sentences=tuple(sentences),
+            )
+        )
+    return tuple(adjusted), tuple(decisions)
+
+
+def _cross_segment_merge_score(
+    left: Sentence,
+    right: Sentence,
+    gap_seconds: float,
+    analyzer: JapaneseMorphologicalAnalyzer,
+) -> tuple[int, tuple[CrossSegmentMergeEvidence, ...], bool]:
+    evidence: list[CrossSegmentMergeEvidence] = []
+    left_text = _compact_text(left.text)
+    right_text = _compact_text(right.text)
+    left_analysis = analyzer.analyze(left_text)
+    right_analysis = analyzer.analyze(right_text)
+    if not left_analysis or not right_analysis:
+        return 0, (), False
+
+    if _ends_with_terminal_mark(
+        left.text,
+        (*DEFAULT_SENTENCE_BOUNDARY_CONFIG.terminal_marks, "?", "!"),
+    ):
+        evidence.append(CrossSegmentMergeEvidence("terminal_punctuation", -6))
+
+    has_fragment_reconstruction = _reconstructs_cross_segment_fragment(
+        left_text,
+        right_text,
+        left_analysis,
+        analyzer,
+    )
+    if has_fragment_reconstruction:
+        evidence.append(
+            CrossSegmentMergeEvidence("word_fragment_reconstruction", 6)
+        )
+
+    left_last = left_analysis[-1]
+    if _is_strongly_incomplete_predicate(left_last):
+        evidence.append(
+            CrossSegmentMergeEvidence("incomplete_predicate_chain", 4)
+        )
+    elif _ends_with_conditional_clause(left_last):
+        evidence.append(CrossSegmentMergeEvidence("conditional_clause_tail", 4))
+    elif _ends_with_conjunctive_particle(left_last):
+        evidence.append(CrossSegmentMergeEvidence("conjunctive_clause_tail", 4))
+    elif _ends_with_suspended_object(
+        left_last,
+        right_analysis,
+        gap_seconds,
+    ):
+        evidence.append(CrossSegmentMergeEvidence("suspended_object", 4))
+    elif _ends_with_quotative_topic(
+        left_last,
+        right_analysis,
+        gap_seconds,
+    ):
+        evidence.append(CrossSegmentMergeEvidence("quotative_topic", 4))
+    elif _ends_with_topic_location_tail(left_analysis):
+        evidence.append(CrossSegmentMergeEvidence("incomplete_topic_location", 4))
+    elif _ends_with_tight_subject_tail(left_last, right_analysis, gap_seconds):
+        evidence.append(CrossSegmentMergeEvidence("tight_subject_predicate", 4))
+    elif _is_dependent_formal_noun_tail(left_analysis):
+        evidence.append(CrossSegmentMergeEvidence("dependent_formal_noun", 4))
+
+    if _starts_independent_response(right_analysis):
+        evidence.append(CrossSegmentMergeEvidence("independent_response", -5))
+
+    if _starts_dependent_quotative_continuation(right_text):
+        evidence.append(CrossSegmentMergeEvidence("dependent_quotative_right", 4))
+    elif _forms_coordinated_condition(left_analysis, right_analysis, right_text):
+        evidence.append(CrossSegmentMergeEvidence("coordinated_condition", 4))
+
+    if gap_seconds > DEFAULT_SENTENCE_BOUNDARY_CONFIG.max_cross_segment_grammar_gap_seconds:
+        evidence.append(CrossSegmentMergeEvidence("long_cross_segment_gap", -2))
+    elif gap_seconds <= DEFAULT_SENTENCE_BOUNDARY_CONFIG.max_dependent_continuation_gap_seconds:
+        evidence.append(CrossSegmentMergeEvidence("tight_timing", 1))
+
+    return sum(item.score for item in evidence), tuple(evidence), has_fragment_reconstruction
+
+
+def _reconstructs_cross_segment_fragment(
+    left_text: str,
+    right_text: str,
+    left_analysis: tuple[JapaneseMorpheme, ...],
+    analyzer: JapaneseMorphologicalAnalyzer,
+) -> bool:
+    combined = analyzer.analyze(f"{left_text}{right_text}")
+    if not combined:
+        return False
+
+    cursor = 0
+    boundary_morpheme: JapaneseMorpheme | None = None
+    following_morpheme: JapaneseMorpheme | None = None
+    has_boundary = False
+    for index, morpheme in enumerate(combined):
+        cursor += len(morpheme.surface)
+        if cursor == len(left_text):
+            has_boundary = True
+            boundary_morpheme = morpheme
+            if index + 1 < len(combined):
+                following_morpheme = combined[index + 1]
+            break
+        if cursor > len(left_text):
+            boundary_morpheme = morpheme
+            break
+    if boundary_morpheme is None:
+        return False
+    separate_last = left_analysis[-1]
+    if not has_boundary:
+        return bool(
+            separate_last.part_of_speech
+            and separate_last.part_of_speech[0] in {"感動詞", "接頭辞"}
+            and len(separate_last.surface) <= 3
+            and (
+                left_text.endswith(("ー", "っ", "ゃ", "ゅ", "ょ"))
+                or (
+                    analyzer.analyze(right_text)
+                    and _is_functional_continuation(analyzer.analyze(right_text)[0])
+                )
+            )
+        )
+
+    if (
+        _is_strongly_incomplete_predicate(separate_last)
+        and following_morpheme is not None
+        and _is_functional_continuation(following_morpheme)
+    ):
+        return True
+
+    return bool(
+        boundary_morpheme.surface == separate_last.surface
+        and separate_last.part_of_speech
+        and separate_last.part_of_speech[0] == "感動詞"
+        and len(separate_last.surface) <= 3
+        and (
+            boundary_morpheme.dictionary_form != separate_last.dictionary_form
+            or boundary_morpheme.part_of_speech[:2]
+            != separate_last.part_of_speech[:2]
+            or boundary_morpheme.conjugation_form
+            != separate_last.conjugation_form
+        )
+    )
+
+
+def _starts_cross_segment_response(
+    text: str,
+    analysis: tuple[JapaneseMorpheme, ...],
+) -> bool:
+    normalized = _compact_text(text)
+    return bool(
+        _starts_independent_response(analysis)
+        or normalized.startswith((*_RESPONSE_STARTS, "わかりました", "どういうこと"))
+    )
+
+
+def _is_strongly_incomplete_predicate(morpheme: JapaneseMorpheme) -> bool:
+    return bool(
+        morpheme.part_of_speech
+        and morpheme.part_of_speech[0] in {"動詞", "形容詞", "助動詞"}
+        and any(
+            form in morpheme.conjugation_form
+            for form in ("未然形", "連用形", "接続形")
+        )
+    )
+
+
+def _ends_with_conditional_clause(morpheme: JapaneseMorpheme) -> bool:
+    return bool(
+        morpheme.part_of_speech
+        and morpheme.part_of_speech[0] in {"動詞", "形容詞", "助動詞"}
+        and "仮定形" in morpheme.conjugation_form
+    )
+
+
+def _ends_with_conjunctive_particle(morpheme: JapaneseMorpheme) -> bool:
+    return bool(
+        morpheme.part_of_speech[:2] == ("助詞", "接続助詞")
+        and morpheme.dictionary_form in {"て", "で"}
+    )
+
+
+def _ends_with_suspended_object(
+    morpheme: JapaneseMorpheme,
+    right: tuple[JapaneseMorpheme, ...],
+    gap_seconds: float,
+) -> bool:
+    return bool(
+        gap_seconds
+        <= DEFAULT_SENTENCE_BOUNDARY_CONFIG.max_cross_segment_grammar_gap_seconds
+        and morpheme.part_of_speech[:2] == ("助詞", "格助詞")
+        and morpheme.dictionary_form == "を"
+        and _has_early_predicate(right)
+    )
+
+
+def _ends_with_quotative_topic(
+    morpheme: JapaneseMorpheme,
+    right: tuple[JapaneseMorpheme, ...],
+    gap_seconds: float,
+) -> bool:
+    return bool(
+        gap_seconds
+        <= DEFAULT_SENTENCE_BOUNDARY_CONFIG.max_cross_segment_grammar_gap_seconds
+        and morpheme.part_of_speech
+        and morpheme.part_of_speech[0] == "助詞"
+        and morpheme.dictionary_form == "って"
+        and _has_early_predicate(right)
+    )
+
+
+def _has_early_predicate(morphemes: tuple[JapaneseMorpheme, ...]) -> bool:
+    return any(
+        morpheme.part_of_speech
+        and morpheme.part_of_speech[0]
+        in {"動詞", "形容詞", "形状詞", "助動詞"}
+        for morpheme in morphemes[:4]
+    )
+
+
+def _starts_dependent_quotative_continuation(text: str) -> bool:
+    return _compact_text(text).startswith(("っていう", "という"))
+
+
+def _forms_coordinated_condition(
+    left: tuple[JapaneseMorpheme, ...],
+    right: tuple[JapaneseMorpheme, ...],
+    right_text: str,
+) -> bool:
+    if not left or not right or not _compact_text(right_text).startswith("そして"):
+        return False
+    left_last = left[-1]
+    return bool(
+        left_last.dictionary_form == "たい"
+        and left_last.part_of_speech
+        and left_last.part_of_speech[0] == "助動詞"
+        and _ends_with_conditional_clause(right[-1])
+    )
+
+
+def _is_dependent_formal_noun_tail(
+    morphemes: tuple[JapaneseMorpheme, ...],
+) -> bool:
+    if len(morphemes) < 2 or morphemes[-1].dictionary_form != "ほか":
+        return False
+    previous = morphemes[-2]
+    return bool(
+        previous.part_of_speech
+        and previous.part_of_speech[0] in {"動詞", "形容詞", "助動詞"}
+        and "連体形" in previous.conjugation_form
+    )
+
+
+def _ends_with_topic_location_tail(
+    morphemes: tuple[JapaneseMorpheme, ...],
+) -> bool:
+    return bool(
+        len(morphemes) >= 2
+        and morphemes[-2].part_of_speech[:2] == ("助詞", "格助詞")
+        and morphemes[-2].dictionary_form == "で"
+        and morphemes[-1].part_of_speech[:2] == ("助詞", "係助詞")
+        and morphemes[-1].dictionary_form == "は"
+    )
+
+
+def _ends_with_tight_subject_tail(
+    left_last: JapaneseMorpheme,
+    right: tuple[JapaneseMorpheme, ...],
+    gap_seconds: float,
+) -> bool:
+    return bool(
+        gap_seconds
+        <= DEFAULT_SENTENCE_BOUNDARY_CONFIG.max_dependent_continuation_gap_seconds
+        and left_last.part_of_speech[:2] == ("助詞", "格助詞")
+        and left_last.dictionary_form == "が"
+        and right
+        and right[0].part_of_speech
+        and right[0].part_of_speech[0] in {"動詞", "形容詞", "助動詞"}
+    )
+
+
 def _merge_adjacent_dependent_continuations(
     segments: tuple[Segment, ...],
     analyzer: JapaneseMorphologicalAnalyzer | None,
@@ -1140,6 +2410,16 @@ def _merge_adjacent_dependent_continuations(
 
         left = previous.sentences[-1]
         right = segment.sentences[0]
+        left_analysis = (
+            analyzer.analyze(_compact_text(left.text))
+            if analyzer is not None
+            else ()
+        )
+        right_analysis = (
+            analyzer.analyze(_compact_text(right.text))
+            if analyzer is not None
+            else ()
+        )
         gap_seconds = (
             right.time_range.start_seconds - left.time_range.end_seconds
         )
@@ -1161,6 +2441,15 @@ def _merge_adjacent_dependent_continuations(
             or _ends_with_terminal_mark(
                 left.text,
                 (*config.terminal_marks, "?", "!"),
+            )
+            or (
+                analyzer is not None
+                and _starts_cross_segment_response(right.text, right_analysis)
+            )
+            or (
+                analyzer is not None
+                and _is_short_response(left.text, left_analysis)
+                and _starts_independent_clause(right_analysis)
             )
             or _continuation_evidence_score(
                 left,
@@ -1281,6 +2570,7 @@ def _expected_numbering_restart(
         last_index,
         sentence.words[last_index],
         analyzer,
+        _asr_boundary_word_indexes(sentence),
     )
     return candidate.value + 1 if candidate is not None else None
 
@@ -1298,16 +2588,27 @@ def _minimal_dependent_prefix_length(
             f"{left.text}{_words_text(right.words[:count])}"
         )
         combined = analyzer.analyze(combined_text)
-        remainder = analyzer.analyze(_compact_text(_words_text(right.words[count:])))
+        remainder_text = _words_text(right.words[count:])
+        remainder = analyzer.analyze(_compact_text(remainder_text))
+        starts_independent_response = _starts_cross_segment_response(
+            remainder_text,
+            remainder,
+        )
         if (
             combined
             and remainder
             and _is_complete_clause(combined)
-            and _starts_independent_clause(remainder)
-            and not _has_cross_boundary_morphological_dependency(
-                combined_text,
-                _words_text(right.words[count:]),
-                analyzer,
+            and (
+                starts_independent_response
+                or _starts_independent_clause(remainder)
+            )
+            and (
+                starts_independent_response
+                or not _has_cross_boundary_morphological_dependency(
+                    combined_text,
+                    remainder_text,
+                    analyzer,
+                )
             )
             and _is_valid_prefix_partition(
                 combined,
@@ -1530,6 +2831,12 @@ def _is_question_clause(morphemes: tuple[JapaneseMorpheme, ...]) -> bool:
         and len(last.part_of_speech) > 1
         and last.part_of_speech[1] == "終助詞"
     )
+
+
+def _is_interrogative_clause(
+    morphemes: tuple[JapaneseMorpheme, ...],
+) -> bool:
+    return _is_question_clause(morphemes) and morphemes[-1].surface in {"か", "の"}
 
 
 def _continuation_evidence_score(
@@ -1756,11 +3063,31 @@ def _merge_adjacent_connective_continuations(
 
         left = previous.sentences[-1]
         right = segment.sentences[0]
+        left_analysis = (
+            analyzer.analyze(_compact_text(left.text))
+            if analyzer is not None
+            else ()
+        )
+        right_analysis = (
+            analyzer.analyze(_compact_text(right.text))
+            if analyzer is not None
+            else ()
+        )
         gap_seconds = right.time_range.start_seconds - left.time_range.end_seconds
         if (
             gap_seconds < 0
             or gap_seconds > config.max_connective_continuation_gap_seconds
-            or not _ends_with_connective_te(left.text)
+            or _starts_independent_discourse(right.text)
+            or (
+                analyzer is not None
+                and _starts_cross_segment_response(right.text, right_analysis)
+            )
+            or (
+                analyzer is not None
+                and _is_short_response(left.text, left_analysis)
+                and _starts_independent_clause(right_analysis)
+            )
+            or not _has_connective_tail(left.text, analyzer)
             or not _connective_merge_has_score_advantage(
                 left,
                 right,
@@ -1855,7 +3182,7 @@ def _connective_continuation_score(
     score = 0
     left_last = left[-1]
     right_first = right[0]
-    if _is_connective_morpheme(left_last):
+    if _is_connective_morpheme(left_last) or _is_nonfinal_particle(left_last):
         score += 4
     elif _is_incomplete_left_context(left_last):
         score += 2
@@ -1866,7 +3193,7 @@ def _connective_continuation_score(
     elif (
         not _is_independent_response_start(right_first)
         and not _is_independent_predicate(right_first)
-        and not _is_question_clause(right)
+        and not _is_interrogative_clause(right)
     ):
         score += 2
     if gap_seconds <= config.max_dependent_continuation_gap_seconds:
@@ -1887,7 +3214,7 @@ def _turn_transition_score(
         score += 5
     if _is_complete_clause(right):
         score += 2
-    if _is_question_clause(right):
+    if _is_interrogative_clause(right):
         score += 3
     if _is_independent_predicate(right_first) and _is_complete_clause(right):
         score += 3
@@ -1913,6 +3240,14 @@ def _is_connective_morpheme(morpheme: JapaneseMorpheme) -> bool:
                 )
             )
         )
+    )
+
+
+def _is_nonfinal_particle(morpheme: JapaneseMorpheme) -> bool:
+    return bool(
+        len(morpheme.part_of_speech) > 1
+        and morpheme.part_of_speech[0] == "助詞"
+        and morpheme.part_of_speech[1] != "終助詞"
     )
 
 
@@ -1950,6 +3285,29 @@ def _ends_with_connective_te(text: str) -> bool:
     if not normalized or normalized.endswith(("、", ",")):
         return False
     return normalized.endswith(("て", "で"))
+
+
+def _has_connective_tail(
+    text: str,
+    analyzer: JapaneseMorphologicalAnalyzer | None,
+) -> bool:
+    if _ends_with_connective_te(text):
+        return True
+    if analyzer is None:
+        return False
+    analyzed = analyzer.analyze(_compact_text(text))
+    return bool(
+        analyzed
+        and not _is_complete_clause(analyzed)
+        and (
+            _is_connective_morpheme(analyzed[-1])
+            or _is_nonfinal_particle(analyzed[-1])
+        )
+    )
+
+
+def _starts_independent_discourse(text: str) -> bool:
+    return _compact_text(text).startswith(_INDEPENDENT_DISCOURSE_STARTS)
 
 
 def _append_comma(sentence: Sentence) -> Sentence:

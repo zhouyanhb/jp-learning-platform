@@ -54,6 +54,10 @@ from jp_learning_platform.workflow.punctuation_attribution_stage import (
 from jp_learning_platform.workflow.subtitle_display_normalization_stage import (
     SubtitleDisplayNormalizationStage,
 )
+from jp_learning_platform.workflow.transcript_anomaly_stage import (
+    TranscriptAnomalyAnalysisStage,
+    TranscriptAnomalyDetector,
+)
 from jp_learning_platform.workflow.word_normalization_stage import (
     WordNormalizationStage,
     WordNormalizer,
@@ -290,6 +294,7 @@ class SubtitlePipelineRunner:
     sentence_boundary_resolver: SentenceBoundaryResolver | None = None
     overlap_text_cleaner: OverlapTextCleaner | None = None
     repeated_text_cleaner: RepeatedTextCleaner | None = None
+    transcript_anomaly_detector: TranscriptAnomalyDetector | None = None
     merger: SubtitleMerger | None = None
     optimizer: ReadabilityOptimizer | None = None
     validator: SubtitleValidator | None = None
@@ -811,6 +816,11 @@ class SubtitlePipelineRunner:
 
         if self.repeated_text_cleaner is not None:
             stages.append(RepeatedTextCleanupStage(self.repeated_text_cleaner))
+
+        if self.transcript_anomaly_detector is not None:
+            stages.append(
+                TranscriptAnomalyAnalysisStage(self.transcript_anomaly_detector)
+            )
 
         if self.sentence_boundary_resolver is not None:
             stages.append(

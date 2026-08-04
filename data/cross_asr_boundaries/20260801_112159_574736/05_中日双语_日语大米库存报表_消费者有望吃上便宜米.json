@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "source_artifact": "output/.work/20260801_112159_574736/中日双语_日语大米库存报表_消费者有望吃上便宜米/05_sentence_boundary_resolution.json",
+  "prediction_artifact": "output/evaluations/cross_asr_20260801/05_中日双语_日语大米库存报表_消费者有望吃上便宜米.json",
+  "source_path": "input/source/【中日双语】日语大米库存报表，消费者有望吃上便宜米？.mp4",
+  "settings": {
+    "max_gap_seconds": 4.0
+  },
+  "labels": {
+    "merge": "Both sides belong to one language sentence.",
+    "keep": "The boundary must remain between language sentences.",
+    "uncertain": "Human review cannot confidently choose merge or keep."
+  },
+  "samples": [
+    {
+      "id": "cross-asr-0001-414bfc74",
+      "origin": "adjacent_sentence_boundary",
+      "segment_index": 0,
+      "sentence_index": 1,
+      "left_end_seconds": 14.565,
+      "right_start_seconds": 14.565,
+      "gap_seconds": 0.0,
+      "left_context": "今後1年間の米の生産量や需要量の見通しが発表され、来年6月の民間の在庫量は過去最大となったことしを上回ることが分かりました。",
+      "right_context": "農林水産省が審議会に示した資料によりますと、2026年3枚の生産量は732万トン、需要量は最大で711万トンとなる見通しです。",
+      "predicted_label": "keep",
+      "prediction": null,
+      "gold_label": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "cross-asr-0002-d5340a0b",
+      "origin": "segment_boundary",
+      "segment_index": 1,
+      "sentence_index": 0,
+      "left_end_seconds": 27.29,
+      "right_start_seconds": 28.301,
+      "gap_seconds": 1.0109999999999992,
+      "left_context": "農林水産省が審議会に示した資料によりますと、2026年3枚の生産量は732万トン、需要量は最大で711万トンとなる見通しです。",
+      "right_context": "この結果、来年6月末の民間の在庫量は最大で281万トンと、過去最大となった今年の243万トンを大きく上回る見通しです",
+      "predicted_label": "keep",
+      "prediction": null,
+      "gold_label": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "cross-asr-0003-c0b2b6e6",
+      "origin": "asr_token_boundary",
+      "segment_index": 1,
+      "sentence_index": 0,
+      "left_end_seconds": 34.54,
+      "right_start_seconds": 35.142,
+      "gap_seconds": 0.6020000000000039,
+      "left_context": "と、",
+      "right_context": "過",
+      "predicted_label": "keep",
+      "prediction": null,
+      "gold_label": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "cross-asr-0004-8244e4d4",
+      "origin": "segment_boundary",
+      "segment_index": 2,
+      "sentence_index": 0,
+      "left_end_seconds": 40.64,
+      "right_start_seconds": 41.8,
+      "gap_seconds": 1.1599999999999966,
+      "left_context": "この結果、来年6月末の民間の在庫量は最大で281万トンと、過去最大となった今年の243万トンを大きく上回る見通しです",
+      "right_context": "2025年3枚の在庫が膨らむ中、米の価格は今後さらに値下がりする可能性があります",
+      "predicted_label": "keep",
+      "prediction": null,
+      "gold_label": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    }
+  ]
+}

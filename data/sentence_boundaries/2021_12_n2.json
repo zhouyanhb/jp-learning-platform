@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "dataset_id": "jlpt-2021-12-n2-sentence-boundaries",
   "language": "ja",
   "annotation_status": "silver",
@@ -15,6 +15,11 @@
     "speaker_turn",
     "source_line_break"
   ],
+  "boundary_dimensions": {
+    "language_sentence": "Boundary between linguistic sentences.",
+    "speaker_turn": "Observed source speaker-label transition.",
+    "content_structure": "Boundary between content roles or units."
+  },
   "roles": {
     "instruction": "Spoken or written section and item directions.",
     "dialogue": "Listening-test body, including dialogue and monologue.",
@@ -194,6 +199,10 @@
           "after_char": 25,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -201,12 +210,21 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn",
+            "content_structure"
           ]
         },
         {
           "after_char": 60,
           "types": [
             "terminal_punctuation",
+            "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
             "speaker_turn"
           ]
         },
@@ -215,12 +233,20 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 153,
           "types": [
             "terminal_punctuation",
+            "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
             "speaker_turn"
           ]
         },
@@ -229,24 +255,38 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 189,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 226,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 244,
           "types": [
             "terminal_punctuation",
+            "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
             "speaker_turn"
           ]
         },
@@ -255,24 +295,38 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 267,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 282,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 291,
           "types": [
             "terminal_punctuation",
+            "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
             "speaker_turn"
           ]
         },
@@ -281,6 +335,10 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
@@ -288,12 +346,20 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 338,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         }
       ],
@@ -403,6 +469,10 @@
           "after_char": 26,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -410,48 +480,75 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn",
+            "content_structure"
           ]
         },
         {
           "after_char": 66,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 93,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 109,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 152,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 187,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 207,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 232,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         }
       ],
@@ -678,6 +775,10 @@
           "after_char": 18,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -685,18 +786,30 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn",
+            "content_structure"
           ]
         },
         {
           "after_char": 48,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 81,
           "types": [
             "terminal_punctuation",
+            "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
             "speaker_turn"
           ]
         },
@@ -705,12 +818,19 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 106,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -718,18 +838,29 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 185,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 208,
           "types": [
             "terminal_punctuation",
+            "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
             "speaker_turn"
           ]
         },
@@ -738,12 +869,19 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 238,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -751,24 +889,37 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 268,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 284,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 305,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -776,18 +927,29 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 353,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 378,
           "types": [
             "terminal_punctuation",
+            "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
             "speaker_turn"
           ]
         },
@@ -796,12 +958,19 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 404,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -809,12 +978,20 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 421,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         }
       ],
@@ -1014,6 +1191,10 @@
           "after_char": 26,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -1021,12 +1202,21 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn",
+            "content_structure"
           ]
         },
         {
           "after_char": 67,
           "types": [
             "terminal_punctuation",
+            "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
             "speaker_turn"
           ]
         },
@@ -1035,12 +1225,19 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 84,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -1048,18 +1245,28 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 125,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 137,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -1067,18 +1274,29 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 193,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 226,
           "types": [
             "terminal_punctuation",
+            "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
             "speaker_turn"
           ]
         },
@@ -1087,12 +1305,19 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 270,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -1100,12 +1325,19 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 308,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -1113,24 +1345,38 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 371,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 379,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 390,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         }
       ],
@@ -1330,18 +1576,30 @@
           "after_char": 32,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
           "after_char": 49,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
           "after_char": 54,
           "types": [
             "terminal_punctuation",
+            "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
             "speaker_turn"
           ]
         },
@@ -1350,18 +1608,28 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 80,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 111,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -1369,18 +1637,29 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 130,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 158,
           "types": [
             "terminal_punctuation",
+            "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
             "speaker_turn"
           ]
         },
@@ -1389,18 +1668,29 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 191,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 215,
           "types": [
             "terminal_punctuation",
+            "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
             "speaker_turn"
           ]
         },
@@ -1409,12 +1699,20 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 237,
           "types": [
             "terminal_punctuation",
+            "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
             "speaker_turn"
           ]
         },
@@ -1423,12 +1721,19 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 253,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -1436,18 +1741,28 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 291,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 300,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         }
       ],
@@ -1620,6 +1935,10 @@
           "after_char": 14,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -1628,6 +1947,11 @@
             "terminal_punctuation",
             "source_line_break",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn",
+            "content_structure"
           ]
         },
         {
@@ -1635,12 +1959,19 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 48,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -1648,18 +1979,28 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 66,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 72,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -1667,24 +2008,38 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 85,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 128,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 148,
           "types": [
             "terminal_punctuation",
+            "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
             "speaker_turn"
           ]
         },
@@ -1693,12 +2048,19 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 177,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -1706,18 +2068,29 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 215,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 219,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         }
       ],
@@ -1881,6 +2254,10 @@
           "after_char": 19,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -1889,6 +2266,11 @@
             "terminal_punctuation",
             "source_line_break",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn",
+            "content_structure"
           ]
         },
         {
@@ -1896,12 +2278,19 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 72,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -1909,12 +2298,19 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 94,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -1922,18 +2318,29 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 146,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 164,
           "types": [
             "terminal_punctuation",
+            "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
             "speaker_turn"
           ]
         },
@@ -1942,12 +2349,19 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 237,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -1955,12 +2369,19 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 308,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -1968,12 +2389,20 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 341,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         }
       ],
@@ -2074,6 +2503,10 @@
           "after_char": 24,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -2081,36 +2514,55 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
           "after_char": 73,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 93,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 122,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 181,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 218,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -2118,6 +2570,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         }
       ],
@@ -2317,6 +2773,10 @@
           "after_char": 28,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -2325,12 +2785,20 @@
             "terminal_punctuation",
             "source_line_break",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn",
+            "content_structure"
           ]
         },
         {
           "after_char": 64,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -2338,12 +2806,19 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 76,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -2351,18 +2826,28 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 120,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 130,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -2370,12 +2855,19 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 210,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -2383,12 +2875,19 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 247,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -2396,12 +2895,19 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 273,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -2409,18 +2915,28 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 321,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 346,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -2428,12 +2944,20 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 380,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         }
       ],
@@ -2534,6 +3058,10 @@
           "after_char": 21,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -2541,36 +3069,55 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
           "after_char": 65,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 93,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 112,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 139,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 165,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -2578,6 +3125,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         }
       ],
@@ -2714,6 +3265,10 @@
           "after_char": 22,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -2722,6 +3277,11 @@
             "terminal_punctuation",
             "source_line_break",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn",
+            "content_structure"
           ]
         },
         {
@@ -2729,18 +3289,29 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 99,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 142,
           "types": [
             "terminal_punctuation",
+            "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
             "speaker_turn"
           ]
         },
@@ -2749,12 +3320,20 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 225,
           "types": [
             "terminal_punctuation",
+            "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
             "speaker_turn"
           ]
         },
@@ -2763,24 +3342,37 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 243,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 277,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 295,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -2788,6 +3380,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         }
       ],
@@ -3007,18 +3603,29 @@
             "terminal_punctuation",
             "source_line_break",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 28,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 48,
           "types": [
             "terminal_punctuation",
+            "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
             "speaker_turn"
           ]
         },
@@ -3027,24 +3634,38 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 69,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 83,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 96,
           "types": [
             "terminal_punctuation",
+            "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
             "speaker_turn"
           ]
         },
@@ -3053,12 +3674,20 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 111,
           "types": [
             "terminal_punctuation",
+            "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
             "speaker_turn"
           ]
         },
@@ -3067,12 +3696,20 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 140,
           "types": [
             "terminal_punctuation",
+            "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
             "speaker_turn"
           ]
         },
@@ -3081,12 +3718,20 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 187,
           "types": [
             "terminal_punctuation",
+            "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
             "speaker_turn"
           ]
         },
@@ -3095,12 +3740,20 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 241,
           "types": [
             "terminal_punctuation",
+            "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
             "speaker_turn"
           ]
         },
@@ -3109,6 +3762,10 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
@@ -3116,6 +3773,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -3123,24 +3784,37 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
           "after_char": 306,
           "types": [
             "source_line_break"
+          ],
+          "dimensions": [
+            "content_structure"
           ]
         },
         {
           "after_char": 317,
           "types": [
             "source_line_break"
+          ],
+          "dimensions": [
+            "content_structure"
           ]
         },
         {
           "after_char": 329,
           "types": [
             "source_line_break"
+          ],
+          "dimensions": [
+            "content_structure"
           ]
         }
       ],
@@ -3369,12 +4043,20 @@
             "terminal_punctuation",
             "source_line_break",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 32,
           "types": [
             "terminal_punctuation",
+            "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
             "speaker_turn"
           ]
         },
@@ -3383,12 +4065,20 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 44,
           "types": [
             "terminal_punctuation",
+            "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
             "speaker_turn"
           ]
         },
@@ -3397,12 +4087,20 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 62,
           "types": [
             "terminal_punctuation",
+            "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
             "speaker_turn"
           ]
         },
@@ -3411,6 +4109,10 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
@@ -3418,18 +4120,28 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 99,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 126,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -3437,24 +4149,38 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 136,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 141,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 156,
           "types": [
             "terminal_punctuation",
+            "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
             "speaker_turn"
           ]
         },
@@ -3463,18 +4189,29 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 181,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 201,
           "types": [
             "terminal_punctuation",
+            "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
             "speaker_turn"
           ]
         },
@@ -3483,6 +4220,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -3490,6 +4231,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -3497,6 +4242,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -3504,6 +4253,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -3511,6 +4264,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         }
       ],
@@ -3640,36 +4397,55 @@
             "terminal_punctuation",
             "source_line_break",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 86,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 104,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 126,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 180,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 199,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -3677,6 +4453,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -3684,24 +4464,37 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
           "after_char": 281,
           "types": [
             "source_line_break"
+          ],
+          "dimensions": [
+            "content_structure"
           ]
         },
         {
           "after_char": 295,
           "types": [
             "source_line_break"
+          ],
+          "dimensions": [
+            "content_structure"
           ]
         },
         {
           "after_char": 314,
           "types": [
             "source_line_break"
+          ],
+          "dimensions": [
+            "content_structure"
           ]
         }
       ],
@@ -3820,30 +4613,45 @@
           "after_char": 28,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 59,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 70,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 126,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 192,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -3851,6 +4659,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -3858,24 +4670,37 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
           "after_char": 262,
           "types": [
             "source_line_break"
+          ],
+          "dimensions": [
+            "content_structure"
           ]
         },
         {
           "after_char": 271,
           "types": [
             "source_line_break"
+          ],
+          "dimensions": [
+            "content_structure"
           ]
         },
         {
           "after_char": 283,
           "types": [
             "source_line_break"
+          ],
+          "dimensions": [
+            "content_structure"
           ]
         }
       ],
@@ -4050,12 +4875,20 @@
             "terminal_punctuation",
             "source_line_break",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 58,
           "types": [
             "terminal_punctuation",
+            "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
             "speaker_turn"
           ]
         },
@@ -4064,6 +4897,10 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
@@ -4071,18 +4908,29 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 119,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 153,
           "types": [
             "terminal_punctuation",
+            "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
             "speaker_turn"
           ]
         },
@@ -4091,12 +4939,20 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 216,
           "types": [
             "terminal_punctuation",
+            "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
             "speaker_turn"
           ]
         },
@@ -4105,18 +4961,28 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 259,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 286,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -4124,6 +4990,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -4131,24 +5001,37 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
           "after_char": 338,
           "types": [
             "source_line_break"
+          ],
+          "dimensions": [
+            "content_structure"
           ]
         },
         {
           "after_char": 345,
           "types": [
             "source_line_break"
+          ],
+          "dimensions": [
+            "content_structure"
           ]
         },
         {
           "after_char": 354,
           "types": [
             "source_line_break"
+          ],
+          "dimensions": [
+            "content_structure"
           ]
         }
       ],
@@ -4214,6 +5097,11 @@
           "types": [
             "source_line_break",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn",
+            "content_structure"
           ]
         },
         {
@@ -4221,6 +5109,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -4228,6 +5120,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -4235,6 +5131,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         }
       ],
@@ -4300,6 +5200,11 @@
           "types": [
             "source_line_break",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn",
+            "content_structure"
           ]
         },
         {
@@ -4307,6 +5212,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -4314,6 +5223,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -4321,6 +5234,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         }
       ],
@@ -4394,12 +5311,18 @@
           "after_char": 2,
           "types": [
             "source_line_break"
+          ],
+          "dimensions": [
+            "content_structure"
           ]
         },
         {
           "after_char": 23,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -4407,6 +5330,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -4414,6 +5341,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -4421,6 +5352,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         }
       ],
@@ -4485,6 +5420,9 @@
           "after_char": 2,
           "types": [
             "source_line_break"
+          ],
+          "dimensions": [
+            "content_structure"
           ]
         },
         {
@@ -4492,6 +5430,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -4499,6 +5441,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -4506,6 +5452,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         }
       ],
@@ -4570,6 +5520,9 @@
           "after_char": 2,
           "types": [
             "source_line_break"
+          ],
+          "dimensions": [
+            "content_structure"
           ]
         },
         {
@@ -4577,6 +5530,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -4584,6 +5541,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -4591,6 +5552,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         }
       ],
@@ -4655,6 +5620,9 @@
           "after_char": 2,
           "types": [
             "source_line_break"
+          ],
+          "dimensions": [
+            "content_structure"
           ]
         },
         {
@@ -4662,6 +5630,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -4669,6 +5641,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -4676,6 +5652,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         }
       ],
@@ -4740,6 +5720,9 @@
           "after_char": 2,
           "types": [
             "source_line_break"
+          ],
+          "dimensions": [
+            "content_structure"
           ]
         },
         {
@@ -4747,6 +5730,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -4754,6 +5741,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -4761,6 +5752,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         }
       ],
@@ -4825,6 +5820,9 @@
           "after_char": 2,
           "types": [
             "source_line_break"
+          ],
+          "dimensions": [
+            "content_structure"
           ]
         },
         {
@@ -4832,6 +5830,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -4839,6 +5841,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -4846,6 +5852,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         }
       ],
@@ -4919,6 +5929,9 @@
           "after_char": 2,
           "types": [
             "source_line_break"
+          ],
+          "dimensions": [
+            "content_structure"
           ]
         },
         {
@@ -4926,18 +5939,28 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
           "after_char": 43,
           "types": [
             "source_line_break"
+          ],
+          "dimensions": [
+            "content_structure"
           ]
         },
         {
           "after_char": 49,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -4945,6 +5968,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         }
       ],
@@ -5009,6 +6036,9 @@
           "after_char": 3,
           "types": [
             "source_line_break"
+          ],
+          "dimensions": [
+            "content_structure"
           ]
         },
         {
@@ -5016,6 +6046,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -5023,6 +6057,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -5030,6 +6068,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         }
       ],
@@ -5103,12 +6145,18 @@
           "after_char": 3,
           "types": [
             "source_line_break"
+          ],
+          "dimensions": [
+            "content_structure"
           ]
         },
         {
           "after_char": 11,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -5116,6 +6164,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -5123,6 +6175,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -5130,6 +6186,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         }
       ],
@@ -5401,12 +6461,18 @@
           "after_char": 3,
           "types": [
             "source_line_break"
+          ],
+          "dimensions": [
+            "content_structure"
           ]
         },
         {
           "after_char": 5,
           "types": [
             "source_line_break"
+          ],
+          "dimensions": [
+            "content_structure"
           ]
         },
         {
@@ -5415,6 +6481,10 @@
             "terminal_punctuation",
             "source_line_break",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
@@ -5422,18 +6492,28 @@
           "types": [
             "terminal_punctuation",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 129,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 170,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -5441,6 +6521,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break",
+            "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
             "speaker_turn"
           ]
         },
@@ -5450,12 +6534,19 @@
             "terminal_punctuation",
             "source_line_break",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 241,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -5464,12 +6555,19 @@
             "terminal_punctuation",
             "source_line_break",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 254,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -5478,12 +6576,19 @@
             "terminal_punctuation",
             "source_line_break",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 295,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -5491,6 +6596,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break",
+            "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
             "speaker_turn"
           ]
         },
@@ -5500,6 +6609,10 @@
             "terminal_punctuation",
             "source_line_break",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
@@ -5507,6 +6620,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break",
+            "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
             "speaker_turn"
           ]
         },
@@ -5516,6 +6633,10 @@
             "terminal_punctuation",
             "source_line_break",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
@@ -5523,6 +6644,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break",
+            "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
             "speaker_turn"
           ]
         },
@@ -5532,12 +6657,19 @@
             "terminal_punctuation",
             "source_line_break",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 477,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -5546,12 +6678,19 @@
             "terminal_punctuation",
             "source_line_break",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 553,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -5559,6 +6698,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -5566,6 +6709,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -5573,6 +6720,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -5580,6 +6731,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         },
         {
@@ -5587,6 +6742,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         }
       ],
@@ -5813,6 +6972,9 @@
           "after_char": 2,
           "types": [
             "source_line_break"
+          ],
+          "dimensions": [
+            "content_structure"
           ]
         },
         {
@@ -5821,48 +6983,73 @@
             "terminal_punctuation",
             "source_line_break",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 48,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 82,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 112,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 139,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 154,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 196,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 231,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -5871,18 +7058,28 @@
             "terminal_punctuation",
             "source_line_break",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 274,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
           "after_char": 301,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -5890,6 +7087,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break",
+            "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
             "speaker_turn"
           ]
         },
@@ -5899,6 +7100,10 @@
             "terminal_punctuation",
             "source_line_break",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
@@ -5907,12 +7112,19 @@
             "terminal_punctuation",
             "source_line_break",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 354,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -5921,12 +7133,19 @@
             "terminal_punctuation",
             "source_line_break",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 370,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -5935,12 +7154,19 @@
             "terminal_punctuation",
             "source_line_break",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
           "after_char": 421,
           "types": [
             "terminal_punctuation"
+          ],
+          "dimensions": [
+            "language_sentence"
           ]
         },
         {
@@ -5949,6 +7175,10 @@
             "terminal_punctuation",
             "source_line_break",
             "speaker_turn"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "speaker_turn"
           ]
         },
         {
@@ -5956,6 +7186,10 @@
           "types": [
             "terminal_punctuation",
             "source_line_break"
+          ],
+          "dimensions": [
+            "language_sentence",
+            "content_structure"
           ]
         }
       ],

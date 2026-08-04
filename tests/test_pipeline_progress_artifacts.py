@@ -107,6 +107,22 @@ def test_stage_artifact_store_uses_ordered_stage_filenames(tmp_path: Path) -> No
     assert store.stage_path(source_path, "subtitle-writer").name == "11_write.json"
 
 
+def test_stage_artifact_store_supports_unicode_source_names(tmp_path: Path) -> None:
+    store = StageArtifactStore(root_directory=tmp_path, run_name="run-001")
+
+    assert store.audio_directory(Path("日本高温中心西移.mp4")).name == "日本高温中心西移"
+
+
+def test_stage_artifact_store_falls_back_for_symbol_only_source_names(
+    tmp_path: Path,
+) -> None:
+    store = StageArtifactStore(root_directory=tmp_path, run_name="run-001")
+
+    directory_name = store.audio_directory(Path("【】.mp4")).name
+
+    assert directory_name.startswith("source_path-")
+
+
 def test_console_progress_reporter_formats_stage_progress() -> None:
     output = StringIO()
     reporter = ConsoleProgressReporter(output=output)

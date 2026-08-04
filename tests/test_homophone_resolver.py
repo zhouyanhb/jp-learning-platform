@@ -27,6 +27,7 @@ from jp_learning_platform.workflow import (
 
 _NOUN_POS = ("名詞", "普通名詞", "サ変可能", "*", "*", "*")
 _GENERAL_NOUN_POS = ("名詞", "普通名詞", "一般", "*", "*", "*")
+_PERSON_NAME_POS = ("名詞", "固有名詞", "人名", "姓", "*", "*")
 
 
 @dataclass(slots=True)
@@ -271,6 +272,90 @@ def test_document_confirmation_rejects_conflicting_mappings() -> None:
     )
 
     assert "回答" not in confirmed
+
+
+def test_document_confirmation_requires_a_strong_seed_ratio() -> None:
+    weak = HomophoneResolutionDecision(
+        segment_position=0,
+        sentence_index=0,
+        original_text="回答",
+        selected_text="解答",
+        reading="かいとう",
+        accepted=True,
+        reason="accepted_same_reading_context",
+        original_score=0.01,
+        selected_score=0.5,
+        candidates=(HomophoneCandidateScore("解答", "かいとう", 0.5),),
+        target_start=0,
+        target_end=2,
+        score_ratio=50.0,
+    )
+
+    confirmed = _unambiguous_confirmed_replacements(
+        (weak,),
+        min_score_ratio=200.0,
+    )
+
+    assert confirmed == {}
+
+
+def test_homophone_resolver_never_rewrites_person_name_without_external_evidence() -> None:
+    text = "小野さんと話します"
+    analyzer = FakeAnalyzer(
+        tokens={text: (("小野", "おの", _PERSON_NAME_POS),)},
+        single_tokens={"尾野": ("おの", _PERSON_NAME_POS)},
+    )
+    generator = FakeCandidateGenerator(
+        candidates={
+            "小野": (HomophoneLanguageModelCandidate("尾野", 0.9),),
+        },
+        scores={"小野": 0.000001, "尾野": 0.9},
+    )
+    word = Word("小野", TimeRange(0.0, 0.5), confidence=0.5)
+    segment = Segment(
+        position=0,
+        text=text,
+        time_range=TimeRange(0.0, 1.0),
+        sentences=(Sentence(text, TimeRange(0.0, 1.0), words=(word,)),),
+    )
+
+    result = BertHomophoneResolver(
+        candidate_generator=generator,
+        analyzer=analyzer,
+    ).resolve(_request(segment))
+
+    assert result.segments[0].text == text
+    assert not result.decisions[0].accepted
+    assert result.decisions[0].reason == "person_name_requires_external_evidence"
+
+
+def test_person_name_pos_does_not_block_a_place_name_component() -> None:
+    text = "終点は川口湖です"
+    analyzer = FakeAnalyzer(
+        tokens={text: (("川口", "かわぐち", _PERSON_NAME_POS),)},
+        single_tokens={"河口": ("かわぐち", _PERSON_NAME_POS)},
+    )
+    generator = FakeCandidateGenerator(
+        candidates={
+            "川口": (HomophoneLanguageModelCandidate("河口", 0.9),),
+        },
+        scores={"川口": 0.000001, "河口": 0.9},
+    )
+    word = Word("川口", TimeRange(0.0, 0.5), confidence=0.5)
+    segment = Segment(
+        position=0,
+        text=text,
+        time_range=TimeRange(0.0, 1.0),
+        sentences=(Sentence(text, TimeRange(0.0, 1.0), words=(word,)),),
+    )
+
+    result = BertHomophoneResolver(
+        candidate_generator=generator,
+        analyzer=analyzer,
+    ).resolve(_request(segment))
+
+    assert result.segments[0].text == "終点は河口湖です"
+    assert result.decisions[0].accepted
 
 
 def test_document_confirmation_propagates_when_only_ratio_gate_failed() -> None:

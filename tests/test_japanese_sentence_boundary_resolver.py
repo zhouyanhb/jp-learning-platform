@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from jp_learning_platform.domain import Segment, Sentence, TimeRange, Word
 from jp_learning_platform.infrastructure import (
     JapaneseMorpheme,
@@ -11,6 +13,7 @@ from jp_learning_platform.infrastructure import (
 from jp_learning_platform.infrastructure.japanese_sentence_boundary_resolver import (
     _has_morpheme_boundary_at,
     _is_complete_clause,
+    _numbering_candidate,
     _is_valid_prefix_partition,
 )
 from jp_learning_platform.workflow import SentenceBoundaryResolutionRequest
@@ -243,6 +246,82 @@ def test_sentence_boundary_resolver_keeps_conditional_clause_with_following_main
         "音がよく聞こえないときは手を挙げてください",
     )
     assert result.decisions == ()
+
+
+def test_splits_complete_clause_restart_without_an_acoustic_pause() -> None:
+    words = (
+        _word("よろしくお願いします", 0.0, 1.0),
+        _word("午前の方には雑草を抜いていただきました", 1.0, 2.0),
+    )
+
+    result = JapaneseSentenceBoundaryResolver(
+        morphological_analyzer=SudachiMorphologicalAnalyzer()
+    ).resolve(
+        _request(
+            _segment(
+                words,
+                text=(
+                    "よろしくお願いします "
+                    "午前の方には雑草を抜いていただきました"
+                ),
+            )
+        )
+    )
+
+    assert tuple(sentence.text for sentence in result.segments[0].sentences) == (
+        "よろしくお願いします",
+        "午前の方には雑草を抜いていただきました",
+    )
+    assert result.decisions[0].reason == "asr_complete_clause_independent_start"
+
+
+def test_short_pause_restart_keeps_adnominal_dependency_together() -> None:
+    words = (
+        _word("昨日買った", 0.0, 1.0),
+        _word("本を読みます", 1.0, 2.0),
+    )
+
+    result = JapaneseSentenceBoundaryResolver(
+        morphological_analyzer=SudachiMorphologicalAnalyzer()
+    ).resolve(_request(_segment(words, text="昨日買った 本を読みます")))
+
+    assert tuple(sentence.text for sentence in result.segments[0].sentences) == (
+        "昨日買った 本を読みます",
+    )
+
+
+def test_speaker_turn_candidate_is_separate_from_sentence_boundary() -> None:
+    words = (
+        _word("映画を見た", 0.0, 1.0),
+        _word("後で感想を話します", 1.7, 2.5),
+    )
+
+    result = JapaneseSentenceBoundaryResolver(
+        morphological_analyzer=SudachiMorphologicalAnalyzer()
+    ).resolve(_request(_segment(words)))
+
+    assert len(result.segments[0].sentences) == 1
+    assert len(result.speaker_turn_candidates) == 1
+    assert result.speaker_turn_candidates[0].reason == "pause_supported_turn"
+    assert not result.speaker_turn_candidates[0].boundary_accepted
+
+
+def test_independent_response_turn_can_support_sentence_boundary() -> None:
+    words = (
+        _word("今日は行けなくて", 0.0, 1.0),
+        _word("そうですか", 1.0, 1.6),
+    )
+
+    result = JapaneseSentenceBoundaryResolver(
+        morphological_analyzer=SudachiMorphologicalAnalyzer()
+    ).resolve(_request(_segment(words)))
+
+    assert tuple(sentence.text for sentence in result.segments[0].sentences) == (
+        "今日は行けなくて",
+        "そうですか",
+    )
+    assert result.speaker_turn_candidates[0].reason == "independent_response_start"
+    assert result.speaker_turn_candidates[0].boundary_accepted
 
 
 def test_sentence_boundary_resolver_keeps_connection_expression_together() -> None:
@@ -627,6 +706,245 @@ def test_sentence_boundary_resolver_scores_cross_segment_auxiliary_chain() -> No
     assert result.segments[0].sentences[0].text == "思うんです"
 
 
+def test_high_confidence_cross_segment_merges_cover_general_continuations() -> None:
+    cases = (
+        (
+            "ホー",
+            "ムは踏切の向こうにありました",
+            3.7,
+            "cross_asr_word_fragment_reconstruction",
+        ),
+        (
+            "電車がだんだんゆっくりになっ",
+            "てなりました。",
+            3.3,
+            "cross_asr_word_fragment_reconstruction",
+        ),
+        (
+            "避難所が465カ所開設され",
+            "およそ1万人が避難しています",
+            0.5,
+            "cross_asr_syntactic_continuation",
+        ),
+        (
+            "震度7を観測した氷川町では",
+            "およそ17軒で家屋の倒壊が起きています",
+            0.6,
+            "cross_asr_syntactic_continuation",
+        ),
+        (
+            "通行止めが発生しているほか",
+            "国道や県道でも被害があります",
+            0.8,
+            "cross_asr_syntactic_continuation",
+        ),
+        (
+            "後で話したいと思いますでももしかしたら",
+            "この動画を見てすぐ気がついた人もいるかもしれません",
+            0.7,
+            "cross_asr_syntactic_continuation",
+        ),
+        (
+            "カメラが私を追って",
+            "こうレンズが動くようになっています",
+            0.4,
+            "cross_asr_syntactic_continuation",
+        ),
+        (
+            "やりたいんだけどできない理由を",
+            "いろいろ見つけてやらない人がいます",
+            0.3,
+            "cross_asr_syntactic_continuation",
+        ),
+        (
+            "すごくやりたいことができるって",
+            "とっても素敵なことだと思います",
+            0.5,
+            "cross_asr_syntactic_continuation",
+        ),
+        (
+            "今自分がやりたい",
+            "そしてそれができる環境なら",
+            0.6,
+            "cross_asr_syntactic_continuation",
+        ),
+        (
+            "やるべきだと思いますよ",
+            "っていう話をしています",
+            0.6,
+            "cross_asr_syntactic_continuation",
+        ),
+    )
+    analyzer = SudachiMorphologicalAnalyzer()
+    for left, right, gap_seconds, expected_reason in cases:
+        request = SentenceBoundaryResolutionRequest(
+            source_path=Path("input.mp3"),
+            working_directory=Path("work"),
+            run_id="run-001",
+            segments=(
+                _sentence_segment(0, left, 0.0, 1.0),
+                _sentence_segment(1, right, 1.0 + gap_seconds, 2.0 + gap_seconds),
+            ),
+        )
+
+        result = JapaneseSentenceBoundaryResolver(
+            morphological_analyzer=analyzer
+        ).resolve(request)
+
+        assert tuple(segment.text for segment in result.segments) == (f"{left}{right}",)
+        sentence = result.segments[0].sentences[0]
+        assert tuple(word.text for word in sentence.words) == (left, right)
+        assert sentence.asr_boundary_word_indexes == (1,)
+        assert len(result.cross_segment_merges) == 1
+        decision = result.cross_segment_merges[0]
+        assert decision.score >= 4
+        assert decision.reason == expected_reason
+        assert sum(item.score for item in decision.evidence) == decision.score
+
+
+def test_high_confidence_cross_segment_merge_keeps_uncertain_boundaries() -> None:
+    cases = (
+        ("説明を終えました。", "では、次に進みます"),
+        ("聞かれて", "はい"),
+        ("早退するので", "わかりました"),
+    )
+    analyzer = SudachiMorphologicalAnalyzer()
+    for left, right in cases:
+        request = SentenceBoundaryResolutionRequest(
+            source_path=Path("input.mp3"),
+            working_directory=Path("work"),
+            run_id="run-001",
+            segments=(
+                _sentence_segment(0, left, 0.0, 1.0),
+                _sentence_segment(1, right, 1.1, 2.0),
+            ),
+        )
+
+        result = JapaneseSentenceBoundaryResolver(
+            morphological_analyzer=analyzer
+        ).resolve(request)
+
+        assert tuple(segment.text for segment in result.segments) == (left, right)
+        assert not result.cross_segment_merges
+
+
+def test_high_confidence_merge_does_not_consume_complete_right_side_restarts() -> None:
+    right_words = (
+        _word("もうちょっとちゃんと説明書を", 1.1, 1.8),
+        _word("後で読みます", 1.8, 2.4),
+        _word("ごめんなさい", 2.6, 3.0),
+        _word("でそう留学したいけどした方がいいですか", 3.1, 4.5),
+    )
+    right = _segment(right_words)
+    right = Segment(
+        position=1,
+        text=right.text,
+        time_range=right.time_range,
+        sentences=right.sentences,
+    )
+    request = SentenceBoundaryResolutionRequest(
+        source_path=Path("input.mp3"),
+        working_directory=Path("work"),
+        run_id="run-001",
+        segments=(
+            _sentence_segment(
+                0,
+                "本当にこれ使い始めたばかりなので",
+                0.0,
+                1.0,
+            ),
+            right,
+        ),
+    )
+
+    result = JapaneseSentenceBoundaryResolver(
+        morphological_analyzer=SudachiMorphologicalAnalyzer()
+    ).resolve(request)
+
+    texts = tuple(
+        sentence.text
+        for segment in result.segments
+        for sentence in segment.sentences
+    )
+    assert texts[0] == (
+        "本当にこれ使い始めたばかりなので"
+        "もうちょっとちゃんと説明書を後で読みます"
+    )
+    assert "ごめんなさい" not in texts[0]
+    assert "でそう留学したいけどした方がいいですか" not in texts[0]
+    assert texts[1:] == (
+        "ごめんなさい",
+        "でそう留学したいけどした方がいいですか",
+    )
+    assert result.cross_segment_merges[0].right_text == (
+        "もうちょっとちゃんと説明書を後で読みます"
+    )
+
+
+def test_dependent_merge_preserves_character_aligned_short_response() -> None:
+    response = _segment(
+        (
+            _word("う", 1.43, 1.56),
+            _word("ん", 1.56, 1.58),
+        )
+    )
+    response = Segment(
+        position=1,
+        text=response.text,
+        time_range=response.time_range,
+        sentences=response.sentences,
+    )
+    request = SentenceBoundaryResolutionRequest(
+        source_path=Path("input.mp3"),
+        working_directory=Path("work"),
+        run_id="run-001",
+        segments=(
+            _sentence_segment(0, "食べてよ", 0.0, 1.0),
+            response,
+        ),
+    )
+
+    result = JapaneseSentenceBoundaryResolver(
+        morphological_analyzer=SudachiMorphologicalAnalyzer()
+    ).resolve(request)
+
+    assert tuple(segment.text for segment in result.segments) == (
+        "食べてよ",
+        "うん",
+    )
+    assert tuple(
+        sentence.text
+        for segment in result.segments
+        for sentence in segment.sentences
+    ) == ("食べてよ", "うん")
+
+
+def test_high_confidence_merge_repairs_adjacent_sentences_in_one_asr_segment() -> None:
+    first_word = _word("電車が", 0.0, 1.0)
+    second_word = _word("動き始めました", 1.0, 2.0)
+    segment = Segment(
+        position=0,
+        text="電車が動き始めました",
+        time_range=TimeRange(0.0, 2.0),
+        sentences=(
+            Sentence(first_word.text, first_word.time_range, words=(first_word,)),
+            Sentence(second_word.text, second_word.time_range, words=(second_word,)),
+        ),
+    )
+
+    result = JapaneseSentenceBoundaryResolver(
+        morphological_analyzer=SudachiMorphologicalAnalyzer()
+    ).resolve(_request(segment))
+
+    assert tuple(sentence.text for sentence in result.segments[0].sentences) == (
+        "電車が動き始めました",
+    )
+    assert len(result.cross_segment_merges) == 1
+    assert result.cross_segment_merges[0].evidence[0].name == (
+        "tight_subject_predicate"
+    )
+
+
 def test_sentence_boundary_resolver_moves_only_minimal_dependent_prefix() -> None:
     right_words = (
         _word("です", 1.05, 1.25),
@@ -998,6 +1316,55 @@ def test_cross_segment_adverbial_tail_looks_ahead_to_right_predicate() -> None:
     )
 
 
+def test_merges_nonfinal_particle_across_upstream_segments() -> None:
+    pairs = (
+        (
+            "曜日を日曜から土曜日のクラスに変更したいって",
+            "土曜も初級クラスは同じ先生が担当なんだけどね",
+        ),
+        (
+            "その間に皆さんには私と一緒に",
+            "そちらの倉庫から花の苗を運んでいただきます",
+        ),
+    )
+    for left, right in pairs:
+        request = SentenceBoundaryResolutionRequest(
+            source_path=Path("input.mp3"),
+            working_directory=Path("work"),
+            run_id="run-001",
+            segments=(
+                _sentence_segment(0, left, 0.0, 1.0),
+                _sentence_segment(1, right, 1.2, 2.0),
+            ),
+        )
+
+        result = JapaneseSentenceBoundaryResolver(
+            morphological_analyzer=SudachiMorphologicalAnalyzer()
+        ).resolve(request)
+
+        assert tuple(segment.text for segment in result.segments) == (left + right,)
+
+
+def test_nonfinal_particle_does_not_consume_independent_discourse_turn() -> None:
+    left = "それより値段もう少し高い設定でもよかったかも"
+    right = "でもお客さん喜んでくれてたよ"
+    request = SentenceBoundaryResolutionRequest(
+        source_path=Path("input.mp3"),
+        working_directory=Path("work"),
+        run_id="run-001",
+        segments=(
+            _sentence_segment(0, left, 0.0, 1.0),
+            _sentence_segment(1, right, 1.7, 2.5),
+        ),
+    )
+
+    result = JapaneseSentenceBoundaryResolver(
+        morphological_analyzer=SudachiMorphologicalAnalyzer()
+    ).resolve(request)
+
+    assert tuple(segment.text for segment in result.segments) == (left, right)
+
+
 def test_cross_segment_adverbial_form_joins_nonfinite_predicate() -> None:
     request = SentenceBoundaryResolutionRequest(
         source_path=Path("input.mp3"),
@@ -1103,6 +1470,140 @@ def test_local_numbering_region_ignores_ordinary_quantities() -> None:
     assert not result.decisions
 
 
+def test_local_numbering_region_reads_quantity_hosts_across_asr_words() -> None:
+    words = (
+        _word("参加者は", 0.0, 0.4),
+        _word("1", 0.4, 0.5),
+        _word("人", 0.5, 0.6),
+        _word("資料を", 0.6, 1.0),
+        _word("2", 1.0, 1.1),
+        _word("冊", 1.1, 1.2),
+        _word("読み", 1.2, 1.6),
+        _word("3", 1.6, 1.7),
+        _word("回", 1.7, 1.8),
+        _word("確認します", 1.8, 2.4),
+    )
+
+    result = JapaneseSentenceBoundaryResolver(
+        morphological_analyzer=SudachiMorphologicalAnalyzer()
+    ).resolve(_request(_segment(words)))
+
+    assert tuple(sentence.text for sentence in result.segments[0].sentences) == (
+        "参加者は1人資料を2冊読み3回確認します",
+    )
+    assert not result.decisions
+
+
+@pytest.mark.parametrize(
+    ("number", "unit"),
+    (("1", "人"), ("2", "人"), ("3", "冊"), ("4", "回"), ("5", "番"), ("10", "代")),
+)
+def test_numbering_candidate_recognizes_generic_quantity_units(
+    number: str,
+    unit: str,
+) -> None:
+    words = (
+        _word(number, 0.0, 0.1),
+        _word(unit, 0.1, 0.2),
+        _word("です", 0.2, 0.5),
+    )
+
+    candidate = _numbering_candidate(
+        words,
+        0,
+        words[0],
+        SudachiMorphologicalAnalyzer(),
+    )
+
+    assert candidate is not None
+    assert candidate.has_lexical_host
+
+
+def test_numbering_candidate_preserves_asr_boundary_before_option_body() -> None:
+    words = (
+        _word("4", 0.0, 0.1),
+        _word("次", 0.1, 0.2),
+        _word("回の応募方法", 0.2, 0.8),
+    )
+    analyzer = SudachiMorphologicalAnalyzer()
+
+    option_number = _numbering_candidate(
+        words,
+        0,
+        words[0],
+        analyzer,
+        frozenset({1}),
+    )
+    ordinal_number = _numbering_candidate(words, 0, words[0], analyzer)
+
+    assert option_number is not None
+    assert not option_number.has_lexical_host
+    assert ordinal_number is not None
+    assert ordinal_number.has_lexical_host
+
+
+def test_cross_sentence_number_and_counter_are_restored_as_ordinary_quantity() -> None:
+    segments = (
+        _sentence_segment(0, "1最初の回答", 0.0, 0.8),
+        _sentence_segment(1, "2次の回答", 1.0, 1.8),
+        _sentence_segment(2, "3", 2.0, 2.1),
+        _sentence_segment(3, "番を選びます", 2.1, 2.8),
+    )
+    request = SentenceBoundaryResolutionRequest(
+        source_path=Path("input.mp3"),
+        working_directory=Path("work"),
+        run_id="run-001",
+        segments=segments,
+    )
+
+    result = JapaneseSentenceBoundaryResolver(
+        morphological_analyzer=SudachiMorphologicalAnalyzer()
+    ).resolve(request)
+
+    sentences = tuple(
+        sentence
+        for segment in result.segments
+        for sentence in segment.sentences
+    )
+    assert tuple(sentence.text for sentence in sentences) == (
+        "1最初の回答",
+        "2次の回答",
+        "3番を選びます",
+    )
+    assert any(
+        decision.reason == "cross_sentence_quantity_unit"
+        for decision in result.decisions
+    )
+    assert not any(
+        decision.reason == "cross_asr_numbering_body"
+        and decision.left_text == "3"
+        for decision in result.decisions
+    )
+
+
+def test_number_followed_by_particle_remains_a_structure_candidate() -> None:
+    words = (
+        _word("選んでください", 0.0, 0.8),
+        _word("1", 1.0, 1.1),
+        _word("を選ぶ", 1.1, 1.8),
+        _word("2", 2.0, 2.1),
+        _word("に変える", 2.1, 2.8),
+        _word("3", 3.0, 3.1),
+        _word("で進める", 3.1, 3.8),
+    )
+
+    result = JapaneseSentenceBoundaryResolver(
+        morphological_analyzer=SudachiMorphologicalAnalyzer()
+    ).resolve(_request(_segment(words)))
+
+    assert tuple(sentence.text for sentence in result.segments[0].sentences) == (
+        "選んでください",
+        "1を選ぶ",
+        "2に変える",
+        "3で進める",
+    )
+
+
 def test_local_numbering_region_requires_multiple_incrementing_items() -> None:
     words = (
         _word("案", 0.0, 0.3),
@@ -1177,6 +1678,87 @@ def test_numbering_sequence_attaches_body_from_next_asr_segment() -> None:
     assert any(
         decision.reason == "cross_asr_numbering_body"
         for decision in result.decisions
+    )
+
+
+def test_confirmed_numbering_sequence_retroactively_attaches_earlier_bodies() -> None:
+    segments = (
+        _sentence_segment(0, "1", 0.0, 0.1),
+        _sentence_segment(1, "最初の案です", 0.2, 0.9),
+        _sentence_segment(2, "2", 1.0, 1.1),
+        _sentence_segment(3, "別の案です", 1.2, 1.9),
+        _sentence_segment(4, "3最後の案です", 2.0, 2.9),
+    )
+    request = SentenceBoundaryResolutionRequest(
+        source_path=Path("input.mp3"),
+        working_directory=Path("work"),
+        run_id="run-001",
+        segments=segments,
+    )
+
+    result = JapaneseSentenceBoundaryResolver(
+        morphological_analyzer=SudachiMorphologicalAnalyzer()
+    ).resolve(request)
+
+    sentences = tuple(
+        sentence
+        for segment in result.segments
+        for sentence in segment.sentences
+    )
+    assert tuple(sentence.text for sentence in sentences) == (
+        "1最初の案です",
+        "2別の案です",
+        "3最後の案です",
+    )
+    assert sentences[0].asr_boundary_word_indexes == (1,)
+    assert sentences[1].asr_boundary_word_indexes == (1,)
+    assert any(
+        decision.reason == "cross_asr_numbering_body"
+        for decision in result.decisions
+    )
+
+
+def test_confirmed_sequence_moves_embedded_expected_numbers_to_next_body() -> None:
+    embedded_three = _segment(
+        (
+            _word("中央の案です", 1.2, 1.9),
+            _word("3", 2.0, 2.1),
+        )
+    )
+    embedded_four = _segment(
+        (
+            _word("最後の案です", 2.2, 2.9),
+            _word("4", 3.0, 3.1),
+        )
+    )
+    segments = (
+        _sentence_segment(0, "1", 0.0, 0.1),
+        _sentence_segment(1, "最初の案です", 0.2, 0.8),
+        _sentence_segment(2, "2", 1.0, 1.1),
+        Segment(3, embedded_three.text, embedded_three.time_range, embedded_three.sentences),
+        Segment(4, embedded_four.text, embedded_four.time_range, embedded_four.sentences),
+        _sentence_segment(5, "四つ目の案です", 3.2, 3.9),
+    )
+    request = SentenceBoundaryResolutionRequest(
+        source_path=Path("input.mp3"),
+        working_directory=Path("work"),
+        run_id="run-001",
+        segments=segments,
+    )
+
+    result = JapaneseSentenceBoundaryResolver(
+        morphological_analyzer=SudachiMorphologicalAnalyzer()
+    ).resolve(request)
+
+    assert tuple(
+        sentence.text
+        for segment in result.segments
+        for sentence in segment.sentences
+    ) == (
+        "1最初の案です",
+        "2中央の案です",
+        "3最後の案です",
+        "4四つ目の案です",
     )
 
 

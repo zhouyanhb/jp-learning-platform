@@ -29,6 +29,13 @@ class WhisperTranscriptionConfig:
     retry_context_confidence_threshold: float = 0.85
     retry_min_confidence_improvement: float = 0.05
     retry_max_segments: int = 12
+    retry_internal_word_gap_seconds: float = 1.0
+    retry_internal_gap_edge_confidence: float = 0.65
+    retry_minimum_gap_reduction_ratio: float = 0.5
+    retry_minimum_text_similarity: float = 0.75
+    retry_minimum_original_character_coverage: float = 0.8
+    retry_max_language_model_regression: float = 0.05
+    retry_max_confidence_regression: float = 0.02
 
 
 @dataclass(frozen=True, slots=True)
@@ -101,6 +108,9 @@ class SentenceBoundaryConfig:
     max_continuation_candidate_gap_seconds: float = 0.5
     max_syntactic_dependency_gap_seconds: float = 1.0
     continuation_score_threshold: int = 4
+    cross_segment_merge_score_threshold: int = 4
+    max_cross_segment_grammar_gap_seconds: float = 1.0
+    max_cross_segment_fragment_gap_seconds: float = 4.0
     close_timing_evidence_score: int = 1
     dependent_prefix_evidence_score: int = 3
     functional_continuation_evidence_score: int = 2

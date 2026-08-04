@@ -303,6 +303,7 @@ def _learning_word_payload(value: LearningWord) -> Mapping[str, object]:
         "aligned_word_indexes": list(value.aligned_word_indexes),
         "time_range": _time_range_payload(value.time_range),
         "timing_estimated": value.timing_estimated,
+        "is_structure": value.is_structure,
     }
 
 
@@ -316,6 +317,7 @@ def _learning_word_from_payload(value: Mapping[str, object]) -> LearningWord:
         ),
         time_range=_time_range_from_payload(value["time_range"]),
         timing_estimated=bool(value.get("timing_estimated", False)),
+        is_structure=bool(value.get("is_structure", False)),
     )
 
 

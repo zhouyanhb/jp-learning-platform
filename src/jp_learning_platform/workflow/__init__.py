@@ -51,6 +51,8 @@ from jp_learning_platform.workflow.readability_optimizer_stage import (
     ReadabilityOptimizerStageError,
 )
 from jp_learning_platform.workflow.sentence_boundary_stage import (
+    CrossSegmentMergeDecision,
+    CrossSegmentMergeEvidence,
     InvalidSentenceBoundaryResolutionError,
     InvalidSentenceBoundaryResolverError,
     MissingSentenceBoundarySegmentsError,
@@ -61,6 +63,7 @@ from jp_learning_platform.workflow.sentence_boundary_stage import (
     SentenceBoundaryResolutionStage,
     SentenceBoundaryResolver,
     SentenceBoundaryStageError,
+    SpeakerTurnCandidate,
 )
 from jp_learning_platform.workflow.punctuation_attribution_stage import (
     PUNCTUATION_ATTRIBUTION_STAGE_NAME,
@@ -151,6 +154,7 @@ from jp_learning_platform.workflow.whisper_stage import (
     WhisperStage,
     WhisperStageError,
     WhisperTranscriber,
+    WhisperRetryDecision,
     WhisperTranscript,
     WhisperTranscriptionRequest,
 )
@@ -167,6 +171,8 @@ from jp_learning_platform.workflow.whisperx_alignment_stage import (
 )
 
 __all__ = [
+    "CrossSegmentMergeDecision",
+    "CrossSegmentMergeEvidence",
     "ExecutionEngine",
     "DuplicateSubtitleOutputError",
     "DEFAULT_SUBTITLE_OUTPUT_EXTENSION",
@@ -246,6 +252,7 @@ __all__ = [
     "SentenceBoundaryResolutionStage",
     "SentenceBoundaryResolver",
     "SentenceBoundaryStageError",
+    "SpeakerTurnCandidate",
     "Stage",
     "StageArtifactRecord",
     "StageArtifactRecorder",
@@ -289,6 +296,7 @@ __all__ = [
     "WhisperStage",
     "WhisperStageError",
     "WhisperTranscriber",
+    "WhisperRetryDecision",
     "WhisperTranscript",
     "WhisperTranscriptionRequest",
     "WhisperXAligner",

@@ -17,6 +17,7 @@ from jp_learning_platform.workflow import (
     InvalidWhisperTranscriptError,
     StageResult,
     WhisperStage,
+    WhisperRetryDecision,
     WhisperTranscript,
     WhisperTranscriptionRequest,
 )
@@ -77,6 +78,39 @@ def test_whisper_stage_transcribes_document_source(tmp_path: Path) -> None:
     assert result.context.document.segments == (segment,)
     assert result.context.run_id == "run-001"
     assert result.context.working_directory == tmp_path / "work"
+    assert result.data == {"retry_decisions": ()}
+
+
+def test_whisper_stage_exposes_retry_decisions_as_audit_data(tmp_path: Path) -> None:
+    source_path = tmp_path / "input.wav"
+    decision = WhisperRetryDecision(
+        time_range=TimeRange(1.0, 2.0),
+        accepted=False,
+        reasons=("low_original_character_coverage",),
+        original_text="元の文",
+        candidate_text="候補",
+        original_confidence=0.6,
+        candidate_confidence=0.7,
+        text_similarity=0.5,
+        original_character_coverage=0.5,
+        original_language_model_score=-0.2,
+        candidate_language_model_score=-0.3,
+        original_grammar_penalty=0,
+        candidate_grammar_penalty=0,
+        deletes_content_or_particle=True,
+    )
+    transcriber = FakeTranscriber(
+        transcript=WhisperTranscript(
+            source_path=source_path,
+            segments=(_segment(),),
+            retry_decisions=(decision,),
+        ),
+        requests=[],
+    )
+
+    result = WhisperStage(transcriber=transcriber).run(_context(source_path))
+
+    assert result.data == {"retry_decisions": (decision,)}
 
 
 def test_whisper_stage_preserves_existing_subtitles(tmp_path: Path) -> None:

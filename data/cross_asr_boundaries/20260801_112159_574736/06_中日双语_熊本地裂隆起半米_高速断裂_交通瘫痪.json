@@ -1,0 +1,356 @@
+{
+  "schema_version": 1,
+  "source_artifact": "output/.work/20260801_112159_574736/中日双语_熊本地裂隆起半米_高速断裂_交通瘫痪/05_sentence_boundary_resolution.json",
+  "prediction_artifact": "output/evaluations/cross_asr_20260801/06_中日双语_熊本地裂隆起半米_高速断裂_交通瘫痪.json",
+  "source_path": "input/source/【中日双语】熊本地裂隆起半米，高速断裂，交通瘫痪.mp4",
+  "settings": {
+    "max_gap_seconds": 4.0
+  },
+  "labels": {
+    "merge": "Both sides belong to one language sentence.",
+    "keep": "The boundary must remain between language sentences.",
+    "uncertain": "Human review cannot confidently choose merge or keep."
+  },
+  "samples": [
+    {
+      "id": "cross-asr-0001-50f084be",
+      "origin": "segment_boundary",
+      "segment_index": 1,
+      "sentence_index": 0,
+      "left_end_seconds": 6.39,
+      "right_start_seconds": 9.922,
+      "gap_seconds": 3.532000000000001,
+      "left_context": "熊本県八代市では、地面が隆起しているのが確認されるなど、被害の状況が見えてきました。",
+      "right_context": "八代市の八代インターチェンジ付近の映像です。",
+      "predicted_label": "keep",
+      "prediction": null,
+      "gold_label": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "cross-asr-0002-59bbc970",
+      "origin": "segment_boundary",
+      "segment_index": 2,
+      "sentence_index": 0,
+      "left_end_seconds": 12.76,
+      "right_start_seconds": 13.91,
+      "gap_seconds": 1.1500000000000004,
+      "left_context": "八代市の八代インターチェンジ付近の映像です。",
+      "right_context": "畑の地面が50センチから60センチほどの段差で隆起しているのが確認できます。",
+      "predicted_label": "keep",
+      "prediction": null,
+      "gold_label": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "cross-asr-0003-ced0f6ad",
+      "origin": "segment_boundary",
+      "segment_index": 3,
+      "sentence_index": 0,
+      "left_end_seconds": 19.11,
+      "right_start_seconds": 20.621,
+      "gap_seconds": 1.5109999999999992,
+      "left_context": "畑の地面が50センチから60センチほどの段差で隆起しているのが確認できます。",
+      "right_context": "この地面が隆起した状況は、畑からかなり先の方まで続いて、",
+      "predicted_label": "keep",
+      "prediction": null,
+      "gold_label": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "cross-asr-0004-3bf49479",
+      "origin": "segment_boundary",
+      "segment_index": 4,
+      "sentence_index": 0,
+      "left_end_seconds": 25.04,
+      "right_start_seconds": 25.92,
+      "gap_seconds": 0.8800000000000026,
+      "left_context": "この地面が隆起した状況は、畑からかなり先の方まで続いて、",
+      "right_context": "先では高速道路の橋桁が外れている状況も確認できます。",
+      "predicted_label": "keep",
+      "prediction": null,
+      "gold_label": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "cross-asr-0005-eae3ae5e",
+      "origin": "segment_boundary",
+      "segment_index": 5,
+      "sentence_index": 0,
+      "left_end_seconds": 29.94,
+      "right_start_seconds": 31.84,
+      "gap_seconds": 1.8999999999999986,
+      "left_context": "先では高速道路の橋桁が外れている状況も確認できます。",
+      "right_context": "震度7の地震を観測して以降、きょう午前9時までに熊本市などで震度1以上の地震を168回観測しています",
+      "predicted_label": "keep",
+      "prediction": null,
+      "gold_label": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "cross-asr-0006-ef22adaa",
+      "origin": "segment_boundary",
+      "segment_index": 6,
+      "sentence_index": 0,
+      "left_end_seconds": 41.4,
+      "right_start_seconds": 42.124,
+      "gap_seconds": 0.7240000000000038,
+      "left_context": "震度7の地震を観測して以降、きょう午前9時までに熊本市などで震度1以上の地震を168回観測しています",
+      "right_context": "歩道とみられます",
+      "predicted_label": "keep",
+      "prediction": null,
+      "gold_label": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "cross-asr-0007-5495bcc0",
+      "origin": "segment_boundary",
+      "segment_index": 7,
+      "sentence_index": 0,
+      "left_end_seconds": 43.0,
+      "right_start_seconds": 43.461,
+      "gap_seconds": 0.4609999999999985,
+      "left_context": "歩道とみられます",
+      "right_context": "この橋がですね、途中から割れるような形で川の中にも落ちてしまっています",
+      "predicted_label": "keep",
+      "prediction": null,
+      "gold_label": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "cross-asr-0008-18e323a0",
+      "origin": "segment_boundary",
+      "segment_index": 8,
+      "sentence_index": 0,
+      "left_end_seconds": 51.47,
+      "right_start_seconds": 53.821,
+      "gap_seconds": 2.350999999999999,
+      "left_context": "この橋がですね、途中から割れるような形で川の中にも落ちてしまっています",
+      "right_context": "国土交通省によりますと、高速道路は九州道など3路線で通行止めが発生しているほか",
+      "predicted_label": "keep",
+      "prediction": null,
+      "gold_label": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "cross-asr-0009-009b6a1f",
+      "origin": "segment_boundary",
+      "segment_index": 9,
+      "sentence_index": 0,
+      "left_end_seconds": 59.88,
+      "right_start_seconds": 60.721,
+      "gap_seconds": 0.840999999999994,
+      "left_context": "国土交通省によりますと、高速道路は九州道など3路線で通行止めが発生しているほか",
+      "right_context": "国道や県道でも橋の損傷などにより通行止めとなっています",
+      "predicted_label": "merge",
+      "prediction": {
+        "score": 4,
+        "reason": "cross_asr_syntactic_continuation",
+        "evidence": [
+          {
+            "name": "dependent_formal_noun",
+            "score": 4
+          }
+        ]
+      },
+      "gold_label": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "cross-asr-0010-1b33ad57",
+      "origin": "segment_boundary",
+      "segment_index": 11,
+      "sentence_index": 0,
+      "left_end_seconds": 69.499,
+      "right_start_seconds": 71.662,
+      "gap_seconds": 2.163000000000011,
+      "left_context": "住宅の2階部分が大きく崩れ落ちています",
+      "right_context": "家屋の倒壊も各地で相次いでいます",
+      "predicted_label": "keep",
+      "prediction": null,
+      "gold_label": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "cross-asr-0011-ba1a3331",
+      "origin": "segment_boundary",
+      "segment_index": 12,
+      "sentence_index": 0,
+      "left_end_seconds": 73.639,
+      "right_start_seconds": 74.602,
+      "gap_seconds": 0.9630000000000081,
+      "left_context": "家屋の倒壊も各地で相次いでいます",
+      "right_context": "震度7を観測した氷川町では",
+      "predicted_label": "keep",
+      "prediction": null,
+      "gold_label": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "cross-asr-0012-6f930d56",
+      "origin": "segment_boundary",
+      "segment_index": 13,
+      "sentence_index": 0,
+      "left_end_seconds": 76.6,
+      "right_start_seconds": 77.184,
+      "gap_seconds": 0.5840000000000032,
+      "left_context": "震度7を観測した氷川町では",
+      "right_context": "およそ17県で家屋の倒壊が起きていて、けが人がいる情報もあります",
+      "predicted_label": "merge",
+      "prediction": {
+        "score": 4,
+        "reason": "cross_asr_syntactic_continuation",
+        "evidence": [
+          {
+            "name": "incomplete_topic_location",
+            "score": 4
+          }
+        ]
+      },
+      "gold_label": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "cross-asr-0013-93b9a9a7",
+      "origin": "asr_token_boundary",
+      "segment_index": 13,
+      "sentence_index": 0,
+      "left_end_seconds": 79.639,
+      "right_start_seconds": 80.205,
+      "gap_seconds": 0.5660000000000025,
+      "left_context": "て、",
+      "right_context": "け",
+      "predicted_label": "keep",
+      "prediction": null,
+      "gold_label": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "cross-asr-0014-a1c6a35c",
+      "origin": "segment_boundary",
+      "segment_index": 14,
+      "sentence_index": 0,
+      "left_end_seconds": 81.62,
+      "right_start_seconds": 83.231,
+      "gap_seconds": 1.61099999999999,
+      "left_context": "およそ17県で家屋の倒壊が起きていて、けが人がいる情報もあります",
+      "right_context": "厳しい暑さの中での避難となっていて、八代市に開設された避難所では体育館で休む様子が見られました",
+      "predicted_label": "keep",
+      "prediction": null,
+      "gold_label": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "cross-asr-0015-042754b9",
+      "origin": "asr_token_boundary",
+      "segment_index": 14,
+      "sentence_index": 0,
+      "left_end_seconds": 85.289,
+      "right_start_seconds": 86.012,
+      "gap_seconds": 0.722999999999999,
+      "left_context": "て、",
+      "right_context": "八",
+      "predicted_label": "keep",
+      "prediction": null,
+      "gold_label": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "cross-asr-0016-0e44ca2a",
+      "origin": "asr_token_boundary",
+      "segment_index": 14,
+      "sentence_index": 0,
+      "left_end_seconds": 88.15,
+      "right_start_seconds": 88.634,
+      "gap_seconds": 0.48399999999999466,
+      "left_context": "は",
+      "right_context": "体",
+      "predicted_label": "merge",
+      "prediction": {
+        "score": 4,
+        "reason": "cross_asr_syntactic_continuation",
+        "evidence": [
+          {
+            "name": "incomplete_topic_location",
+            "score": 4
+          }
+        ]
+      },
+      "gold_label": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "cross-asr-0017-fd17927b",
+      "origin": "segment_boundary",
+      "segment_index": 15,
+      "sentence_index": 0,
+      "left_end_seconds": 90.41,
+      "right_start_seconds": 91.801,
+      "gap_seconds": 1.3910000000000053,
+      "left_context": "厳しい暑さの中での避難となっていて、八代市に開設された避難所では体育館で休む様子が見られました",
+      "right_context": "熊本県内では避難所が465カ所開設され",
+      "predicted_label": "keep",
+      "prediction": null,
+      "gold_label": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "cross-asr-0018-5f9ef789",
+      "origin": "segment_boundary",
+      "segment_index": 16,
+      "sentence_index": 0,
+      "left_end_seconds": 95.56,
+      "right_start_seconds": 96.144,
+      "gap_seconds": 0.5840000000000032,
+      "left_context": "熊本県内では避難所が465カ所開設され",
+      "right_context": "およそ1万人が避難しています",
+      "predicted_label": "merge",
+      "prediction": {
+        "score": 4,
+        "reason": "cross_asr_syntactic_continuation",
+        "evidence": [
+          {
+            "name": "incomplete_predicate_chain",
+            "score": 4
+          }
+        ]
+      },
+      "gold_label": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "cross-asr-0019-7d468b8e",
+      "origin": "asr_token_boundary",
+      "segment_index": 17,
+      "sentence_index": 0,
+      "left_end_seconds": 109.189,
+      "right_start_seconds": 109.533,
+      "gap_seconds": 0.3440000000000083,
+      "left_context": "も",
+      "right_context": "一",
+      "predicted_label": "keep",
+      "prediction": null,
+      "gold_label": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    }
+  ]
+}

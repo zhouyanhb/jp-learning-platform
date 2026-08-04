@@ -60,10 +60,20 @@ def build_boundary_dataset(source_path: Path) -> dict[str, object]:
                 }
             )
             if not is_final:
+                next_unit = units[unit_index + 1]
+                next_role = roles[unit_index + 1]
                 boundaries.append(
                     {
                         "after_char": offset,
                         "types": list(unit.boundary_types),
+                        "dimensions": list(
+                            _boundary_dimensions(
+                                unit,
+                                role,
+                                next_unit,
+                                next_role,
+                            )
+                        ),
                     }
                 )
 
@@ -82,7 +92,7 @@ def build_boundary_dataset(source_path: Path) -> dict[str, object]:
         )
 
     return {
-        "schema_version": 2,
+        "schema_version": 3,
         "dataset_id": "jlpt-2021-12-n2-sentence-boundaries",
         "language": "ja",
         "annotation_status": "silver",
@@ -98,6 +108,11 @@ def build_boundary_dataset(source_path: Path) -> dict[str, object]:
             "speaker_turn",
             "source_line_break",
         ],
+        "boundary_dimensions": {
+            "language_sentence": "Boundary between linguistic sentences.",
+            "speaker_turn": "Observed source speaker-label transition.",
+            "content_structure": "Boundary between content roles or units.",
+        },
         "roles": {
             "instruction": "Spoken or written section and item directions.",
             "dialogue": "Listening-test body, including dialogue and monologue.",
@@ -256,6 +271,29 @@ def _line_kind(line: str) -> str:
     if _INSTRUCTION_LINE.match(normalized):
         return "instruction"
     return "content"
+
+
+def _boundary_dimensions(
+    unit: _AnnotatedUnit,
+    role: str,
+    next_unit: _AnnotatedUnit,
+    next_role: str,
+) -> tuple[str, ...]:
+    dimensions: list[str] = []
+    types = set(unit.boundary_types)
+    if types.intersection({"terminal_punctuation", "speaker_turn"}):
+        dimensions.append("language_sentence")
+    if "speaker_turn" in types:
+        dimensions.append("speaker_turn")
+    if (
+        role != next_role
+        or (
+            role in {"instruction", "option"}
+            and unit.source_line != next_unit.source_line
+        )
+    ):
+        dimensions.append("content_structure")
+    return tuple(dimensions)
 
 
 def _unit_roles(units: tuple[_AnnotatedUnit, ...]) -> tuple[str, ...]:

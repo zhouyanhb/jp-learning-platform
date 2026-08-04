@@ -1,4 +1,4 @@
-"""Assign standalone punctuation to its question sentence without changing words."""
+"""Assign standalone trailing punctuation to its preceding sentence."""
 
 from __future__ import annotations
 
@@ -17,9 +17,20 @@ class PunctuationAttributionDecision:
     segment_position: int
     sentence_index: int
     attributed_text: str
-    original_question_text: str
-    resulting_question_text: str
-    reason: str = "standalone_punctuation_after_question"
+    original_sentence_text: str
+    resulting_sentence_text: str
+    is_question: bool
+    reason: str = "standalone_trailing_punctuation"
+
+    @property
+    def original_question_text(self) -> str:
+        """Return the former field name for callers migrating old artifacts."""
+        return self.original_sentence_text
+
+    @property
+    def resulting_question_text(self) -> str:
+        """Return the former field name for callers migrating old artifacts."""
+        return self.resulting_sentence_text
 
 
 @dataclass(frozen=True, slots=True)
@@ -34,18 +45,20 @@ class PunctuationAttributionStage:
             for sentence_index, sentence in enumerate(segment.sentences):
                 if (
                     sentences
-                    and sentences[-1].is_question
-                    and _is_punctuation_only(sentence.text)
+                    and _is_trailing_punctuation_only(sentence.text)
                 ):
                     previous = sentences.pop()
                     merged = Sentence(
                         text=f"{previous.text}{sentence.text}",
                         time_range=TimeRange(
                             previous.time_range.start_seconds,
-                            sentence.time_range.end_seconds,
+                            max(
+                                previous.time_range.end_seconds,
+                                sentence.time_range.end_seconds,
+                            ),
                         ),
                         words=(*previous.words, *sentence.words),
-                        is_question=True,
+                        is_question=previous.is_question,
                         asr_boundary_word_indexes=(
                             *previous.asr_boundary_word_indexes,
                             len(previous.words),
@@ -61,8 +74,9 @@ class PunctuationAttributionStage:
                             segment_position=segment.position,
                             sentence_index=sentence_index,
                             attributed_text=sentence.text,
-                            original_question_text=previous.text,
-                            resulting_question_text=merged.text,
+                            original_sentence_text=previous.text,
+                            resulting_sentence_text=merged.text,
+                            is_question=previous.is_question,
                         )
                     )
                 else:
@@ -91,10 +105,15 @@ class PunctuationAttributionStage:
         )
 
 
-def _is_punctuation_only(text: str) -> bool:
+def _is_trailing_punctuation_only(text: str) -> bool:
     characters = tuple(character for character in text if not character.isspace())
-    return bool(characters) and all(
-        unicodedata.category(character).startswith("P") for character in characters
+    return (
+        bool(characters)
+        and all(
+            unicodedata.category(character).startswith("P")
+            for character in characters
+        )
+        and unicodedata.category(characters[0]) not in {"Ps", "Pi"}
     )
 
 

@@ -1,3 +1,4 @@
+import unicodedata
 from pathlib import Path
 
 import pytest
@@ -136,6 +137,44 @@ class _Analyzer:
                 JapaneseMorpheme("、", ("補助記号", "読点", "*")),
                 JapaneseMorpheme("確認", ("名詞", "普通名詞", "サ変可能")),
             ),
+            "ごめんなさい": (
+                JapaneseMorpheme("ごめん", ("名詞", "普通名詞", "一般")),
+                JapaneseMorpheme(
+                    "なさい",
+                    ("動詞", "非自立可能", "*"),
+                    dictionary_form="なさる",
+                    conjugation_form="命令形",
+                ),
+            ),
+            "お休みなさい": (
+                JapaneseMorpheme("お", ("接頭辞", "*", "*")),
+                JapaneseMorpheme(
+                    "休み",
+                    ("動詞", "一般", "*", "*", "五段-マ行", "連用形-一般"),
+                    dictionary_form="休む",
+                    conjugation_form="連用形-一般",
+                ),
+                JapaneseMorpheme(
+                    "なさい",
+                    ("動詞", "非自立可能", "*"),
+                    dictionary_form="なさる",
+                    conjugation_form="命令形",
+                ),
+            ),
+            "話しなさい": (
+                JapaneseMorpheme(
+                    "話し",
+                    ("動詞", "一般", "*", "*", "五段-サ行", "連用形-一般"),
+                    dictionary_form="話す",
+                    conjugation_form="連用形-一般",
+                ),
+                JapaneseMorpheme(
+                    "なさい",
+                    ("動詞", "非自立可能", "*"),
+                    dictionary_form="なさる",
+                    conjugation_form="命令形",
+                ),
+            ),
         }
         if text in structural_fixtures:
             return structural_fixtures[text]
@@ -214,6 +253,9 @@ def _normalize(
         ("田中社長", ("田中", "社長"), ("田中社長",)),
         ("森先輩", ("森", "先輩"), ("森先輩",)),
         ("2,3冊", ("2", ",", "3", "冊"), ("2", "3冊")),
+        ("ごめんなさい", ("ごめん", "なさい"), ("ごめんなさい",)),
+        ("お休みなさい", ("お", "休み", "なさい"), ("お休みなさい",)),
+        ("話しなさい", ("話し", "なさい"), ("話しなさい",)),
     ],
 )
 def test_normalizes_learning_units_without_sentence_specific_replacements(
@@ -230,6 +272,171 @@ def test_learning_words_exclude_standalone_punctuation() -> None:
     _aligned_words, learning_words = _normalize("、確認", ("、確認",))
 
     assert tuple(word.text for word in learning_words) == ("確認",)
+
+
+@pytest.mark.parametrize("text", ("確認。", "内容、確認。"))
+def test_learning_words_never_include_punctuation(text: str) -> None:
+    words = (Word(text, TimeRange(0.0, 1.0), 0.9),)
+    sentence = Sentence(text, TimeRange(0.0, 1.0), words)
+    segment = Segment(0, text, sentence.time_range, (sentence,))
+
+    result = JapaneseLearningWordNormalizer(SudachiMorphologicalAnalyzer()).normalize(
+        WordNormalizationRequest(Path("audio.mp3"), (segment,))
+    )
+
+    learning_words = result.segments[0].sentences[0].learning_words
+    assert learning_words
+    assert all(
+        all(not unicodedata.category(character).startswith("P") for character in word.text)
+        for word in learning_words
+    )
+    assert learning_words[-1].end_char < len(text)
+
+
+def test_marks_incrementing_sentence_prefixes_as_structure() -> None:
+    texts = (
+        "1 ポイントと交換する品物を変える",
+        "2 テーマを変更する",
+        "3 見学会に参加する",
+    )
+    sentences = tuple(
+        Sentence(
+            text,
+            TimeRange(index, index + 1),
+            (Word(text, TimeRange(index, index + 1), 0.9),),
+        )
+        for index, text in enumerate(texts)
+    )
+    segment = Segment(0, " ".join(texts), TimeRange(0, 3), sentences)
+
+    result = JapaneseLearningWordNormalizer(SudachiMorphologicalAnalyzer()).normalize(
+        WordNormalizationRequest(Path("audio.mp3"), (segment,))
+    )
+
+    normalized = result.segments[0].sentences
+    assert tuple(word.text for word in normalized[0].learning_words[:2]) == (
+        "1",
+        "ポイント",
+    )
+    assert all(sentence.learning_words[0].is_structure for sentence in normalized)
+
+
+def test_marks_confirmed_cross_asr_number_prefixes_as_structure() -> None:
+    texts = ("1最初の案", "2次の案", "3最後の案")
+    sentences = tuple(
+        Sentence(
+            text,
+            TimeRange(index, index + 1),
+            (
+                Word(text[0], TimeRange(index, index + 0.1), 0.9),
+                Word(text[1:], TimeRange(index + 0.1, index + 1), 0.9),
+            ),
+            asr_boundary_word_indexes=(1,),
+        )
+        for index, text in enumerate(texts)
+    )
+    segment = Segment(0, "".join(texts), TimeRange(0, 3), sentences)
+
+    result = JapaneseLearningWordNormalizer(
+        SudachiMorphologicalAnalyzer()
+    ).normalize(WordNormalizationRequest(Path("audio.mp3"), (segment,)))
+
+    normalized = result.segments[0].sentences
+    assert all(sentence.learning_words[0].is_structure for sentence in normalized)
+    assert tuple(sentence.learning_words[0].text for sentence in normalized) == (
+        "1",
+        "2",
+        "3",
+    )
+
+
+def test_structure_sequence_allows_continuation_between_numbered_sentences() -> None:
+    texts = ("1最初の回答", "その補足です", "2次の回答", "3最後の回答")
+    sentences = tuple(
+        Sentence(
+            text,
+            TimeRange(index, index + 1),
+            (
+                Word(text[0], TimeRange(index, index + 0.1), 0.9),
+                Word(text[1:], TimeRange(index + 0.1, index + 1), 0.9),
+            ) if text[0].isdecimal() else (
+                Word(text, TimeRange(index, index + 1), 0.9),
+            ),
+            asr_boundary_word_indexes=(1,) if text[0].isdecimal() else (),
+        )
+        for index, text in enumerate(texts)
+    )
+    segment = Segment(0, "".join(texts), TimeRange(0, 4), sentences)
+
+    result = JapaneseLearningWordNormalizer(
+        SudachiMorphologicalAnalyzer()
+    ).normalize(WordNormalizationRequest(Path("audio.mp3"), (segment,)))
+
+    normalized = result.segments[0].sentences
+    numbered = tuple(sentence for sentence in normalized if sentence.text[0].isdecimal())
+    assert all(sentence.learning_words[0].is_structure for sentence in numbered)
+
+
+def test_local_reanalysis_prevents_contextual_prefix_overmerge() -> None:
+    text = "よしこういう時にさほんとこのカメラ便利"
+    sentence = Sentence(
+        text,
+        TimeRange(0.0, 1.0),
+        (Word(text, TimeRange(0.0, 1.0), 0.9),),
+    )
+    segment = Segment(0, text, sentence.time_range, (sentence,))
+    result = JapaneseLearningWordNormalizer(
+        SudachiMorphologicalAnalyzer()
+    ).normalize(WordNormalizationRequest(Path("audio.mp3"), (segment,)))
+    learning_words = result.segments[0].sentences[0].learning_words
+
+    assert "さほんと" not in tuple(word.text for word in learning_words)
+    assert "さ" in tuple(word.text for word in learning_words)
+    assert "ほんと" in tuple(word.text for word in learning_words)
+
+
+def test_local_reanalysis_accepts_combination_that_is_one_complete_word() -> None:
+    text = "お願いします"
+    sentence = Sentence(
+        text,
+        TimeRange(0.0, 1.0),
+        (Word(text, TimeRange(0.0, 1.0), 0.9),),
+    )
+    segment = Segment(0, text, sentence.time_range, (sentence,))
+
+    result = JapaneseLearningWordNormalizer(
+        SudachiMorphologicalAnalyzer()
+    ).normalize(WordNormalizationRequest(Path("audio.mp3"), (segment,)))
+
+    learning_words = result.segments[0].sentences[0].learning_words
+    assert tuple(word.text for word in learning_words) == ("お願いします",)
+
+
+@pytest.mark.parametrize("text", ("ご案内します", "お話しします"))
+def test_combines_prefixed_suru_verb_inflection_as_one_learning_word(
+    text: str,
+) -> None:
+    sentence = Sentence(
+        text,
+        TimeRange(0.0, 1.0),
+        (Word(text, TimeRange(0.0, 1.0), 0.9),),
+    )
+    segment = Segment(0, text, sentence.time_range, (sentence,))
+
+    result = JapaneseLearningWordNormalizer(
+        SudachiMorphologicalAnalyzer()
+    ).normalize(WordNormalizationRequest(Path("audio.mp3"), (segment,)))
+
+    assert tuple(
+        word.text for word in result.segments[0].sentences[0].learning_words
+    ) == (text,)
+
+
+def test_keeps_ordinary_number_counter_as_lexical_word() -> None:
+    _aligned_words, learning_words = _normalize("2番", ("2", "番"))
+
+    assert tuple(word.text for word in learning_words) == ("2番",)
+    assert not learning_words[0].is_structure
 
 
 def test_combines_non_independent_verb_auxiliary_stem_and_inflected_auxiliary() -> None:

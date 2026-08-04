@@ -1,0 +1,59 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "JP: 从 main 调试整个 source 文件夹",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "jp_learning_platform",
+      "args": [
+        "transcribe",
+        "input/source",
+        "--output-dir",
+        "output",
+        "--device",
+        "cpu",
+        "--compute-type",
+        "int8",
+        "--enable-homophone-resolver",
+        "--enable-word-normalization",
+        "--export-srt",
+        "--no-cache"
+      ],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "subProcess": true
+    },
+    {
+      "name": "JP: 从 main 调试富士急视频",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "jp_learning_platform",
+      "args": [
+        "transcribe",
+        "input/source/Riding the Fujikyu Railway ｜ Japanese Listening Practice [ev4Xcp57Vx0].webm",
+        "--output-dir",
+        "output",
+        "--device",
+        "cpu",
+        "--compute-type",
+        "int8",
+        "--enable-homophone-resolver",
+        "--enable-word-normalization",
+        "--export-srt",
+        "--no-cache"
+      ],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "subProcess": true
+    }
+  ]
+}

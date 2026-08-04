@@ -25,6 +25,26 @@ also records its source line, speaker and one of four roles: `instruction`,
 exam-item structure provide the initial labels. Structurally inconsistent
 items are marked `needs_review` for manual verification.
 
+Reference boundaries carry independent dimensions: `language_sentence`,
+`speaker_turn` and `content_structure`. The evaluator calculates sentence
+precision, recall and F1 only from `language_sentence`. Pure role, option and
+item boundaries are excluded from both language true positives and false
+positives until a structure-layer hypothesis exists. Speaker-turn and content
+structure dimensions remain explicit `reference_only` baselines.
+
+## Speaker-turn evidence
+
+The sentence-boundary stage records `speaker_turn_candidates` separately from
+accepted language-sentence `decisions`. A candidate is inferred from general
+Japanese conversational evidence such as an independent response, a
+question-answer transition, a morpheme boundary and timing. It does not assign
+or imply a `speaker_id`.
+
+`boundary_accepted` is true only when the surrounding text also supports two
+independent linguistic utterances. Filled pauses and same-speaker prefixes such
+as `うん、これから...` may remain turn candidates without creating a sentence
+boundary.
+
 ## Alignment-held silence
 
 Some forced aligners represent a pause by extending the preceding word until

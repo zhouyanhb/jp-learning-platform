@@ -20,6 +20,7 @@ from jp_learning_platform.infrastructure import (
     AuditableOverlapTextCleaner,
     AuditableRepeatedTextCleaner,
     CompositeSubtitleWriter,
+    ConservativeTranscriptAnomalyDetector,
     ConservativeSubtitleMerger,
     ConsoleProgressReporter,
     DEFAULT_HOMOPHONE_MODEL_ID,
@@ -61,6 +62,7 @@ _PIPELINE_STAGES = (
     "Homophone Resolution (optional)",
     "Auditable Overlap Text Cleanup",
     "Auditable Repeated Text Cleanup",
+    "Transcript Anomaly Analysis",
     "Sentence Boundary Resolution",
     "Punctuation Attribution",
     "Learning Word Normalization (optional)",
@@ -233,6 +235,7 @@ def _run_transcribe(args: Namespace, output: TextIO, error_output: TextIO) -> in
         repeated_text_cleaner=AuditableRepeatedTextCleaner(
             morphological_analyzer=morphological_analyzer
         ),
+        transcript_anomaly_detector=ConservativeTranscriptAnomalyDetector(),
         word_normalizer=_build_word_normalizer(args),
         sentence_boundary_resolver=JapaneseSentenceBoundaryResolver(
             morphological_analyzer=morphological_analyzer

@@ -6,6 +6,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, fields, is_dataclass
 from datetime import datetime, timezone
 from enum import Enum
+import hashlib
 import json
 from pathlib import Path
 import re
@@ -28,6 +29,7 @@ STAGE_ARTIFACT_FILENAMES: Mapping[str, str] = {
     "homophone-resolution": "04_homophone_resolution.json",
     "overlap-text-cleanup": "04a_overlap_text_cleanup.json",
     "repeated-text-cleanup": "04b_repeated_text_cleanup.json",
+    "transcript-anomaly-analysis": "04c_transcript_anomaly_analysis.json",
     "sentence-boundary-resolution": "05_sentence_boundary_resolution.json",
     "punctuation-attribution": "05a_punctuation_attribution.json",
     "word-normalization": "06_word_normalization.json",
@@ -39,7 +41,7 @@ STAGE_ARTIFACT_FILENAMES: Mapping[str, str] = {
     "subtitle-writer": "11_write.json",
 }
 
-_SAFE_FRAGMENT_PATTERN = re.compile(r"[^A-Za-z0-9_.-]+")
+_SAFE_FRAGMENT_PATTERN = re.compile(r"[^\w.-]+", flags=re.UNICODE)
 
 
 def _default_run_name() -> str:
@@ -54,10 +56,14 @@ def _safe_path_fragment(value: str, field_name: str) -> str:
     if not isinstance(value, str):
         raise TypeError(f"{field_name} must be a string.")
 
-    normalized = _SAFE_FRAGMENT_PATTERN.sub("_", value.strip())
+    stripped = value.strip()
+    normalized = _SAFE_FRAGMENT_PATTERN.sub("_", stripped)
     normalized = normalized.strip("._")
     if not normalized:
-        raise ValueError(f"{field_name} must not be empty.")
+        if not stripped:
+            raise ValueError(f"{field_name} must not be empty.")
+        digest = hashlib.sha256(stripped.encode("utf-8")).hexdigest()[:12]
+        normalized = f"{field_name}-{digest}"
 
     return normalized
 

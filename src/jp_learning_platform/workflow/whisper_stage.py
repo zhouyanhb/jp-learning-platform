@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol, TypeVar
 
-from jp_learning_platform.domain import Document, PipelineContext, Segment
+from jp_learning_platform.domain import Document, PipelineContext, Segment, TimeRange
 from jp_learning_platform.workflow.runtime import StageResult
 
 WHISPER_STAGE_NAME = "whisper"
@@ -62,11 +62,32 @@ class WhisperTranscriptionRequest:
 
 
 @dataclass(frozen=True, slots=True)
+class WhisperRetryDecision:
+    """Auditable acceptance decision for one bounded ASR retry candidate."""
+
+    time_range: TimeRange
+    accepted: bool
+    reasons: tuple[str, ...]
+    original_text: str
+    candidate_text: str
+    original_confidence: float | None
+    candidate_confidence: float | None
+    text_similarity: float
+    original_character_coverage: float
+    original_language_model_score: float | None
+    candidate_language_model_score: float | None
+    original_grammar_penalty: int
+    candidate_grammar_penalty: int
+    deletes_content_or_particle: bool
+
+
+@dataclass(frozen=True, slots=True)
 class WhisperTranscript:
     """Normalized Whisper transcription output."""
 
     source_path: Path
     segments: tuple[Segment, ...] = ()
+    retry_decisions: tuple[WhisperRetryDecision, ...] = ()
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "source_path", Path(self.source_path))
@@ -74,6 +95,15 @@ class WhisperTranscript:
             self,
             "segments",
             _tuple_of_type(self.segments, Segment, "segments"),
+        )
+        object.__setattr__(
+            self,
+            "retry_decisions",
+            _tuple_of_type(
+                self.retry_decisions,
+                WhisperRetryDecision,
+                "retry_decisions",
+            ),
         )
 
 
@@ -145,7 +175,11 @@ class WhisperStage:
             working_directory=context.working_directory,
         )
 
-        return StageResult(stage_name=self.name, context=next_context)
+        return StageResult(
+            stage_name=self.name,
+            context=next_context,
+            data={"retry_decisions": transcript.retry_decisions},
+        )
 
 
 __all__ = [
@@ -156,5 +190,6 @@ __all__ = [
     "WhisperStageError",
     "WhisperTranscriber",
     "WhisperTranscript",
+    "WhisperRetryDecision",
     "WhisperTranscriptionRequest",
 ]
