@@ -49,7 +49,12 @@ from jp_learning_platform.workflow.repeated_text_cleanup_stage import (
     RepeatedTextCleanupStage,
 )
 from jp_learning_platform.workflow.punctuation_attribution_stage import (
+    InternalPunctuationRestorer,
     PunctuationAttributionStage,
+)
+from jp_learning_platform.workflow.question_punctuation_candidate_stage import (
+    QuestionPunctuationCandidateDetector,
+    QuestionPunctuationCandidateStage,
 )
 from jp_learning_platform.workflow.subtitle_display_normalization_stage import (
     SubtitleDisplayNormalizationStage,
@@ -292,6 +297,10 @@ class SubtitlePipelineRunner:
     homophone_resolver: HomophoneResolver | None = None
     word_normalizer: WordNormalizer | None = None
     sentence_boundary_resolver: SentenceBoundaryResolver | None = None
+    punctuation_restorer: InternalPunctuationRestorer | None = None
+    question_punctuation_candidate_detector: (
+        QuestionPunctuationCandidateDetector | None
+    ) = None
     overlap_text_cleaner: OverlapTextCleaner | None = None
     repeated_text_cleaner: RepeatedTextCleaner | None = None
     transcript_anomaly_detector: TranscriptAnomalyDetector | None = None
@@ -826,7 +835,13 @@ class SubtitlePipelineRunner:
             stages.append(
                 SentenceBoundaryResolutionStage(self.sentence_boundary_resolver)
             )
-            stages.append(PunctuationAttributionStage())
+            stages.append(PunctuationAttributionStage(self.punctuation_restorer))
+            if self.question_punctuation_candidate_detector is not None:
+                stages.append(
+                    QuestionPunctuationCandidateStage(
+                        self.question_punctuation_candidate_detector
+                    )
+                )
 
         if self.word_normalizer is not None:
             stages.append(WordNormalizationStage(self.word_normalizer))

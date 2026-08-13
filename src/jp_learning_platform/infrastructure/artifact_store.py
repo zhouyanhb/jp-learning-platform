@@ -32,6 +32,7 @@ STAGE_ARTIFACT_FILENAMES: Mapping[str, str] = {
     "transcript-anomaly-analysis": "04c_transcript_anomaly_analysis.json",
     "sentence-boundary-resolution": "05_sentence_boundary_resolution.json",
     "punctuation-attribution": "05a_punctuation_attribution.json",
+    "question-punctuation-candidates": "05b_question_punctuation_candidates.json",
     "word-normalization": "06_word_normalization.json",
     "subtitle-builder": "07_build.json",
     "subtitle-display-normalization": "07a_subtitle_display_normalization.json",

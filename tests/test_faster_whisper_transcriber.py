@@ -6,6 +6,16 @@ from types import SimpleNamespace
 import pytest
 
 from jp_learning_platform.infrastructure import FasterWhisperTranscriber
+from jp_learning_platform.infrastructure.faster_whisper_transcriber import (
+    _extract_external_retry_between_anchors,
+    _extract_external_retry_window,
+    _has_ordered_text_anchors,
+    _instantiate_whisper_model,
+    _short_utterance_structure_penalty,
+)
+from jp_learning_platform.infrastructure.japanese_word_normalizer import (
+    SudachiMorphologicalAnalyzer,
+)
 from jp_learning_platform.infrastructure.transcript_anomaly_detector import (
     ConservativeTranscriptAnomalyDetector,
 )
@@ -28,6 +38,46 @@ class RecordingWhisperModel:
         self.source_path = source_path
         self.options = options
         return (), object()
+
+
+def test_whisper_model_loader_prefers_complete_local_cache() -> None:
+    calls: list[bool] = []
+
+    def model_class(model_name: str, **options: object) -> object:
+        assert model_name == "turbo"
+        calls.append(bool(options["local_files_only"]))
+        return object()
+
+    _instantiate_whisper_model(model_class, "turbo", device="auto")
+
+    assert calls == [True]
+
+
+def test_whisper_model_loader_downloads_only_when_local_snapshot_is_missing() -> None:
+    from huggingface_hub.errors import LocalEntryNotFoundError
+
+    calls: list[bool] = []
+
+    def model_class(model_name: str, **options: object) -> object:
+        del model_name
+        local_only = bool(options["local_files_only"])
+        calls.append(local_only)
+        if local_only:
+            raise LocalEntryNotFoundError("not cached")
+        return object()
+
+    _instantiate_whisper_model(model_class, "turbo", device="auto")
+
+    assert calls == [True, False]
+
+
+def test_whisper_model_loader_does_not_hide_invalid_local_model_error() -> None:
+    def model_class(model_name: str, **options: object) -> object:
+        del model_name, options
+        raise ValueError("invalid model")
+
+    with pytest.raises(ValueError, match="invalid model"):
+        _instantiate_whisper_model(model_class, "turbo", device="auto")
 
 
 def test_faster_whisper_transcriber_uses_centralized_default_options(
@@ -73,7 +123,8 @@ class RetryWhisperModel:
 
     def transcribe(self, source_path: str, **options: object) -> tuple[tuple[object, ...], object]:
         self.calls.append(options)
-        return self.responses.pop(0), object()
+        response = self.responses[0] if len(self.responses) == 1 else self.responses.pop(0)
+        return response, object()
 
 
 def _external_segment(
@@ -401,3 +452,625 @@ def test_internal_gap_retry_rejects_language_model_score_regression(
     )
 
     assert result.segments[0].text == original.text
+
+
+def test_internal_gap_retry_accepts_bounded_morphological_repair(
+    tmp_path: Path,
+) -> None:
+    source_path = tmp_path / "audio.mp3"
+    original = SimpleNamespace(
+        text="電車がゆっくりになってなりました。",
+        start=0.0,
+        end=6.0,
+        avg_logprob=-0.03,
+        words=(
+            SimpleNamespace(
+                word="電車がゆっくりになって",
+                start=0.0,
+                end=1.0,
+                probability=0.99,
+            ),
+            SimpleNamespace(
+                word="なりました。",
+                start=4.0,
+                end=6.0,
+                probability=0.6,
+            ),
+        ),
+    )
+    candidate = SimpleNamespace(
+        text="電車がゆっくりになって止まりました。",
+        start=0.0,
+        end=6.0,
+        avg_logprob=-0.149,
+        words=(
+            SimpleNamespace(
+                word="電車がゆっくりになって止まりました。",
+                start=0.0,
+                end=6.0,
+                probability=0.794,
+            ),
+        ),
+    )
+    model = RetryWhisperModel([(original,), (candidate,)])
+    transcriber = FasterWhisperTranscriber()
+    transcriber._model = model
+
+    result = transcriber.transcribe(
+        WhisperTranscriptionRequest(source_path, tmp_path / "work", "run-001")
+    )
+
+    assert result.segments[0].text == candidate.text
+    assert result.retry_decisions[0].accepted
+    assert result.retry_decisions[0].reasons == (
+        "accepted_morphological_repair",
+    )
+
+
+def test_internal_gap_retry_does_not_exempt_ordinary_content_change(
+    tmp_path: Path,
+) -> None:
+    source_path = tmp_path / "audio.mp3"
+    original = SimpleNamespace(
+        text="電車がゆっくりになっていました。",
+        start=0.0,
+        end=6.0,
+        avg_logprob=-0.03,
+        words=(
+            SimpleNamespace(
+                word="電車がゆっくりになって",
+                start=0.0,
+                end=1.0,
+                probability=0.99,
+            ),
+            SimpleNamespace(
+                word="いました。",
+                start=4.0,
+                end=6.0,
+                probability=0.6,
+            ),
+        ),
+    )
+    candidate = SimpleNamespace(
+        text="電車がゆっくりになって止まりました。",
+        start=0.0,
+        end=6.0,
+        avg_logprob=-0.149,
+        words=(
+            SimpleNamespace(
+                word="電車がゆっくりになって止まりました。",
+                start=0.0,
+                end=6.0,
+                probability=0.794,
+            ),
+        ),
+    )
+    model = RetryWhisperModel([(original,), (candidate,)])
+    transcriber = FasterWhisperTranscriber()
+    transcriber._model = model
+
+    result = transcriber.transcribe(
+        WhisperTranscriptionRequest(source_path, tmp_path / "work", "run-001")
+    )
+
+    assert result.segments[0].text == original.text
+    assert not result.retry_decisions[0].accepted
+    assert "language_model_regression" in result.retry_decisions[0].reasons
+
+
+def test_internal_gap_retry_selects_supported_safe_candidate(
+    tmp_path: Path,
+) -> None:
+    source_path = tmp_path / "audio.mp3"
+    original = SimpleNamespace(
+        text="電車がゆっくりになってなりました。",
+        start=0.0,
+        end=6.0,
+        avg_logprob=-0.1,
+        words=(
+            SimpleNamespace(
+                word="電車がゆっくりになって",
+                start=0.0,
+                end=1.0,
+                probability=0.9,
+            ),
+            SimpleNamespace(
+                word="なりました。",
+                start=4.0,
+                end=6.0,
+                probability=0.5,
+            ),
+        ),
+    )
+    unsafe = SimpleNamespace(
+        text="駅で昼ご飯を食べました。",
+        start=0.0,
+        end=6.0,
+        avg_logprob=-0.01,
+        words=(
+            SimpleNamespace(
+                word="駅で昼ご飯を食べました。",
+                start=0.0,
+                end=6.0,
+                probability=0.99,
+            ),
+        ),
+    )
+    repaired = SimpleNamespace(
+        text="電車がゆっくりになって止まりました。",
+        start=0.0,
+        end=6.0,
+        avg_logprob=-0.2,
+        words=(
+            SimpleNamespace(
+                word="電車がゆっくりになって止まりました。",
+                start=0.0,
+                end=6.0,
+                probability=0.82,
+            ),
+        ),
+    )
+    model = RetryWhisperModel(
+        [(original,), (unsafe,), (repaired,), (repaired,)]
+    )
+    transcriber = FasterWhisperTranscriber()
+    transcriber._model = model
+
+    result = transcriber.transcribe(
+        WhisperTranscriptionRequest(source_path, tmp_path / "work", "run-001")
+    )
+
+    assert result.segments[0].text == repaired.text
+    assert len(result.retry_decisions) == 2
+    selected = next(item for item in result.retry_decisions if item.selected)
+    rejected = next(item for item in result.retry_decisions if not item.selected)
+    assert selected.passed_validation
+    assert selected.candidate_support_count == 2
+    assert selected.selection_score is not None
+    assert not rejected.passed_validation
+    assert rejected.candidate_text == unsafe.text
+
+
+def test_low_confidence_morphological_chain_triggers_local_repair(
+    tmp_path: Path,
+) -> None:
+    source_path = tmp_path / "audio.mp3"
+    original = SimpleNamespace(
+        text="多分、いいなっても悩まないことなんてないと思います。",
+        start=0.0,
+        end=10.0,
+        avg_logprob=-0.2,
+        words=(
+            SimpleNamespace(word="多分、", start=0.0, end=2.0, probability=0.95),
+            SimpleNamespace(word="いい", start=2.0, end=3.0, probability=0.2),
+            SimpleNamespace(
+                word="なっても悩まないことなんてないと思います。",
+                start=3.0,
+                end=10.0,
+                probability=0.95,
+            ),
+        ),
+    )
+    repaired = SimpleNamespace(
+        text="たぶんいくつになっても悩まないことなんてないと思います。",
+        start=0.0,
+        end=10.0,
+        avg_logprob=-0.18,
+        words=(
+            SimpleNamespace(
+                word="たぶんいくつになっても悩まないことなんてないと思います。",
+                start=0.0,
+                end=10.0,
+                probability=0.9,
+            ),
+        ),
+    )
+    model = RetryWhisperModel(
+        [(original,), (repaired,), (repaired,), (repaired,)]
+    )
+    transcriber = FasterWhisperTranscriber()
+    transcriber._model = model
+
+    result = transcriber.transcribe(
+        WhisperTranscriptionRequest(source_path, tmp_path / "work", "run-001")
+    )
+
+    assert result.segments[0].text == repaired.text
+    assert len(model.calls) == 4
+    assert result.retry_decisions[0].selected
+    assert result.retry_decisions[0].passed_validation
+    assert result.retry_decisions[0].candidate_support_count == 3
+    assert result.retry_decisions[0].reasons == ("accepted_morphological_repair",)
+
+
+def test_morphological_retry_preserves_terminal_mark_and_original_time_range(
+    tmp_path: Path,
+) -> None:
+    source_path = tmp_path / "audio.mp3"
+    original = SimpleNamespace(
+        text="何歳になっても悩みます。",
+        start=1.0,
+        end=8.0,
+        avg_logprob=-0.2,
+        words=(
+            SimpleNamespace(word="何歳に", start=1.0, end=3.0, probability=0.2),
+            SimpleNamespace(word="なっても悩みます。", start=3.0, end=8.0, probability=0.9),
+        ),
+    )
+    repaired = SimpleNamespace(
+        text="いくつになっても悩みます",
+        start=1.1,
+        end=7.2,
+        avg_logprob=-0.1,
+        words=(
+            SimpleNamespace(
+                word="いくつになっても悩みます",
+                start=1.1,
+                end=7.2,
+                probability=0.99,
+            ),
+        ),
+    )
+    model = RetryWhisperModel(
+        [(original,), (repaired,), (repaired,), (repaired,)]
+    )
+    transcriber = FasterWhisperTranscriber()
+    transcriber._model = model
+
+    result = transcriber.transcribe(
+        WhisperTranscriptionRequest(source_path, tmp_path / "work", "run-001")
+    )
+
+    assert result.segments[0].text == "いくつになっても悩みます。"
+    assert result.segments[0].time_range.start_seconds == 1.0
+    assert result.segments[0].time_range.end_seconds == 8.0
+    final_word = result.segments[0].sentences[0].words[-1]
+    assert final_word.text.endswith("。")
+    assert final_word.time_range.end_seconds == 8.0
+
+
+def test_morphological_retry_rejects_candidate_that_keeps_anomaly(
+    tmp_path: Path,
+) -> None:
+    source_path = tmp_path / "audio.mp3"
+    original = SimpleNamespace(
+        text="多分、いいなっても悩まない。",
+        start=0.0,
+        end=5.0,
+        words=(
+            SimpleNamespace(word="多分、", start=0.0, end=1.0, probability=0.9),
+            SimpleNamespace(word="いい", start=1.0, end=2.0, probability=0.2),
+            SimpleNamespace(
+                word="なっても悩まない。",
+                start=2.0,
+                end=5.0,
+                probability=0.9,
+            ),
+        ),
+    )
+    unchanged = SimpleNamespace(
+        text=original.text,
+        start=0.0,
+        end=5.0,
+        words=(
+            SimpleNamespace(word=original.text, start=0.0, end=5.0, probability=0.99),
+        ),
+    )
+    model = RetryWhisperModel(
+        [(original,), (unchanged,), (unchanged,), (unchanged,)]
+    )
+    transcriber = FasterWhisperTranscriber()
+    transcriber._model = model
+
+    result = transcriber.transcribe(
+        WhisperTranscriptionRequest(source_path, tmp_path / "work", "run-001")
+    )
+
+    assert result.segments[0].text == original.text
+    assert len(result.retry_decisions) == 1
+    assert not result.retry_decisions[0].passed_validation
+    assert not result.retry_decisions[0].selected
+
+
+def test_short_high_confidence_response_accepts_consensus_repair(
+    tmp_path: Path,
+) -> None:
+    source_path = tmp_path / "audio.mp3"
+    original = SimpleNamespace(
+        text="なにょ",
+        start=1.0,
+        end=1.5,
+        avg_logprob=-0.3,
+        words=(
+            SimpleNamespace(word="な", start=1.0, end=1.3, probability=0.90),
+            SimpleNamespace(word="にょ", start=1.3, end=1.5, probability=0.91),
+        ),
+    )
+    repaired = SimpleNamespace(
+        text="何を",
+        start=1.0,
+        end=1.5,
+        avg_logprob=-0.1,
+        words=(
+            SimpleNamespace(word="何を", start=1.0, end=1.5, probability=0.97),
+        ),
+    )
+    model = RetryWhisperModel(
+        [(original,), (repaired,), (repaired,), (repaired,)]
+    )
+    transcriber = FasterWhisperTranscriber(retry_max_segments=0)
+    transcriber._model = model
+
+    result = transcriber.transcribe(
+        WhisperTranscriptionRequest(source_path, tmp_path / "work", "run-001")
+    )
+
+    assert result.segments[0].text == "何を"
+    assert len(model.calls) == 4
+    assert result.retry_decisions[0].accepted
+    assert result.retry_decisions[0].candidate_support_count == 3
+    assert result.retry_decisions[0].reasons == ("accepted_morphological_repair",)
+    assert len(result.short_anomaly_retry_audits) == 1
+    assert result.short_anomaly_retry_audits[0].accepted
+    assert result.short_anomaly_retry_audits[0].failure_reasons == ()
+    analysis = result.short_utterance_analysis_audits[0]
+    assert analysis.original_text == "なにょ"
+    assert analysis.morpheme_surfaces == ("な", "にょ")
+    assert analysis.structure_penalty == 1
+    assert analysis.short_anomaly_detected
+
+
+def test_short_high_confidence_response_rejects_disagreeing_candidates(
+    tmp_path: Path,
+) -> None:
+    source_path = tmp_path / "audio.mp3"
+    original = SimpleNamespace(
+        text="なにょ",
+        start=1.0,
+        end=1.5,
+        avg_logprob=-0.3,
+        words=(
+            SimpleNamespace(word="な", start=1.0, end=1.3, probability=0.90),
+            SimpleNamespace(word="にょ", start=1.3, end=1.5, probability=0.91),
+        ),
+    )
+    candidates = tuple(
+        SimpleNamespace(
+            text=text,
+            start=1.0,
+            end=1.5,
+            avg_logprob=-0.1,
+            words=(
+                SimpleNamespace(word=text, start=1.0, end=1.5, probability=0.97),
+            ),
+        )
+        for text in ("何を", "何の", "何よ")
+    )
+    model = RetryWhisperModel(
+        [(original,), *((candidate,) for candidate in candidates)]
+    )
+    transcriber = FasterWhisperTranscriber(retry_max_segments=0)
+    transcriber._model = model
+
+    result = transcriber.transcribe(
+        WhisperTranscriptionRequest(source_path, tmp_path / "work", "run-001")
+    )
+
+    assert result.segments[0].text == original.text
+    assert len(result.retry_decisions) == 3
+    assert not any(item.accepted for item in result.retry_decisions)
+    assert result.short_anomaly_retry_audits[0].failure_reasons == (
+        "candidate_consensus_missing",
+    )
+
+
+def test_short_well_formed_response_does_not_trigger_anomaly_retry(
+    tmp_path: Path,
+) -> None:
+    source_path = tmp_path / "audio.mp3"
+    original = SimpleNamespace(
+        text="そうだね",
+        start=1.0,
+        end=1.5,
+        avg_logprob=-0.1,
+        words=(
+            SimpleNamespace(word="そう", start=1.0, end=1.3, probability=0.95),
+            SimpleNamespace(word="だね", start=1.3, end=1.5, probability=0.96),
+        ),
+    )
+    model = RetryWhisperModel([(original,)])
+    transcriber = FasterWhisperTranscriber(retry_max_segments=0)
+    transcriber._model = model
+
+    result = transcriber.transcribe(
+        WhisperTranscriptionRequest(source_path, tmp_path / "work", "run-001")
+    )
+
+    assert result.segments[0].text == original.text
+    assert len(model.calls) == 1
+    assert result.retry_decisions == ()
+    assert len(result.short_utterance_analysis_audits) == 1
+    assert not result.short_utterance_analysis_audits[0].short_anomaly_detected
+
+
+@pytest.mark.parametrize(
+    ("text", "expected_penalty"),
+    (
+        ("てかさ", 0),
+        ("ってかさ", 0),
+        ("じゃあさ", 0),
+        ("だからさ", 0),
+        ("そうだね", 0),
+        ("なにょ", 1),
+    ),
+)
+def test_short_utterance_penalty_distinguishes_complete_colloquial_markers(
+    text: str,
+    expected_penalty: int,
+) -> None:
+    assert _short_utterance_structure_penalty(
+        text,
+        SudachiMorphologicalAnalyzer(),
+    ) == expected_penalty
+
+
+def test_complete_colloquial_marker_does_not_trigger_short_retry(
+    tmp_path: Path,
+) -> None:
+    source_path = tmp_path / "audio.mp3"
+    original = SimpleNamespace(
+        text="てかさ",
+        start=1.0,
+        end=1.7,
+        avg_logprob=-0.1,
+        words=(
+            SimpleNamespace(word="て", start=1.0, end=1.2, probability=0.95),
+            SimpleNamespace(word="か", start=1.2, end=1.4, probability=0.95),
+            SimpleNamespace(word="さ", start=1.4, end=1.7, probability=0.95),
+        ),
+    )
+    model = RetryWhisperModel([(original,)])
+    transcriber = FasterWhisperTranscriber(retry_max_segments=0)
+    transcriber._model = model
+
+    result = transcriber.transcribe(
+        WhisperTranscriptionRequest(source_path, tmp_path / "work", "run-001")
+    )
+
+    assert result.segments[0].text == "てかさ"
+    assert len(model.calls) == 1
+    assert result.short_anomaly_retry_audits == ()
+    assert not result.short_utterance_analysis_audits[0].short_anomaly_detected
+
+
+def test_low_confidence_retry_rejects_new_short_morphological_anomaly(
+    tmp_path: Path,
+) -> None:
+    source_path = tmp_path / "audio.mp3"
+    original = SimpleNamespace(
+        text="何を",
+        start=1.0,
+        end=1.7,
+        avg_logprob=-0.4,
+        words=(
+            SimpleNamespace(word="何", start=1.0, end=1.3, probability=0.55),
+            SimpleNamespace(word="を", start=1.3, end=1.7, probability=0.60),
+        ),
+    )
+    malformed = SimpleNamespace(
+        text="なにょ",
+        start=1.0,
+        end=1.7,
+        avg_logprob=-0.1,
+        words=(
+            SimpleNamespace(word="な", start=1.0, end=1.3, probability=0.90),
+            SimpleNamespace(word="にょ", start=1.3, end=1.7, probability=0.91),
+        ),
+    )
+    model = RetryWhisperModel([(original,), (malformed,)])
+    transcriber = FasterWhisperTranscriber()
+    transcriber._model = model
+
+    result = transcriber.transcribe(
+        WhisperTranscriptionRequest(source_path, tmp_path / "work", "run-001")
+    )
+
+    assert result.segments[0].text == "何を"
+    assert len(result.retry_decisions) == 1
+    assert not result.retry_decisions[0].accepted
+    assert "morphological_structure_degradation" in (
+        result.retry_decisions[0].reasons
+    )
+
+
+def test_short_retry_window_excludes_word_from_preceding_segment() -> None:
+    original = SimpleNamespace(text="なにょ", start=504.17, end=504.89)
+    retry_segments = (
+        SimpleNamespace(
+            text="一応店員さん伝えとこうか",
+            start=502.67,
+            end=504.21,
+            avg_logprob=-0.4,
+            words=(
+                SimpleNamespace(
+                    word="か", start=504.01, end=504.21, probability=0.98
+                ),
+            ),
+        ),
+        SimpleNamespace(
+            text="え、なにを?",
+            start=504.21,
+            end=504.99,
+            avg_logprob=-0.4,
+            words=(
+                SimpleNamespace(
+                    word="え、", start=504.21, end=504.57, probability=0.39
+                ),
+                SimpleNamespace(
+                    word="なにを?", start=504.69, end=504.99, probability=0.70
+                ),
+            ),
+        ),
+    )
+
+    extracted = _extract_external_retry_window(original, retry_segments)
+
+    assert len(extracted) == 1
+    assert extracted[0].text == "え、なにを?"
+    assert tuple(word.word for word in extracted[0].words) == ("え、", "なにを?")
+    assert extracted[0].start == original.start
+    assert extracted[0].end == original.end
+
+
+def test_short_retry_uses_surrounding_text_anchors() -> None:
+    original = SimpleNamespace(text="なにょ", start=504.17, end=504.89)
+    left = SimpleNamespace(text="一応店員さん伝えとこうか")
+    right = SimpleNamespace(text="なんか今回そのバチバチのやつやらないのは")
+
+    def segment(text: str, start: float, end: float) -> SimpleNamespace:
+        return SimpleNamespace(
+            text=text,
+            start=start,
+            end=end,
+            avg_logprob=-0.2,
+            words=(
+                SimpleNamespace(
+                    word=text,
+                    start=start,
+                    end=end,
+                    probability=0.9,
+                ),
+            ),
+        )
+
+    retry_segments = (
+        segment(left.text, 502.67, 504.21),
+        segment("え、なにを?", 504.21, 504.99),
+        segment("いや、うん", 505.27, 506.25),
+        segment(right.text, 506.60, 509.14),
+    )
+
+    extracted = _extract_external_retry_between_anchors(
+        original,
+        retry_segments,
+        left,
+        right,
+    )
+
+    assert len(extracted) == 1
+    assert extracted[0].text == "え、なにを?"
+
+
+def test_short_retry_accepts_ordered_anchors_inside_merged_segment() -> None:
+    left = SimpleNamespace(text="一応店員さん伝えとこうか")
+    right = SimpleNamespace(text="なんか今回そのバチバチのやつやらないのは")
+    retry_segments = (
+        SimpleNamespace(
+            text=(
+                "一応店員さん伝えとこうかいや"
+                "何か今回そのマチバチのやつやらないのは"
+            )
+        ),
+    )
+
+    assert _has_ordered_text_anchors(retry_segments, left, right)

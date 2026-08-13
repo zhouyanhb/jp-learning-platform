@@ -69,6 +69,35 @@ class SudachiMorphologicalAnalyzer:
         )
 
 
+def morphological_particle_chain_penalty(
+    text: str,
+    analyzer: JapaneseMorphologicalAnalyzer,
+) -> int:
+    """Count unlikely dependent-predicate and particle chains."""
+    morphemes = tuple(
+        item
+        for item in analyzer.analyze(text)
+        if item.part_of_speech and item.part_of_speech[0] != "補助記号"
+    )
+    penalty = 0
+    for first, second, third, fourth in zip(
+        morphemes,
+        morphemes[1:],
+        morphemes[2:],
+        morphemes[3:],
+    ):
+        if (
+            len(first.part_of_speech) > 1
+            and first.part_of_speech[0] in {"動詞", "形容詞"}
+            and first.part_of_speech[1] == "非自立可能"
+            and second.part_of_speech[:2] == ("助詞", "終助詞")
+            and third.part_of_speech[:2] == ("助詞", "副助詞")
+            and fourth.part_of_speech[:2] == ("助詞", "係助詞")
+        ):
+            penalty += 1
+    return penalty
+
+
 @dataclass(frozen=True, slots=True)
 class _LearningUnit:
     text: str
@@ -127,6 +156,7 @@ class JapaneseLearningWordNormalizer:
         has_structural_number: bool,
     ) -> Sentence:
         morphemes = self._analyzer.analyze(sentence.text)
+        morphemes = self._repair_contextual_functional_boundaries(morphemes)
         units = self._learning_units(morphemes, has_structural_number)
         if not units:
             return sentence
@@ -141,6 +171,52 @@ class JapaneseLearningWordNormalizer:
             learning_words=learning_words,
             is_question=sentence.is_question,
             asr_boundary_word_indexes=sentence.asr_boundary_word_indexes,
+        )
+
+    def _repair_contextual_functional_boundaries(
+        self,
+        morphemes: tuple[JapaneseMorpheme, ...],
+    ) -> tuple[JapaneseMorpheme, ...]:
+        repaired: list[JapaneseMorpheme] = []
+        index = 0
+        while index < len(morphemes):
+            if index + 1 >= len(morphemes):
+                repaired.append(morphemes[index])
+                break
+            left, right = morphemes[index : index + 2]
+            if not (
+                left.part_of_speech
+                and left.part_of_speech[0] == "接続詞"
+                and right.part_of_speech
+                and right.part_of_speech[0] == "名詞"
+            ):
+                repaired.append(left)
+                index += 1
+                continue
+            combined = left.surface + right.surface
+            try:
+                local = self._analyzer.analyze(combined)
+            except LookupError:
+                local = ()
+            if self._is_functional_boundary_reanalysis(combined, local):
+                repaired.extend(local)
+                index += 2
+                continue
+            repaired.append(left)
+            index += 1
+        return tuple(repaired)
+
+    @staticmethod
+    def _is_functional_boundary_reanalysis(
+        combined: str,
+        local: tuple[JapaneseMorpheme, ...],
+    ) -> bool:
+        return bool(
+            len(local) == 2
+            and "".join(item.surface for item in local) == combined
+            and local[0].part_of_speech
+            and local[0].part_of_speech[0] == "接続詞"
+            and local[1].part_of_speech[:2] == ("助詞", "終助詞")
         )
 
     @staticmethod
@@ -294,7 +370,8 @@ class JapaneseLearningWordNormalizer:
                         ),
                     )
                 )
-        structural = self._merge_structural_units(raw)
+        functional = self._merge_functional_units(raw)
+        structural = self._merge_structural_units(functional)
         merged = self._merge_reanalyzed_nominals(structural)
         return tuple(unit for unit in merged if not self._is_pure_punctuation(unit))
 
@@ -303,6 +380,58 @@ class JapaneseLearningWordNormalizer:
         return bool(unit.text) and all(
             unicodedata.category(character).startswith("P")
             for character in unit.text
+        )
+
+    @classmethod
+    def _merge_functional_units(
+        cls,
+        units: list[_LearningUnit],
+    ) -> list[_LearningUnit]:
+        merged: list[_LearningUnit] = []
+        for unit in units:
+            if merged and cls._forms_functional_learning_unit(merged[-1], unit):
+                previous = merged.pop()
+                merged.append(
+                    _LearningUnit(
+                        text=previous.text + unit.text,
+                        start=previous.start,
+                        end=unit.end,
+                        pos=previous.pos,
+                    )
+                )
+            else:
+                merged.append(unit)
+        return merged
+
+    @classmethod
+    def _forms_functional_learning_unit(
+        cls,
+        left: _LearningUnit,
+        right: _LearningUnit,
+    ) -> bool:
+        if (
+            left.is_structure
+            or right.is_structure
+            or cls._is_pure_punctuation(left)
+            or cls._is_pure_punctuation(right)
+        ):
+            return False
+        left_pos = left.pos[:2]
+        right_pos = right.pos[:2]
+        return bool(
+            (
+                left_pos == ("助詞", "副助詞")
+                and right_pos == ("助詞", "係助詞")
+            )
+            or (
+                left_pos == ("助詞", "終助詞")
+                and right_pos == ("助詞", "終助詞")
+            )
+            or (
+                left_pos == ("助詞", "準体助詞")
+                and right.pos
+                and right.pos[0] == "助動詞"
+            )
         )
 
     def _merge_structural_units(

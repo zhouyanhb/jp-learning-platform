@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Protocol
 import unicodedata
 
 from jp_learning_platform.domain import Document, PipelineContext, Segment, Sentence, TimeRange
@@ -34,7 +35,20 @@ class PunctuationAttributionDecision:
 
 
 @dataclass(frozen=True, slots=True)
+class InternalPunctuationRestoration:
+    sentence: Sentence
+    attributed_text: str
+    original_sentence_text: str
+    reason: str
+
+
+class InternalPunctuationRestorer(Protocol):
+    def restore(self, sentence: Sentence) -> InternalPunctuationRestoration | None: ...
+
+
+@dataclass(frozen=True, slots=True)
 class PunctuationAttributionStage:
+    internal_restorer: InternalPunctuationRestorer | None = None
     name: str = PUNCTUATION_ATTRIBUTION_STAGE_NAME
 
     def run(self, context: PipelineContext) -> StageResult:
@@ -81,6 +95,24 @@ class PunctuationAttributionStage:
                     )
                 else:
                     sentences.append(sentence)
+                if self.internal_restorer is not None:
+                    current = sentences[-1]
+                    restoration = self.internal_restorer.restore(current)
+                    if restoration is not None:
+                        sentences[-1] = restoration.sentence
+                        decisions.append(
+                            PunctuationAttributionDecision(
+                                segment_position=segment.position,
+                                sentence_index=sentence_index,
+                                attributed_text=restoration.attributed_text,
+                                original_sentence_text=(
+                                    restoration.original_sentence_text
+                                ),
+                                resulting_sentence_text=restoration.sentence.text,
+                                is_question=restoration.sentence.is_question,
+                                reason=restoration.reason,
+                            )
+                        )
             segments.append(
                 Segment(
                     position=segment.position,
@@ -118,6 +150,8 @@ def _is_trailing_punctuation_only(text: str) -> bool:
 
 
 __all__ = [
+    "InternalPunctuationRestoration",
+    "InternalPunctuationRestorer",
     "PUNCTUATION_ATTRIBUTION_STAGE_NAME",
     "PunctuationAttributionDecision",
     "PunctuationAttributionStage",

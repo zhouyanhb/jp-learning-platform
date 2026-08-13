@@ -379,6 +379,9 @@ class JapaneseSentenceBoundaryResolver:
             gap_seconds > allowed_gap
             or score < config.cross_segment_merge_score_threshold
             or _starts_independent_discourse(right.text)
+            or _starts_topic_shift_expression(
+                self.morphological_analyzer.analyze(_compact_text(right.text))
+            )
             or _starts_cross_segment_response(
                 right.text,
                 self.morphological_analyzer.analyze(_compact_text(right.text)),
@@ -423,7 +426,20 @@ class JapaneseSentenceBoundaryResolver:
             words[word_index], words[word_index + 1]
         )
         right_text = _words_text(words[word_index + 1 :])
-        if _starts_with_sentence_final_particle(right_text):
+        has_speaker_turn_boundary = bool(
+            speaker_turn_reason is not None
+            and self.morphological_analyzer is not None
+            and _speaker_turn_supports_sentence_boundary(
+                left_text,
+                right_text,
+                speaker_turn_reason,
+                self.morphological_analyzer,
+            )
+        )
+        if (
+            _starts_with_sentence_final_particle(right_text)
+            and not has_speaker_turn_boundary
+        ):
             return None
         if _starts_with_dependent_continuation(right_text):
             return None
@@ -454,16 +470,21 @@ class JapaneseSentenceBoundaryResolver:
                 self.sentence_final_suffixes,
             )
         )
-        has_speaker_turn_boundary = bool(
-            speaker_turn_reason is not None
-            and self.morphological_analyzer is not None
-            and _speaker_turn_supports_sentence_boundary(
+        has_extended_conjunctive_continuation = bool(
+            self.morphological_analyzer is not None
+            and _is_extended_alignment_word(words[word_index])
+            and _word_gap_seconds(words[word_index], words[word_index + 1])
+            <= DEFAULT_SENTENCE_BOUNDARY_CONFIG.max_dependent_continuation_gap_seconds
+            and not has_trusted_asr_restart
+            and not has_speaker_turn_boundary
+            and _has_conjunctive_predicate_continuation(
                 left_text,
                 right_text,
-                speaker_turn_reason,
                 self.morphological_analyzer,
             )
         )
+        if has_extended_conjunctive_continuation:
+            return None
         if (
             self.morphological_analyzer is not None
             and gap_seconds
@@ -1467,7 +1488,15 @@ def _speaker_turn_candidate_reason(
     )
     if (
         _is_interrogative_clause(left)
-        and _starts_independent_clause(right)
+        and (
+            _starts_independent_clause(right)
+            or _looks_like_short_asr_response(
+                words[word_index + 1 :],
+                right,
+                gap_seconds,
+                is_asr_boundary,
+            )
+        )
         and (is_asr_boundary or gap_seconds >= 0.3)
     ):
         return "question_answer_transition"
@@ -1487,7 +1516,7 @@ def _speaker_turn_supports_sentence_boundary(
 ) -> bool:
     left = analyzer.analyze(_compact_text(left_text))
     right = analyzer.analyze(_compact_text(right_text))
-    if not left or not right or not _starts_independent_clause(right):
+    if not left or not right:
         return False
     has_dependency = _has_cross_boundary_morphological_dependency(
         left_text,
@@ -1501,7 +1530,15 @@ def _speaker_turn_supports_sentence_boundary(
             and _is_complete_clause(right)
         )
     if reason == "question_answer_transition":
-        return not has_dependency
+        return bool(
+            not has_dependency
+            and (
+                _starts_independent_clause(right)
+                or _is_short_terminal_response_analysis(right)
+            )
+        )
+    if not _starts_independent_clause(right):
+        return False
     if reason == "independent_response_start":
         return bool(
             not has_dependency
@@ -1522,6 +1559,39 @@ def _speaker_turn_supports_sentence_boundary(
             or _compact_text(left_text).endswith(_ELLIPTICAL_TURN_ENDS)
         )
     return False
+
+
+def _looks_like_short_asr_response(
+    words: tuple[Word, ...],
+    analyzed: tuple[JapaneseMorpheme, ...],
+    gap_seconds: float,
+    is_asr_boundary: bool,
+) -> bool:
+    if not words or not is_asr_boundary or gap_seconds < 0.3:
+        return False
+    text = _words_text(words)
+    duration = words[-1].time_range.end_seconds - words[0].time_range.start_seconds
+    return bool(
+        len(_compact_text(text)) <= 8
+        and duration <= 1.5
+        and _is_short_terminal_response_analysis(analyzed)
+    )
+
+
+def _is_short_terminal_response_analysis(
+    analyzed: tuple[JapaneseMorpheme, ...],
+) -> bool:
+    if len(analyzed) < 2:
+        return False
+    last = analyzed[-1]
+    return bool(
+        last.part_of_speech[:2] == ("助詞", "終助詞")
+        and any(
+            item.part_of_speech
+            and item.part_of_speech[0] in {"感動詞", "助動詞", "代名詞", "名詞"}
+            for item in analyzed[:-1]
+        )
+    )
 
 
 def _is_short_response(
@@ -1889,6 +1959,7 @@ def _merge_high_confidence_cross_segment_continuations(
                 _starts_independent_discourse(right.text)
                 and not has_coordinated_condition
             )
+            or _starts_topic_shift_expression(right_analysis)
             or _starts_cross_segment_response(right.text, right_analysis)
             or (
                 _is_functional_continuation(right_analysis[0])
@@ -2070,6 +2141,7 @@ def _merge_high_confidence_adjacent_sentences(
                     (*config.terminal_marks, "?", "!"),
                 )
                 or _starts_independent_discourse(sentence.text)
+                or _starts_topic_shift_expression(right_analysis)
                 or _starts_cross_segment_response(sentence.text, right_analysis)
             ):
                 sentences.append(sentence)
@@ -2154,8 +2226,10 @@ def _cross_segment_merge_score(
         )
     elif _ends_with_conditional_clause(left_last):
         evidence.append(CrossSegmentMergeEvidence("conditional_clause_tail", 4))
-    elif _ends_with_conjunctive_particle(left_last):
+    elif _ends_with_conjunctive_particle_chain(left_analysis):
         evidence.append(CrossSegmentMergeEvidence("conjunctive_clause_tail", 4))
+    elif _ends_with_causal_connective_clause(left_analysis):
+        evidence.append(CrossSegmentMergeEvidence("causal_clause_tail", 4))
     elif _ends_with_suspended_object(
         left_last,
         right_analysis,
@@ -2170,7 +2244,7 @@ def _cross_segment_merge_score(
         evidence.append(CrossSegmentMergeEvidence("quotative_topic", 4))
     elif _ends_with_topic_location_tail(left_analysis):
         evidence.append(CrossSegmentMergeEvidence("incomplete_topic_location", 4))
-    elif _ends_with_tight_subject_tail(left_last, right_analysis, gap_seconds):
+    elif _ends_with_suspended_subject(left_last, right_analysis, gap_seconds):
         evidence.append(CrossSegmentMergeEvidence("tight_subject_predicate", 4))
     elif _is_dependent_formal_noun_tail(left_analysis):
         evidence.append(CrossSegmentMergeEvidence("dependent_formal_noun", 4))
@@ -2262,7 +2336,54 @@ def _starts_cross_segment_response(
     normalized = _compact_text(text)
     return bool(
         _starts_independent_response(analysis)
+        or _is_compact_terminal_response(analysis, normalized)
         or normalized.startswith((*_RESPONSE_STARTS, "わかりました", "どういうこと"))
+    )
+
+
+def _is_compact_terminal_response(
+    analysis: tuple[JapaneseMorpheme, ...],
+    normalized_text: str,
+) -> bool:
+    if not analysis or len(normalized_text) > 8:
+        return False
+    first = analysis[0]
+    last = analysis[-1]
+    if (
+        not first.part_of_speech
+        or first.part_of_speech[0] not in {"副詞", "感動詞"}
+        or last.part_of_speech[:2] != ("助詞", "終助詞")
+    ):
+        return False
+    return bool(
+        len(analysis) == 2
+        or (
+            len(analysis) == 3
+            and analysis[1].part_of_speech
+            and analysis[1].part_of_speech[0] == "助動詞"
+            and analysis[1].conjugation_type in {"助動詞-ダ", "助動詞-デス"}
+        )
+    )
+
+
+def _starts_topic_shift_expression(
+    analysis: tuple[JapaneseMorpheme, ...],
+) -> bool:
+    if not (
+        len(analysis) >= 2
+        and analysis[0].part_of_speech
+        and analysis[0].part_of_speech[0] == "代名詞"
+        and analysis[1].part_of_speech
+        and analysis[1].part_of_speech[0] == "助詞"
+        and analysis[1].dictionary_form in {"より", "では"}
+    ):
+        return False
+    if analysis[1].dictionary_form == "では":
+        return True
+    return bool(
+        len(analysis) >= 3
+        and analysis[2].part_of_speech
+        and analysis[2].part_of_speech[0] in {"動詞", "形容詞", "助動詞"}
     )
 
 
@@ -2375,19 +2496,17 @@ def _ends_with_topic_location_tail(
     )
 
 
-def _ends_with_tight_subject_tail(
+def _ends_with_suspended_subject(
     left_last: JapaneseMorpheme,
     right: tuple[JapaneseMorpheme, ...],
     gap_seconds: float,
 ) -> bool:
     return bool(
         gap_seconds
-        <= DEFAULT_SENTENCE_BOUNDARY_CONFIG.max_dependent_continuation_gap_seconds
+        <= DEFAULT_SENTENCE_BOUNDARY_CONFIG.max_cross_segment_grammar_gap_seconds
         and left_last.part_of_speech[:2] == ("助詞", "格助詞")
         and left_last.dictionary_form == "が"
-        and right
-        and right[0].part_of_speech
-        and right[0].part_of_speech[0] in {"動詞", "形容詞", "助動詞"}
+        and _has_early_predicate(right)
     )
 
 
@@ -2445,6 +2564,10 @@ def _merge_adjacent_dependent_continuations(
             or (
                 analyzer is not None
                 and _starts_cross_segment_response(right.text, right_analysis)
+            )
+            or (
+                analyzer is not None
+                and _starts_topic_shift_expression(right_analysis)
             )
             or (
                 analyzer is not None
@@ -3002,6 +3125,50 @@ def _has_cross_boundary_morphological_dependency(
     )
 
 
+def _has_conjunctive_predicate_continuation(
+    left_text: str,
+    right_text: str,
+    analyzer: JapaneseMorphologicalAnalyzer,
+) -> bool:
+    left = analyzer.analyze(_compact_text(left_text))
+    right = analyzer.analyze(_compact_text(right_text))
+    return bool(
+        left
+        and right
+        and _ends_with_conjunctive_particle_chain(left)
+        and right[0].part_of_speech
+        and right[0].part_of_speech[0]
+        in {"動詞", "形容詞", "助動詞"}
+    )
+
+
+def _ends_with_conjunctive_particle_chain(
+    morphemes: tuple[JapaneseMorpheme, ...],
+) -> bool:
+    if not morphemes:
+        return False
+    if _ends_with_conjunctive_particle(morphemes[-1]):
+        return True
+    return bool(
+        len(morphemes) >= 2
+        and morphemes[-1].part_of_speech[:2] == ("助詞", "係助詞")
+        and morphemes[-1].dictionary_form == "も"
+        and _ends_with_conjunctive_particle(morphemes[-2])
+    )
+
+
+def _ends_with_causal_connective_clause(
+    morphemes: tuple[JapaneseMorpheme, ...],
+) -> bool:
+    if not morphemes:
+        return False
+    last = morphemes[-1]
+    return bool(
+        last.part_of_speech[:2] == ("助詞", "接続助詞")
+        and last.dictionary_form in {"から", "ので"}
+    )
+
+
 def _forms_adverbial_nonfinite_dependency(
     left: tuple[JapaneseMorpheme, ...],
     right: tuple[JapaneseMorpheme, ...],
@@ -3081,6 +3248,10 @@ def _merge_adjacent_connective_continuations(
             or (
                 analyzer is not None
                 and _starts_cross_segment_response(right.text, right_analysis)
+            )
+            or (
+                analyzer is not None
+                and _starts_topic_shift_expression(right_analysis)
             )
             or (
                 analyzer is not None

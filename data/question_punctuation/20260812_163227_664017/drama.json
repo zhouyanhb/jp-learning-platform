@@ -1,0 +1,6283 @@
+{
+  "schema_version": 1,
+  "language": "ja",
+  "annotation_status": "silver_needs_review",
+  "reference": "input/source-text/第1集 看完去搜了“大食蚁兽”.srt",
+  "candidate_artifact": "output/.work/20260812_163227_664017/第1集_看完去搜了_大食蚁兽/05b_question_punctuation_candidates.json",
+  "candidate_types": {
+    "sentence_terminal_question": "Question at a language-sentence endpoint.",
+    "embedded_quoted_question": "Question embedded inside quoted speech.",
+    "elliptical_question": "Short question without an explicit predicate."
+  },
+  "gold_labels": {
+    "question": "Reference evidence supports a question mark at this span.",
+    "non_question": "Reference evidence does not support the predicted question.",
+    "uncertain": "Human review cannot decide reliably."
+  },
+  "review_instructions": [
+    "Confirm gold_label for every prediction sample.",
+    "Assign gold_candidate_type for every confirmed question.",
+    "Review missed references before using recall by candidate type."
+  ],
+  "evaluation_snapshot": {
+    "metrics": {
+      "precision": 1.0,
+      "recall": 0.005555555555555556,
+      "f1": 0.011049723756906079,
+      "true_positive": 1,
+      "false_positive": 0,
+      "false_negative": 179,
+      "precision_target_met": true
+    },
+    "metrics_by_candidate_type": {
+      "sentence_terminal_question": {
+        "predicted_questions": 0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "precision": null,
+        "recall_contribution": 0.0,
+        "precision_target_met": null
+      },
+      "embedded_quoted_question": {
+        "predicted_questions": 1,
+        "true_positive": 1,
+        "false_positive": 0,
+        "precision": 1.0,
+        "recall_contribution": 0.005555555555555556,
+        "precision_target_met": true
+      },
+      "elliptical_question": {
+        "predicted_questions": 0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "precision": null,
+        "recall_contribution": 0.0,
+        "precision_target_met": null
+      }
+    }
+  },
+  "samples": [
+    {
+      "id": "question-candidate-00001",
+      "sample_kind": "prediction",
+      "candidate_type": "embedded_quoted_question",
+      "predicted_text": "トイレ借りていい",
+      "predicted_time_range": {
+        "start_seconds": 359.822,
+        "end_seconds": 360.884
+      },
+      "evidence": [
+        "embedded_quoted_question",
+        "quotative_speech_predicate",
+        "implicit_permission_question"
+      ],
+      "automatic_match": "true_positive",
+      "reference": {
+        "start_seconds": 357.173,
+        "end_seconds": 361.043,
+        "text": "何か 友達ん家で｢トイレ借りていい？｣って聞くのに→",
+        "is_question": true
+      },
+      "gold_label": "question",
+      "gold_candidate_type": "embedded_quoted_question",
+      "review_status": "reviewed",
+      "review_note": "引用范围、时间范围和参考问号落点一致，确认 TP。",
+      "error_attribution": "none"
+    },
+    {
+      "id": "missed-reference-00001",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 15.096499999999999,
+        "end_seconds": 17.532500000000002,
+        "text": "(久美子)しばらく行ってないでしょたまには 顔見せてあげな？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 14.983,
+          "end_seconds": 16.404,
+          "text": "しばらく行ってないでしょ。",
+          "is_question": false,
+          "segment_position": 0,
+          "sentence_index": 2
+        },
+        {
+          "start_seconds": 16.404,
+          "end_seconds": 18.986,
+          "text": "たまには顔見せてあげな。",
+          "is_question": false,
+          "segment_position": 0,
+          "sentence_index": 3
+        }
+      ],
+      "gold_label": "uncertain",
+      "gold_candidate_type": "sentence_terminal_question",
+      "review_status": "reviewed",
+      "review_note": "命令式确认「顔見せてあげな」已形成独立完整语言句，但未生成疑问候选。",
+      "error_attribution": "candidate_rule_missing"
+    },
+    {
+      "id": "missed-reference-00002",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 21.6025,
+        "end_seconds": 24.0385,
+        "text": "遥 どうすんの？(遥) 行くよ 私 運転だから｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 20.867,
+          "end_seconds": 22.968,
+          "text": "はるかどうすんの?",
+          "is_question": true,
+          "segment_position": 0,
+          "sentence_index": 5
+        },
+        {
+          "start_seconds": 22.968,
+          "end_seconds": 25.25,
+          "text": "行くよ、私運転だから。",
+          "is_question": false,
+          "segment_position": 0,
+          "sentence_index": 6
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": "sentence_terminal_question",
+      "review_status": "reviewed",
+      "review_note": "输出已有『はるかどうすんの?』，不属于缺标点候选漏检。",
+      "error_attribution": "already_visible_question_mark"
+    },
+    {
+      "id": "missed-reference-00003",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 27.264000000000003,
+        "end_seconds": 30.701,
+        "text": "(麻美) お父さん 行くの？(寛) 仕事が入っちゃってんだよ｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 26.851,
+          "end_seconds": 28.012,
+          "text": "お父さん行くの?",
+          "is_question": true,
+          "segment_position": 0,
+          "sentence_index": 8
+        },
+        {
+          "start_seconds": 28.012,
+          "end_seconds": 29.953,
+          "text": "いや、お父さん仕事が入っちゃってんだよ。",
+          "is_question": false,
+          "segment_position": 0,
+          "sentence_index": 9
+        },
+        {
+          "start_seconds": 29.953,
+          "end_seconds": 31.714,
+          "text": "ああ、そうなんだね。",
+          "is_question": false,
+          "segment_position": 0,
+          "sentence_index": 10
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "当前语言句已包含「お父さん行くの?」，不属于标点候选漏报。",
+      "error_attribution": "already_visible_question_mark"
+    },
+    {
+      "id": "missed-reference-00004",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 30.768,
+        "end_seconds": 33.704,
+        "text": "(麻美) あぁ そうなんだね｡>> 麻美 もう52分だけど大丈夫？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 29.953,
+          "end_seconds": 31.714,
+          "text": "ああ、そうなんだね。",
+          "is_question": false,
+          "segment_position": 0,
+          "sentence_index": 10
+        },
+        {
+          "start_seconds": 31.714,
+          "end_seconds": 33.756,
+          "text": "あさみ、もう5時2分だけど大丈夫?",
+          "is_question": true,
+          "segment_position": 0,
+          "sentence_index": 11
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00005",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 33.771,
+        "end_seconds": 36.207,
+        "text": "間に合うの？(麻美) えっ ヤバい 52分｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 33.756,
+          "end_seconds": 34.236,
+          "text": "間に合うの?",
+          "is_question": true,
+          "segment_position": 0,
+          "sentence_index": 12
+        },
+        {
+          "start_seconds": 34.236,
+          "end_seconds": 34.496,
+          "text": "え?",
+          "is_question": true,
+          "segment_position": 0,
+          "sentence_index": 13
+        },
+        {
+          "start_seconds": 34.496,
+          "end_seconds": 35.577,
+          "text": "やばい、5時2分。",
+          "is_question": false,
+          "segment_position": 0,
+          "sentence_index": 14
+        },
+        {
+          "start_seconds": 35.577,
+          "end_seconds": 37.038,
+          "text": "あー、ごめん、はるか、ごめん。",
+          "is_question": false,
+          "segment_position": 0,
+          "sentence_index": 15
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": "sentence_terminal_question",
+      "review_status": "reviewed",
+      "review_note": "输出已有『間に合うの?』『え?』，05b 不应承担已存在问号的召回。",
+      "error_attribution": "already_visible_question_mark"
+    },
+    {
+      "id": "missed-reference-00006",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 38.776,
+        "end_seconds": 41.212,
+        "text": "(麻美) ダッシュで食べる あと何分？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 38.719,
+          "end_seconds": 39.9,
+          "text": "うん、出して食べる。",
+          "is_question": false,
+          "segment_position": 0,
+          "sentence_index": 17
+        },
+        {
+          "start_seconds": 39.9,
+          "end_seconds": 40.36,
+          "text": "あ、あとラムさん。",
+          "is_question": false,
+          "segment_position": 0,
+          "sentence_index": 18
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00007",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 41.278,
+        "end_seconds": 43.714,
+        "text": "(遥) あと10分後ぐらい？(麻美) ＯＫ！",
+        "is_question": true
+      },
+      "language_sentence_context": [],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "参考问句与当前语言句时间轴没有重叠，排除出候选规则评估。",
+      "error_attribution": "asr_omission_or_misalignment"
+    },
+    {
+      "id": "missed-reference-00008",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 43.781,
+        "end_seconds": 45.716,
+        "text": "寿命かな？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 45.651,
+          "end_seconds": 50.86,
+          "text": "思えばこの日が人生最後の日だった1週目の",
+          "is_question": false,
+          "segment_position": 1,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "uncertain",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "「寿命かな？」未出现在重叠语言句，当前重叠文本属于后续旁白。",
+      "error_attribution": "asr_omission_or_misalignment"
+    },
+    {
+      "id": "missed-reference-00009",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 79.44650000000001,
+        "end_seconds": 82.88250000000001,
+        "text": "(麻美) あれって さくら保育園？>> そうだね｡",
+        "is_question": true
+      },
+      "language_sentence_context": [],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "参考中的问答在当前语言句时间轴没有重叠，不能评价候选生成。",
+      "error_attribution": "asr_omission_or_misalignment"
+    },
+    {
+      "id": "missed-reference-00010",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 82.94950000000001,
+        "end_seconds": 85.38550000000001,
+        "text": "(麻美) うちらの時あのカートなかったよね？",
+        "is_question": true
+      },
+      "language_sentence_context": [],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "参考问句在当前语言句时间轴没有对应内容。",
+      "error_attribution": "asr_omission_or_misalignment"
+    },
+    {
+      "id": "missed-reference-00011",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 95.969,
+        "end_seconds": 98.90499999999999,
+        "text": "あれ？ 公園の電話ボックスなくなってる｡",
+        "is_question": true
+      },
+      "language_sentence_context": [],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "参考中的短疑问「あれ？」及后续陈述均无对应重叠语言句。",
+      "error_attribution": "asr_omission_or_misalignment"
+    },
+    {
+      "id": "missed-reference-00012",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 98.972,
+        "end_seconds": 102.40899999999999,
+        "text": "(麻美) ん？ あんなとこに電話ボックスなんてあったっけ？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 101.182,
+          "end_seconds": 105.14,
+          "text": "ヨーボックスなんてあったってあったよ使ってんの見たことないけど",
+          "is_question": false,
+          "segment_position": 3,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": "sentence_terminal_question",
+      "review_status": "reviewed",
+      "review_note": "参考为『あったっけ?』，ASR 识别成『あったって』且粘连，候选层无法恢复。",
+      "error_attribution": "asr_error"
+    },
+    {
+      "id": "missed-reference-00013",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 114.988,
+        "end_seconds": 117.92399999999999,
+        "text": "全然関係ないけどお姉ちゃん 結婚しないの？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 115.732,
+          "end_seconds": 118.169,
+          "text": "全然関係ないけどお姉ちゃん結婚しないの",
+          "is_question": false,
+          "segment_position": 5,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "完整问句「お姉ちゃん結婚しないの」与参考高度一致，但未生成候选。",
+      "error_attribution": "candidate_rule_missing"
+    },
+    {
+      "id": "missed-reference-00014",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 118.4855,
+        "end_seconds": 123.35650000000001,
+        "text": "(麻美) 結婚？ あ～ フフフ…｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 118.598,
+          "end_seconds": 118.967,
+          "text": "結婚?",
+          "is_question": true,
+          "segment_position": 6,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 120.21,
+          "end_seconds": 120.53,
+          "text": "ご視聴ありがとうございました",
+          "is_question": false,
+          "segment_position": 7,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 123.06,
+          "end_seconds": 124.718,
+          "text": "まあ今特に自由もないしね",
+          "is_question": false,
+          "segment_position": 8,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00015",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 134.6455,
+        "end_seconds": 137.58249999999998,
+        "text": "(麻美) え？お父さん へそくりしてんの？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 136.476,
+          "end_seconds": 137.34,
+          "text": "お父さんへそくりしてんの?",
+          "is_question": true,
+          "segment_position": 13,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00016",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 147.6585,
+        "end_seconds": 150.5955,
+        "text": "(麻美) ありがとう｡>> は～い 帰りは？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 148.552,
+          "end_seconds": 148.739,
+          "text": "ありがとう",
+          "is_question": false,
+          "segment_position": 18,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 149.867,
+          "end_seconds": 154.858,
+          "text": "帰りは、今日ねミーポンたちとご飯食べるから多分ミーポンに乗せてもらうと思う",
+          "is_question": false,
+          "segment_position": 19,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00017",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 206.89749999999998,
+        "end_seconds": 210.33449999999996,
+        "text": "(市民)だから 何とかならないの？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 204.922,
+          "end_seconds": 209.479,
+          "text": "特に大変なのが窓口業務だからなんとかならないの",
+          "is_question": false,
+          "segment_position": 27,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": "sentence_terminal_question",
+      "review_status": "reviewed",
+      "review_note": "『なんとかならないの』文本存在且为句末问句，但未形成候选。",
+      "error_attribution": "candidate_rule_missing"
+    },
+    {
+      "id": "missed-reference-00018",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 224.08599999999998,
+        "end_seconds": 228.52399999999997,
+        "text": "谷口課長 すみませんあちら よろしいですか？",
+        "is_question": true
+      },
+      "language_sentence_context": [],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "职场许可问句在当前语言句时间轴没有对应内容。",
+      "error_attribution": "asr_omission_or_misalignment"
+    },
+    {
+      "id": "missed-reference-00019",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 257.29949999999997,
+        "end_seconds": 259.7355,
+        "text": "96番の方？>> はい｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 258.51,
+          "end_seconds": 259.107,
+          "text": "96番",
+          "is_question": false,
+          "segment_position": 34,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "编号加人物接尾语形成省略询问「96番の方？」；当前文本保留核心范围并有回答语境。",
+      "error_attribution": "candidate_rule_missing"
+    },
+    {
+      "id": "missed-reference-00020",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 280.56749999999994,
+        "end_seconds": 283.5034999999999,
+        "text": ">> 普通に挨拶でしょ｡(麻美) でしょ？ 意味分かんなくない？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 278.222,
+          "end_seconds": 282.586,
+          "text": "一回切れられたんだよ、なれしいってなれしいって普通にアンサーって言ってるでしょ?",
+          "is_question": true,
+          "segment_position": 42,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 282.586,
+          "end_seconds": 283.26,
+          "text": "意味わからなくない?",
+          "is_question": true,
+          "segment_position": 43,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": "sentence_terminal_question",
+      "review_status": "reviewed",
+      "review_note": "输出已有『でしょ?』『意味わからなくない?』。",
+      "error_attribution": "already_visible_question_mark"
+    },
+    {
+      "id": "missed-reference-00021",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 298.466,
+        "end_seconds": 300.83500000000004,
+        "text": "(麻美) じゃあ うちらも｢おかえりなさい｣にする？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 297.002,
+          "end_seconds": 298.478,
+          "text": "そのまま仕事に行くからだ",
+          "is_question": false,
+          "segment_position": 48,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 299.221,
+          "end_seconds": 301.12,
+          "text": "じゃあ、うちらもお帰りなさいにする?",
+          "is_question": true,
+          "segment_position": 49,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00022",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 303.40400000000005,
+        "end_seconds": 306.841,
+        "text": ">> あとさ 窓口の締めの挨拶ってムズくない？(麻美) 分かるよ｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 303.682,
+          "end_seconds": 306.32,
+          "text": "どうさ、窓口の締めの挨拶ってムズくない?",
+          "is_question": true,
+          "segment_position": 51,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 306.56,
+          "end_seconds": 309.439,
+          "text": "分かるよ、だってありがとうございましたじゃないもんね",
+          "is_question": false,
+          "segment_position": 52,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00023",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 314.53499999999997,
+        "end_seconds": 316.47099999999995,
+        "text": "(麻美) じゃあ｢いってらっしゃい｣にする？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 314.803,
+          "end_seconds": 317.439,
+          "text": "じゃあ、行ってらっしゃいにする絶対決められる",
+          "is_question": false,
+          "segment_position": 55,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "问句「いってらっしゃいにする」与后续陈述被合并，需先修语言句边界。",
+      "error_attribution": "language_sentence_error"
+    },
+    {
+      "id": "missed-reference-00024",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 361.11,
+        "end_seconds": 363.546,
+        "text": "似たものがありますよね｡(麻美) トイレ？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 358.36,
+          "end_seconds": 369.897,
+          "text": "なんか友達ん家でトイレ借りていいって聞くのに似たものがありますよねトイレほらあれも別にダメっていう人なんかいないけどなぜか許可を取っちゃうじゃないですか",
+          "is_question": false,
+          "segment_position": 65,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": "elliptical_question",
+      "review_status": "reviewed",
+      "review_note": "参考外层另有短问句『トイレ?』，输出将其并入长句；不同于已命中的引用问句。",
+      "error_attribution": "language_sentence_error"
+    },
+    {
+      "id": "missed-reference-00025",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 399.649,
+        "end_seconds": 401.584,
+        "text": "(美穂) やった～ ありがとう開けていい？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 398.161,
+          "end_seconds": 401.64,
+          "text": "はいこれうちら2人からやったありがとう開けていい?",
+          "is_question": true,
+          "segment_position": 69,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "当前语言句已经包含「開けていい?」，不属于候选漏报。",
+      "error_attribution": "already_visible_question_mark"
+    },
+    {
+      "id": "missed-reference-00026",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 408.5804999999999,
+        "end_seconds": 412.0174999999999,
+        "text": "(夏希) よかった～｡(美穂) これ結構したんじゃないの？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 409.98,
+          "end_seconds": 417.22,
+          "text": "でもこれ結構したんじゃないのいやそんなでもないよねまあ2人からだしねえありがとうめっちゃ嬉しいよかった",
+          "is_question": false,
+          "segment_position": 72,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "问句与回答、感谢等多轮内容被吞入同一长语言句。",
+      "error_attribution": "language_sentence_error"
+    },
+    {
+      "id": "missed-reference-00027",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 422.41999999999996,
+        "end_seconds": 425.85699999999997,
+        "text": "(麻美) みーぽん｡(美穂) ん？(麻美) 今 一瞬あっち見た？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 420.42,
+          "end_seconds": 423.643,
+          "text": "えーポンん?",
+          "is_question": true,
+          "segment_position": 74,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 423.643,
+          "end_seconds": 425.605,
+          "text": "今一瞬あっち見た?",
+          "is_question": true,
+          "segment_position": 74,
+          "sentence_index": 1
+        },
+        {
+          "start_seconds": 425.605,
+          "end_seconds": 426.446,
+          "text": "あっち?",
+          "is_question": true,
+          "segment_position": 74,
+          "sentence_index": 2
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00028",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 425.923,
+        "end_seconds": 427.859,
+        "text": "(美穂) あっち？(麻美) うん｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 425.605,
+          "end_seconds": 426.446,
+          "text": "あっち?",
+          "is_question": true,
+          "segment_position": 74,
+          "sentence_index": 2
+        },
+        {
+          "start_seconds": 426.446,
+          "end_seconds": 428.829,
+          "text": "うんもしかしてさ",
+          "is_question": false,
+          "segment_position": 74,
+          "sentence_index": 3
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00029",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 427.92499999999995,
+        "end_seconds": 432.864,
+        "text": "もしかしてさ 店員さんが何か持って来るかなって思ったよね？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 426.446,
+          "end_seconds": 428.829,
+          "text": "うんもしかしてさ",
+          "is_question": false,
+          "segment_position": 74,
+          "sentence_index": 3
+        },
+        {
+          "start_seconds": 428.829,
+          "end_seconds": 433.373,
+          "text": "店員さんがなんか持ってくるかなって思ったようねん?",
+          "is_question": true,
+          "segment_position": 74,
+          "sentence_index": 4
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": "sentence_terminal_question",
+      "review_status": "reviewed",
+      "review_note": "输出已有对应的句末问号，虽有局部 ASR 错字。",
+      "error_attribution": "already_visible_question_mark"
+    },
+    {
+      "id": "missed-reference-00030",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 432.92999999999995,
+        "end_seconds": 434.866,
+        "text": "(美穂) ん？ 何を？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 428.829,
+          "end_seconds": 433.373,
+          "text": "店員さんがなんか持ってくるかなって思ったようねん?",
+          "is_question": true,
+          "segment_position": 74,
+          "sentence_index": 4
+        },
+        {
+          "start_seconds": 433.373,
+          "end_seconds": 434.194,
+          "text": "何を?",
+          "is_question": true,
+          "segment_position": 74,
+          "sentence_index": 5
+        },
+        {
+          "start_seconds": 434.194,
+          "end_seconds": 439.399,
+          "text": "あのさ流れ的にさあの花火がバチバチってなってるやつ持ってくるって思った?",
+          "is_question": true,
+          "segment_position": 74,
+          "sentence_index": 6
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00031",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 437.935,
+        "end_seconds": 441.43899999999996,
+        "text": "持って来るって思った？(夏希) えっ そうなの？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 434.194,
+          "end_seconds": 439.399,
+          "text": "あのさ流れ的にさあの花火がバチバチってなってるやつ持ってくるって思った?",
+          "is_question": true,
+          "segment_position": 74,
+          "sentence_index": 6
+        },
+        {
+          "start_seconds": 439.399,
+          "end_seconds": 440.08,
+          "text": "えそうなの?",
+          "is_question": true,
+          "segment_position": 74,
+          "sentence_index": 7
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "当前语言句已分别包含「持ってくるって思った?」「そうなの?」。",
+      "error_attribution": "already_visible_question_mark"
+    },
+    {
+      "id": "missed-reference-00032",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 456.94350000000003,
+        "end_seconds": 459.8795,
+        "text": "(夏希) えっ…もしかして やってほしかった？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 458.206,
+          "end_seconds": 459.64,
+          "text": "えもしかしてやってほしかった",
+          "is_question": false,
+          "segment_position": 84,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 459.781,
+          "end_seconds": 461.58,
+          "text": "いやいや全然そういうことじゃない",
+          "is_question": false,
+          "segment_position": 85,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "许可/期待确认问句已形成独立语言句，后续否定回答也独立，但未生成候选。",
+      "error_attribution": "candidate_rule_missing"
+    },
+    {
+      "id": "missed-reference-00033",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 464.1255,
+        "end_seconds": 466.56149999999997,
+        "text": "ね｡(麻美) えっ 何？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 464.992,
+          "end_seconds": 465.5,
+          "text": "えっ?",
+          "is_question": true,
+          "segment_position": 87,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00034",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 492.4925,
+        "end_seconds": 495.92850000000004,
+        "text": "気にし過ぎじゃない？(麻美) 多分 覚えてないと思うよ｡",
+        "is_question": true
+      },
+      "language_sentence_context": [],
+      "gold_label": "uncertain",
+      "gold_candidate_type": null,
+      "review_status": "needs_audio_review",
+      "review_note": "参考『気にし過ぎじゃない?』无重叠输出上下文，需听音频确认缺失。",
+      "error_attribution": "asr_omission_or_misalignment"
+    },
+    {
+      "id": "missed-reference-00035",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 501.626,
+        "end_seconds": 505.06199999999995,
+        "text": "(麻美) 一応 店員さんに伝えとこっか？(美穂) えっ 何を？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 502.888,
+          "end_seconds": 504.05,
+          "text": "一応店員さん伝えとこうか",
+          "is_question": false,
+          "segment_position": 96,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 504.17,
+          "end_seconds": 504.499,
+          "text": "何を",
+          "is_question": false,
+          "segment_position": 97,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00036",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 515.1535,
+        "end_seconds": 519.0905,
+        "text": "(美穂) やめて… 余計 恥ずかしいから｡(麻美) ホント？ 大丈夫？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 513.182,
+          "end_seconds": 515.6,
+          "text": "決してこの子の扱いが低いとかじゃないですよ",
+          "is_question": false,
+          "segment_position": 99,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 515.761,
+          "end_seconds": 518.458,
+          "text": "やめて余計恥ずかしいからやめて",
+          "is_question": false,
+          "segment_position": 100,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "参考中的「ホント？ 大丈夫？」未出现在重叠语言句，不能归责于候选规则。",
+      "error_attribution": "asr_omission_or_misalignment"
+    },
+    {
+      "id": "missed-reference-00037",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 525.6429999999999,
+        "end_seconds": 528.579,
+        "text": "すっごい懐かしいの見つけた｡(麻美) 何？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 525.963,
+          "end_seconds": 527.3,
+          "text": "すっごい懐かしいの見つけた",
+          "is_question": false,
+          "segment_position": 104,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00038",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 534.6519999999999,
+        "end_seconds": 536.5869999999999,
+        "text": "(麻美) え～ 何これ いつ頃？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 533.386,
+          "end_seconds": 535.858,
+          "text": "なにこれいつ頃",
+          "is_question": false,
+          "segment_position": 106,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00039",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 536.6539999999999,
+        "end_seconds": 540.0909999999999,
+        "text": "(美穂) これ ラウンドワン出来てすぐだから 中２とか？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 536.942,
+          "end_seconds": 542.72,
+          "text": "これラウンド1できてすぐだから12とか、なんだっけ",
+          "is_question": false,
+          "segment_position": 107,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "关键数量「中2」被识别为「12」，且后续文本也与参考不一致。",
+      "error_attribution": "asr_error"
+    },
+    {
+      "id": "missed-reference-00040",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 541.5919999999999,
+        "end_seconds": 544.5289999999999,
+        "text": "(麻美) 何だっけ？ このポーズ｡(美穂) これでしょ？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 536.942,
+          "end_seconds": 542.72,
+          "text": "これラウンド1できてすぐだから12とか、なんだっけ",
+          "is_question": false,
+          "segment_position": 107,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 542.822,
+          "end_seconds": 543.519,
+          "text": "これこのポーズ",
+          "is_question": false,
+          "segment_position": 108,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 543.58,
+          "end_seconds": 544.888,
+          "text": "専門学校のポスターの",
+          "is_question": false,
+          "segment_position": 109,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": "elliptical_question",
+      "review_status": "reviewed",
+      "review_note": "『何だっけ』文本存在但与后续短片段粘连，未独立为问句。",
+      "error_attribution": "language_sentence_error"
+    },
+    {
+      "id": "missed-reference-00041",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 578.5565000000001,
+        "end_seconds": 582.9945000000001,
+        "text": "真里ちゃん 覚えてる？(麻美) 真里ちゃんって→",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 577.841,
+          "end_seconds": 581.66,
+          "text": "そういえばさマリちゃん覚えてたマリちゃんってウノマリちゃん",
+          "is_question": false,
+          "segment_position": 121,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 581.782,
+          "end_seconds": 584.077,
+          "text": "そう生徒会長のマリちゃん今何やってるか知ってる",
+          "is_question": false,
+          "segment_position": 122,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00042",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 583.0615000000001,
+        "end_seconds": 585.9975000000002,
+        "text": "今 何やってるか知ってる？(夏希) えっ 知らない｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 581.782,
+          "end_seconds": 584.077,
+          "text": "そう生徒会長のマリちゃん今何やってるか知ってる",
+          "is_question": false,
+          "segment_position": 122,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 584.628,
+          "end_seconds": 585.019,
+          "text": "知らない",
+          "is_question": false,
+          "segment_position": 123,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00043",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 588.5665000000001,
+        "end_seconds": 590.0015000000001,
+        "text": "(美穂) すごくない？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 587.442,
+          "end_seconds": 588.673,
+          "text": "えぇーすごくない",
+          "is_question": false,
+          "segment_position": 125,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 589.992,
+          "end_seconds": 592.829,
+          "text": "ついに物理的にも雲の上の存在になっちゃったね",
+          "is_question": false,
+          "segment_position": 126,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00044",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 606.9825000000001,
+        "end_seconds": 609.4185000000001,
+        "text": "むしろ 性格悪いよね｡(美穂) どういうこと？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 604.696,
+          "end_seconds": 607.03,
+          "text": "そこまで優秀で性格までいいってさ",
+          "is_question": false,
+          "segment_position": 130,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 607.192,
+          "end_seconds": 608.35,
+          "text": "むしろ性格悪いよね",
+          "is_question": false,
+          "segment_position": 131,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 609.212,
+          "end_seconds": 610.346,
+          "text": "どういうことだってほら",
+          "is_question": false,
+          "segment_position": 132,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00045",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 634.1930000000001,
+        "end_seconds": 639.1310000000001,
+        "text": "(麻美) 何かさ… 超ダメになってる同級生とかいないのかな？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 636.471,
+          "end_seconds": 638.83,
+          "text": "超ダメになってる同級生とかいないのかな",
+          "is_question": false,
+          "segment_position": 144,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "完整的探索性问句「いないのかな」与参考高度一致，但未生成候选。",
+      "error_attribution": "candidate_rule_missing"
+    },
+    {
+      "id": "missed-reference-00046",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 639.1980000000001,
+        "end_seconds": 640.633,
+        "text": "(美穂) 何で？(麻美) このままだと→",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 639.497,
+          "end_seconds": 645.889,
+          "text": "なんでこのままだと劣等感で押しつぶされそうだからダメな人の話聞いて元気もらいたい最低だなでもちょっと分かる",
+          "is_question": false,
+          "segment_position": 145,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "短问句「なんで」与后续解释被合并为一个长语言句。",
+      "error_attribution": "language_sentence_error"
+    },
+    {
+      "id": "missed-reference-00047",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 645.2040000000001,
+        "end_seconds": 648.6410000000001,
+        "text": "(夏希) でも ちょっと分かるないの？ ダメな同級生の話｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 639.497,
+          "end_seconds": 645.889,
+          "text": "なんでこのままだと劣等感で押しつぶされそうだからダメな人の話聞いて元気もらいたい最低だなでもちょっと分かる",
+          "is_question": false,
+          "segment_position": 145,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 646.367,
+          "end_seconds": 646.43,
+          "text": "え?",
+          "is_question": true,
+          "segment_position": 146,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 647.19,
+          "end_seconds": 647.737,
+          "text": "Aコンないの?",
+          "is_question": true,
+          "segment_position": 147,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 647.737,
+          "end_seconds": 648.547,
+          "text": "ダメな同級生の話",
+          "is_question": false,
+          "segment_position": 147,
+          "sentence_index": 1
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00048",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 656.3605,
+        "end_seconds": 658.7965,
+        "text": "(夏希) そろそろ行く？(麻美) そうだね｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 656.704,
+          "end_seconds": 657.32,
+          "text": "そろそろ行く?",
+          "is_question": true,
+          "segment_position": 150,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 657.741,
+          "end_seconds": 658.075,
+          "text": "そうだね",
+          "is_question": false,
+          "segment_position": 151,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00049",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 658.8625000000001,
+        "end_seconds": 661.2315,
+        "text": "(美穂) 帰りにプリクラ撮ってかない？(夏希) あっ いいね｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 659.622,
+          "end_seconds": 661.236,
+          "text": "帰りにクリプラ取ってからいいね",
+          "is_question": false,
+          "segment_position": 152,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "「プリクラ撮ってかない」被识别为「クリプラ取ってから」，候选规则不应承担该错误。",
+      "error_attribution": "asr_error"
+    },
+    {
+      "id": "missed-reference-00050",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 661.2985,
+        "end_seconds": 664.2345,
+        "text": "(麻美) 撮ろう 撮ろう｡(夏希) ラウンドワン 開いてるかな？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 661.523,
+          "end_seconds": 662.033,
+          "text": "いいねとろとろ",
+          "is_question": false,
+          "segment_position": 153,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 663.003,
+          "end_seconds": 663.858,
+          "text": "ランドワン空いてるかな",
+          "is_question": false,
+          "segment_position": 154,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 664.143,
+          "end_seconds": 665.279,
+          "text": "あそこ朝までやってるでしょ",
+          "is_question": false,
+          "segment_position": 155,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": "sentence_terminal_question",
+      "review_status": "reviewed",
+      "review_note": "『ラウンドワン空いてるかな』文本完整，属于自问式句末问句。",
+      "error_attribution": "candidate_rule_missing"
+    },
+    {
+      "id": "missed-reference-00051",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 669.3065,
+        "end_seconds": 672.2425000000001,
+        "text": "(麻美) え～ 何 今 こんなになってんの？(美穂) めっちゃ進化してんじゃん｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 669.321,
+          "end_seconds": 670.719,
+          "text": "えー何今こんななんてんの",
+          "is_question": false,
+          "segment_position": 157,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 671.266,
+          "end_seconds": 672.179,
+          "text": "めっちゃ進化してんじゃん",
+          "is_question": false,
+          "segment_position": 158,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "问句主体和句末「の」保留且回答独立；轻微口语识别偏差不妨碍候选判断。",
+      "error_attribution": "candidate_rule_missing"
+    },
+    {
+      "id": "missed-reference-00052",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 675.3125,
+        "end_seconds": 678.2485,
+        "text": "これさ これぐらいキレイに撮れますよってこと？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 675.181,
+          "end_seconds": 678.38,
+          "text": "これさ、これぐらい綺麗に撮れますよってこと?",
+          "is_question": true,
+          "segment_position": 160,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00053",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 696.511,
+        "end_seconds": 698.4459999999999,
+        "text": "(夏希) この後 どうする？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 695.92,
+          "end_seconds": 698.04,
+          "text": "置いてかないでこの後どうする?",
+          "is_question": true,
+          "segment_position": 169,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00054",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 703.0169999999999,
+        "end_seconds": 705.453,
+        "text": "(麻美) カラオケとか行っちゃう？(夏希) あっ いいね カラオケ｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 703.75,
+          "end_seconds": 704.3,
+          "text": "カラオケとか行っちゃう?",
+          "is_question": true,
+          "segment_position": 172,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 704.743,
+          "end_seconds": 706.259,
+          "text": "いいねカラオケ行くか",
+          "is_question": false,
+          "segment_position": 173,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00055",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 714.5289999999999,
+        "end_seconds": 716.9639999999999,
+        "text": "(福田) いらっしゃいませ何名様ですか？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 715.289,
+          "end_seconds": 715.659,
+          "text": "いらっしゃいませ",
+          "is_question": false,
+          "segment_position": 178,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 715.68,
+          "end_seconds": 716.78,
+          "text": "何名様ですか?",
+          "is_question": true,
+          "segment_position": 179,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00056",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 721.4689999999999,
+        "end_seconds": 726.4069999999999,
+        "text": "福ちゃん？ 福ちゃんじゃない？(福田) お～ お～ お～！",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 720.56,
+          "end_seconds": 722.18,
+          "text": "ふくちゃん?",
+          "is_question": true,
+          "segment_position": 181,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 723.672,
+          "end_seconds": 723.98,
+          "text": "ふくちゃんじゃない?",
+          "is_question": true,
+          "segment_position": 182,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "当前语言句已分别包含「ふくちゃん?」「ふくちゃんじゃない?」。",
+      "error_attribution": "already_visible_question_mark"
+    },
+    {
+      "id": "missed-reference-00057",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 730.1915,
+        "end_seconds": 733.6285,
+        "text": "久しぶりえっ ３人 いつ以来だっけ？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 730.37,
+          "end_seconds": 730.994,
+          "text": "久しぶり",
+          "is_question": false,
+          "segment_position": 184,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 732.264,
+          "end_seconds": 733.42,
+          "text": "3人いつ以来だっけ?",
+          "is_question": true,
+          "segment_position": 185,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00058",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 733.6954999999999,
+        "end_seconds": 736.6315,
+        "text": "(夏希) いつだろう？成人式が最後じゃない？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 733.943,
+          "end_seconds": 734.91,
+          "text": "いつだろう",
+          "is_question": false,
+          "segment_position": 186,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 734.91,
+          "end_seconds": 735.675,
+          "text": "成人式が成人式だ",
+          "is_question": false,
+          "segment_position": 186,
+          "sentence_index": 1
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00059",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 742.5264999999999,
+        "end_seconds": 745.4635,
+        "text": "今日は 何の集まりなの？(夏希) 何の集まりっていうか→",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 742.784,
+          "end_seconds": 743.819,
+          "text": "今日は何の集まりなの?",
+          "is_question": true,
+          "segment_position": 189,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 744.122,
+          "end_seconds": 745.531,
+          "text": "何の集まりっていうか",
+          "is_question": false,
+          "segment_position": 190,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00060",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 750.3865000000001,
+        "end_seconds": 752.8225000000001,
+        "text": "あ～ 時間どうする？(美穂) どうしよっか｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 750.408,
+          "end_seconds": 750.858,
+          "text": "時間どうする?",
+          "is_question": true,
+          "segment_position": 192,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": "sentence_terminal_question",
+      "review_status": "reviewed",
+      "review_note": "输出已有『時間どうする?』。",
+      "error_attribution": "already_visible_question_mark"
+    },
+    {
+      "id": "missed-reference-00061",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 752.7144999999999,
+        "end_seconds": 756.1514999999999,
+        "text": "(夏希) え～ 取りあえず ２？(美穂) ２だね ２時間で｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 753.384,
+          "end_seconds": 754.377,
+          "text": "とりあえず2?",
+          "is_question": true,
+          "segment_position": 193,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 755.103,
+          "end_seconds": 756.155,
+          "text": "2だね 2時間ね",
+          "is_question": false,
+          "segment_position": 194,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00062",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 765.565,
+        "end_seconds": 768.5010000000001,
+        "text": "そういえばさ 成人式の後もここ来なかったっけ？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 765.981,
+          "end_seconds": 768.76,
+          "text": "そういえば成人試験の後もここ来なかったっけ?",
+          "is_question": true,
+          "segment_position": 198,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00063",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 780.6435,
+        "end_seconds": 783.0785,
+        "text": "“粉雪”だったけ？(美穂) 違ったっけ？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 781.685,
+          "end_seconds": 782.48,
+          "text": "粉駅だったっけ?",
+          "is_question": true,
+          "segment_position": 204,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00064",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 786.1485,
+        "end_seconds": 788.5844999999999,
+        "text": "(夏希) 誰から歌う？(麻美) 早くね？(夏希) えっ 早い？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 785.586,
+          "end_seconds": 786.159,
+          "text": "そっち系だった",
+          "is_question": false,
+          "segment_position": 206,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 786.964,
+          "end_seconds": 787.86,
+          "text": "ねぇ誰から歌う?",
+          "is_question": true,
+          "segment_position": 207,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 788.064,
+          "end_seconds": 788.42,
+          "text": "早くね?",
+          "is_question": true,
+          "segment_position": 208,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00065",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 788.6514999999999,
+        "end_seconds": 792.5885,
+        "text": "(麻美) 着いてすぐ歌うって高校生じゃん｡(夏希) 高校生ってそうなの？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 788.922,
+          "end_seconds": 789.16,
+          "text": "早い?",
+          "is_question": true,
+          "segment_position": 209,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 789.624,
+          "end_seconds": 791.158,
+          "text": "ついてすぐ歌うって高校生じゃん",
+          "is_question": false,
+          "segment_position": 210,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 792.047,
+          "end_seconds": 793.059,
+          "text": "高校生ってそうなの?",
+          "is_question": true,
+          "segment_position": 211,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00066",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 792.6555,
+        "end_seconds": 795.0905,
+        "text": "(麻美) 何か そういうイメージない？(ノック)",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 792.047,
+          "end_seconds": 793.059,
+          "text": "高校生ってそうなの?",
+          "is_question": true,
+          "segment_position": 211,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 793.767,
+          "end_seconds": 794.78,
+          "text": "わかんないけど、そういうイメージじゃない?",
+          "is_question": true,
+          "segment_position": 212,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00067",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 802.6655,
+        "end_seconds": 805.6015,
+        "text": "(夏希) いいの？ 怒られない？>> 大丈夫｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 802.661,
+          "end_seconds": 803.339,
+          "text": "えー、ありがとう",
+          "is_question": false,
+          "segment_position": 216,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 803.786,
+          "end_seconds": 804.375,
+          "text": "いいの?",
+          "is_question": true,
+          "segment_position": 217,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 804.375,
+          "end_seconds": 804.659,
+          "text": "怒られない?",
+          "is_question": true,
+          "segment_position": 217,
+          "sentence_index": 1
+        },
+        {
+          "start_seconds": 805.547,
+          "end_seconds": 805.74,
+          "text": "大丈夫?",
+          "is_question": true,
+          "segment_position": 218,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00068",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 821.217,
+        "end_seconds": 824.654,
+        "text": "(美穂) そういえばさ 福ちゃんってまだ音楽やってんだっけ？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 822.303,
+          "end_seconds": 825.08,
+          "text": "そういえばさ、ふくちゃんってまだ音楽やってんだっけ?",
+          "is_question": true,
+          "segment_position": 222,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00069",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 824.9755,
+        "end_seconds": 827.4105,
+        "text": "(麻美) 分かんない やってんじゃない？(夏希) いや やめたんだよ｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 822.303,
+          "end_seconds": 825.08,
+          "text": "そういえばさ、ふくちゃんってまだ音楽やってんだっけ?",
+          "is_question": true,
+          "segment_position": 222,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 825.688,
+          "end_seconds": 826.48,
+          "text": "あかんのやってんじゃない?",
+          "is_question": true,
+          "segment_position": 223,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 826.64,
+          "end_seconds": 827.399,
+          "text": "いや、やめたんだよ",
+          "is_question": false,
+          "segment_position": 224,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00070",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 827.4775,
+        "end_seconds": 830.4135,
+        "text": "(麻美) そうなんだ｡(夏希) あれ？ ２人 どこまで知ってる？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 827.44,
+          "end_seconds": 827.6,
+          "text": "えっ?",
+          "is_question": true,
+          "segment_position": 225,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 828.02,
+          "end_seconds": 828.418,
+          "text": "そうなんだ",
+          "is_question": false,
+          "segment_position": 226,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 829.023,
+          "end_seconds": 829.509,
+          "text": "あれ?",
+          "is_question": true,
+          "segment_position": 227,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 829.509,
+          "end_seconds": 830.359,
+          "text": "2人どこまで知ってる?",
+          "is_question": true,
+          "segment_position": 227,
+          "sentence_index": 1
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": "sentence_terminal_question",
+      "review_status": "reviewed",
+      "review_note": "输出已有『あれ?』『2人どこまで知ってる?』。",
+      "error_attribution": "already_visible_question_mark"
+    },
+    {
+      "id": "missed-reference-00071",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 845.9295,
+        "end_seconds": 848.4315,
+        "text": "(美穂) あーちんは？(麻美) 食べる 食べる｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 846.425,
+          "end_seconds": 846.9,
+          "text": "アーチンは?",
+          "is_question": true,
+          "segment_position": 234,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 847.34,
+          "end_seconds": 848.09,
+          "text": "うん、食べる",
+          "is_question": false,
+          "segment_position": 235,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00072",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 863.6514999999999,
+        "end_seconds": 866.5885,
+        "text": "(麻美) 覚えてない？ 何かさ福ちゃんはさ ここで→",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 863.821,
+          "end_seconds": 870.98,
+          "text": "覚えてないなんかさ福ちゃんはさここで音楽やるって言った時みんななんか絶対売れるよとか言ってなかった",
+          "is_question": false,
+          "segment_position": 239,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00073",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 869.1804999999999,
+        "end_seconds": 871.6165,
+        "text": "｢絶対売れるよ｣とか言ってなかった？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 863.821,
+          "end_seconds": 870.98,
+          "text": "覚えてないなんかさ福ちゃんはさここで音楽やるって言った時みんななんか絶対売れるよとか言ってなかった",
+          "is_question": false,
+          "segment_position": 239,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "引用内容虽处于长句中，但目标确认结构位于语言句末且文本完整。",
+      "error_attribution": "candidate_rule_missing"
+    },
+    {
+      "id": "missed-reference-00074",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 873.1845,
+        "end_seconds": 876.1204999999999,
+        "text": "(麻美) なっちサインもらってなかったっけ？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 873.933,
+          "end_seconds": 875.549,
+          "text": "なっちサインもらってなかったっけ",
+          "is_question": false,
+          "segment_position": 241,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00075",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 886.682,
+        "end_seconds": 889.118,
+        "text": "あの“粉雪”聴いたらいけると思わない？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 885.72,
+          "end_seconds": 888.68,
+          "text": "いやでもさ、あの粉雪聞いたらいけると思わない",
+          "is_question": false,
+          "segment_position": 246,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00076",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 891.687,
+        "end_seconds": 894.624,
+        "text": "(麻美) え～ “粉雪”だったっけ？(美穂) いや～ 何か→",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 892.571,
+          "end_seconds": 893.74,
+          "text": "え、粉雪だったっけ",
+          "is_question": false,
+          "segment_position": 249,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 894.062,
+          "end_seconds": 896.72,
+          "text": "いやなんか粉雪系のそっち系だよ",
+          "is_question": false,
+          "segment_position": 250,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00077",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 911.075,
+        "end_seconds": 914.5120000000001,
+        "text": "(麻美) もう言っちゃうけどさ｡(夏希) ん？ 何？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 911.804,
+          "end_seconds": 912.495,
+          "text": "言っちゃうけどさ",
+          "is_question": false,
+          "segment_position": 256,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 912.801,
+          "end_seconds": 913.278,
+          "text": "ん?",
+          "is_question": true,
+          "segment_position": 257,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 913.278,
+          "end_seconds": 913.32,
+          "text": "何?",
+          "is_question": true,
+          "segment_position": 257,
+          "sentence_index": 1
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00078",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 934.8625,
+        "end_seconds": 936.7975,
+        "text": "言っていい？(夏希) どうぞ｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 934.627,
+          "end_seconds": 935.0,
+          "text": "言っていい?",
+          "is_question": true,
+          "segment_position": 268,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 935.44,
+          "end_seconds": 935.573,
+          "text": "どうぞ",
+          "is_question": false,
+          "segment_position": 269,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 936.522,
+          "end_seconds": 940.72,
+          "text": "サービスしてくれるんだったらポテトじゃなくてドリンクをタダにしてほしかったよね",
+          "is_question": false,
+          "segment_position": 270,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00079",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 960.5004999999999,
+        "end_seconds": 963.3704999999999,
+        "text": "福ちゃんだよね？(美穂) 福ちゃんなんだよね 僅差だけど｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 955.683,
+          "end_seconds": 961.449,
+          "text": "誰も悪くない加害者のいない事件だよねでもさ、誰が悪いか決めろって言われたらフクちゃんだよね",
+          "is_question": false,
+          "segment_position": 278,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 961.47,
+          "end_seconds": 962.927,
+          "text": "フクちゃんなんだよね、僅差だけどね",
+          "is_question": false,
+          "segment_position": 279,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00080",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 965.9394999999998,
+        "end_seconds": 967.8744999999999,
+        "text": "(麻美) 福ちゃんってさ あれじゃない？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 966.295,
+          "end_seconds": 967.359,
+          "text": "フクちゃんってさ、あれじゃん",
+          "is_question": false,
+          "segment_position": 281,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": "sentence_terminal_question",
+      "review_status": "reviewed",
+      "review_note": "参考『あれじゃない?』被识别为陈述『あれじゃん』。",
+      "error_attribution": "asr_error"
+    },
+    {
+      "id": "missed-reference-00081",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 967.9414999999999,
+        "end_seconds": 969.8764999999999,
+        "text": "しーちゃんと結婚したんじゃなかったっけ？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 968.064,
+          "end_seconds": 969.98,
+          "text": "シーちゃんと結婚したんじゃなかったっけ?",
+          "is_question": true,
+          "segment_position": 282,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00082",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 983.5725000000001,
+        "end_seconds": 988.0105000000001,
+        "text": "何で別れちゃったの？(夏希) あぁ… 何かね→",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 983.913,
+          "end_seconds": 984.848,
+          "text": "なんで別れちゃったの",
+          "is_question": false,
+          "segment_position": 290,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 987.051,
+          "end_seconds": 987.466,
+          "text": "なんかね",
+          "is_question": false,
+          "segment_position": 291,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00083",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 995.069,
+        "end_seconds": 997.005,
+        "text": "しーちゃんが一番 背中押してなかったっけ？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 995.303,
+          "end_seconds": 996.8,
+          "text": "しーちゃんが一番背中押してなかった",
+          "is_question": false,
+          "segment_position": 295,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 996.983,
+          "end_seconds": 997.639,
+          "text": "押してた",
+          "is_question": false,
+          "segment_position": 296,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00084",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 999.073,
+        "end_seconds": 1001.509,
+        "text": "それで いい感じになって付き合ったんじゃなかったっけ？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 998.481,
+          "end_seconds": 1001.279,
+          "text": "なんならあの二人それでいい感じになって付きあったんじゃなかったっけ",
+          "is_question": false,
+          "segment_position": 297,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "完整回忆确认句「付き合ったんじゃなかったっけ」未生成候选。",
+      "error_attribution": "candidate_rule_missing"
+    },
+    {
+      "id": "missed-reference-00085",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1012.6015000000001,
+        "end_seconds": 1014.5365,
+        "text": "福ちゃんは？(夏希) 福ちゃんはね→",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1007.243,
+          "end_seconds": 1015.245,
+          "text": "今は職場の人と付きあっててもうすぐ結婚するんだってふくちゃんははくちゃんはね",
+          "is_question": false,
+          "segment_position": 299,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "话题省略问句「福ちゃんは」被前后叙述吞并，同时存在局部识别偏差。",
+      "error_attribution": "language_sentence_error"
+    },
+    {
+      "id": "missed-reference-00086",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1021.7004999999999,
+        "end_seconds": 1024.6365,
+        "text": "(美穂) 福ちゃん パパなの？(夏希) で それが きっかけで→",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1021.98,
+          "end_seconds": 1022.656,
+          "text": "パパやの",
+          "is_question": false,
+          "segment_position": 300,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1023.663,
+          "end_seconds": 1028.68,
+          "text": "でそれがきっかけで音楽もきっぱりやめて今はバイト掛け持ちしながら家族養ってんだって",
+          "is_question": false,
+          "segment_position": 301,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "参考「パパなの？」被识别为不完整的「パパやの」，需先处理识别错误。",
+      "error_attribution": "asr_error"
+    },
+    {
+      "id": "missed-reference-00087",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1059.1924999999999,
+        "end_seconds": 1061.6285,
+        "text": "(美穂) うわ～！(麻美) えっ なくしたの？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1058.93,
+          "end_seconds": 1060.489,
+          "text": "えぇなくしたの",
+          "is_question": false,
+          "segment_position": 311,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1060.751,
+          "end_seconds": 1064.28,
+          "text": "えぇなおさら食べろよ",
+          "is_question": false,
+          "segment_position": 312,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00088",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1069.195,
+        "end_seconds": 1071.13,
+        "text": "さすがに厳しいだろうなと思ってたもん｡(夏希) ホントに？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1067.781,
+          "end_seconds": 1070.679,
+          "text": "いやいやうまいなと思ったけどさすがに厳しいだろうなと思ってたもん",
+          "is_question": false,
+          "segment_position": 314,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1070.801,
+          "end_seconds": 1073.58,
+          "text": "ほんとにこれ止めなかったっていうことで3人同罪だよ",
+          "is_question": false,
+          "segment_position": 315,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00089",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1074.2,
+        "end_seconds": 1077.636,
+        "text": "(麻美)｢え～｣じゃない ３人で食べよう｡(美穂) 鼻差で福ちゃん 悪いのに？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1074.602,
+          "end_seconds": 1076.319,
+          "text": "えぇじゃないの3人で食べよ",
+          "is_question": false,
+          "segment_position": 317,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1076.582,
+          "end_seconds": 1078.618,
+          "text": "話されてくちゃ悪いのにでも言わないの",
+          "is_question": false,
+          "segment_position": 318,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00090",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1128.4780000000003,
+        "end_seconds": 1130.4130000000002,
+        "text": "(麻美) ポケベルってだいぶ上の世代だよね？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1130.089,
+          "end_seconds": 1132.51,
+          "text": "イトコがよく唄ってたんだよね",
+          "is_question": false,
+          "segment_position": 323,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "uncertain",
+      "gold_candidate_type": null,
+      "review_status": "needs_audio_review",
+      "review_note": "参考『ポケベルって…だよね?』与重叠输出不对应，需听音频。",
+      "error_attribution": "asr_omission_or_misalignment"
+    },
+    {
+      "id": "missed-reference-00091",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1132.4820000000002,
+        "end_seconds": 1135.4180000000001,
+        "text": "(美穂) うちらが保育園ぐらいの時じゃなかった？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1130.089,
+          "end_seconds": 1132.51,
+          "text": "イトコがよく唄ってたんだよね",
+          "is_question": false,
+          "segment_position": 323,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1132.731,
+          "end_seconds": 1135.169,
+          "text": "うちらが保育園ぐらいの時じゃなかった",
+          "is_question": false,
+          "segment_position": 324,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00092",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1135.4850000000001,
+        "end_seconds": 1139.8560000000002,
+        "text": "(麻美) 通話はできないんだっけ？(美穂) 何か 番号 送るんじゃなかった？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1135.73,
+          "end_seconds": 1137.568,
+          "text": "何だっけ通話はできないんだっけ",
+          "is_question": false,
+          "segment_position": 325,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1138.451,
+          "end_seconds": 1140.769,
+          "text": "なんか番号を送るんじゃなかったっけな",
+          "is_question": false,
+          "segment_position": 326,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00093",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1139.9230000000002,
+        "end_seconds": 1143.3600000000001,
+        "text": "(麻美) 番号？(美穂) うん で 送られてきた番号に→",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1138.451,
+          "end_seconds": 1140.769,
+          "text": "なんか番号を送るんじゃなかったっけな",
+          "is_question": false,
+          "segment_position": 326,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1141.055,
+          "end_seconds": 1141.569,
+          "text": "番号",
+          "is_question": false,
+          "segment_position": 327,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1142.912,
+          "end_seconds": 1146.209,
+          "text": "送られてきた番号に公衆電話からかけるんじゃなかった?",
+          "is_question": true,
+          "segment_position": 328,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00094",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1143.4260000000002,
+        "end_seconds": 1145.8620000000003,
+        "text": "公衆電話からかけるんじゃなかった？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1142.912,
+          "end_seconds": 1146.209,
+          "text": "送られてきた番号に公衆電話からかけるんじゃなかった?",
+          "is_question": true,
+          "segment_position": 328,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00095",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1145.9290000000003,
+        "end_seconds": 1148.8650000000002,
+        "text": "(夏希) 何かさ 文字送れるやつなかった？(麻美) 文字？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1142.912,
+          "end_seconds": 1146.209,
+          "text": "送られてきた番号に公衆電話からかけるんじゃなかった?",
+          "is_question": true,
+          "segment_position": 328,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1146.751,
+          "end_seconds": 1148.709,
+          "text": "なんかさ文字送れるやつなかったっけ?",
+          "is_question": true,
+          "segment_position": 329,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00096",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1148.9320000000002,
+        "end_seconds": 1152.3690000000001,
+        "text": "(夏希) ほら カタカナとか送れるやつあれってピッチだっけ？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1148.936,
+          "end_seconds": 1149.29,
+          "text": "文字?",
+          "is_question": true,
+          "segment_position": 330,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1149.994,
+          "end_seconds": 1151.53,
+          "text": "ほらカタカナとか送れるやつ",
+          "is_question": false,
+          "segment_position": 331,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1152.314,
+          "end_seconds": 1153.19,
+          "text": "あれってピッチだっけ?",
+          "is_question": true,
+          "segment_position": 332,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00097",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1152.5465,
+        "end_seconds": 1155.9835,
+        "text": "(麻美) ピッチじゃない？(美穂) あっ 文字送れるやつもあるね｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1152.314,
+          "end_seconds": 1153.19,
+          "text": "あれってピッチだっけ?",
+          "is_question": true,
+          "segment_position": 332,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1153.271,
+          "end_seconds": 1153.93,
+          "text": "ピッチじゃない?",
+          "is_question": true,
+          "segment_position": 333,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1154.613,
+          "end_seconds": 1156.429,
+          "text": "文字送れるやつもあるよね",
+          "is_question": false,
+          "segment_position": 334,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "当前语言句已包含对应的两个问号，参考字幕块合并了相邻对话。",
+      "error_attribution": "already_visible_question_mark"
+    },
+    {
+      "id": "missed-reference-00098",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1165.2810000000002,
+        "end_seconds": 1169.218,
+        "text": "(美穂) で ｢５･１｣で｢ナ｣｡(麻美) ５･１？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1165.714,
+          "end_seconds": 1167.469,
+          "text": "で5-1でな",
+          "is_question": false,
+          "segment_position": 337,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1168.213,
+          "end_seconds": 1169.065,
+          "text": "5-1でな",
+          "is_question": false,
+          "segment_position": 338,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "参考短确认「5・1？」被识别成重复的「5-1でな」，不能评价问句候选。",
+      "error_attribution": "asr_error"
+    },
+    {
+      "id": "missed-reference-00099",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1203.1965000000002,
+        "end_seconds": 1205.6325000000004,
+        "text": "(美穂) …って これ 何の主題歌だっけ？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1203.903,
+          "end_seconds": 1205.48,
+          "text": "で、これ何の主題歌だっけ?",
+          "is_question": true,
+          "segment_position": 349,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00100",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1211.7055000000003,
+        "end_seconds": 1213.6405000000004,
+        "text": "(夏希) じゃ クイズね｡(麻美) うん 何？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1212.227,
+          "end_seconds": 1212.698,
+          "text": "じゃあクイズね",
+          "is_question": false,
+          "segment_position": 353,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1212.78,
+          "end_seconds": 1213.24,
+          "text": "何?",
+          "is_question": true,
+          "segment_position": 354,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "当前语言句中的短问句「何?」已经带问号。",
+      "error_attribution": "already_visible_question_mark"
+    },
+    {
+      "id": "missed-reference-00101",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1213.7075000000004,
+        "end_seconds": 1216.6435000000004,
+        "text": "(夏希) これは何の主題歌でしょう？(美穂:麻美) はい｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1214.001,
+          "end_seconds": 1215.44,
+          "text": "これは何の主題歌でしょう?",
+          "is_question": true,
+          "segment_position": 355,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00102",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1222.4920000000002,
+        "end_seconds": 1225.428,
+        "text": "(麻美) 分かったけどさ…｡(夏希) おっ 何？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1223.614,
+          "end_seconds": 1224.306,
+          "text": "分かったけどさ",
+          "is_question": false,
+          "segment_position": 356,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1224.613,
+          "end_seconds": 1224.89,
+          "text": "何?",
+          "is_question": true,
+          "segment_position": 357,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00103",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1225.4950000000001,
+        "end_seconds": 1227.43,
+        "text": "(麻美)“家政婦のミタ”でしょ？(夏希) 正解！",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1225.893,
+          "end_seconds": 1226.83,
+          "text": "家政婦の見たでしょ?",
+          "is_question": true,
+          "segment_position": 358,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1227.033,
+          "end_seconds": 1227.245,
+          "text": "あ、正解",
+          "is_question": false,
+          "segment_position": 359,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00104",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1234.548,
+        "end_seconds": 1237.484,
+        "text": "(麻美) ねぇ 中学の時さ三田って先生 いなかった？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1231.871,
+          "end_seconds": 1234.59,
+          "text": "よくその情報量でクイズに踏み切ったよね",
+          "is_question": false,
+          "segment_position": 362,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1235.432,
+          "end_seconds": 1237.47,
+          "text": "中学の時さミタって先生いなかった?",
+          "is_question": true,
+          "segment_position": 363,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00105",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1245.9700000000003,
+        "end_seconds": 1248.9060000000002,
+        "text": "アドバンス 没収されたからね｡(美穂) ゲームボーイアドバンス？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1244.511,
+          "end_seconds": 1247.209,
+          "text": "私あいつにさアドバンス募集されたからね",
+          "is_question": false,
+          "segment_position": 367,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1247.411,
+          "end_seconds": 1248.389,
+          "text": "ゲームオブアドバンス?",
+          "is_question": true,
+          "segment_position": 368,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00106",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1256.9810000000002,
+        "end_seconds": 1258.9160000000002,
+        "text": "(美穂) でも あーちん授業中もやってたよね？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1255.134,
+          "end_seconds": 1258.629,
+          "text": "ペータン超懐かしいんだけどでもアーチェン授業中もやってたよね",
+          "is_question": false,
+          "segment_position": 371,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1258.773,
+          "end_seconds": 1259.149,
+          "text": "やってた",
+          "is_question": false,
+          "segment_position": 372,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00107",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1271.5675,
+        "end_seconds": 1274.0035,
+        "text": "でも多少はまるくなってんじゃないの？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1271.722,
+          "end_seconds": 1273.739,
+          "text": "まあでも多少は丸くなってんじゃないの",
+          "is_question": false,
+          "segment_position": 380,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "完整句末询问「丸くなってんじゃないの」与参考高度一致。",
+      "error_attribution": "candidate_rule_missing"
+    },
+    {
+      "id": "missed-reference-00108",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1274.0705,
+        "end_seconds": 1277.5065,
+        "text": "(美穂) いや 辞めたじゃん｡(麻美) えっ マジで？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1274.385,
+          "end_seconds": 1275.517,
+          "text": "や、やめたじゃん",
+          "is_question": false,
+          "segment_position": 381,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1275.95,
+          "end_seconds": 1276.06,
+          "text": "え?",
+          "is_question": true,
+          "segment_position": 382,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1277.205,
+          "end_seconds": 1277.6,
+          "text": "マジで?",
+          "is_question": true,
+          "segment_position": 383,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00109",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1277.6919999999998,
+        "end_seconds": 1281.129,
+        "text": "(美穂) 知らない？(麻美) 知らない｡(美穂) だいぶ前だよ 問題起こしたとか｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1277.803,
+          "end_seconds": 1278.24,
+          "text": "知らない?",
+          "is_question": true,
+          "segment_position": 384,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1278.38,
+          "end_seconds": 1278.466,
+          "text": "知らない",
+          "is_question": false,
+          "segment_position": 385,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1279.124,
+          "end_seconds": 1281.16,
+          "text": "だいぶ前だよ、なんか問題起こしたとかで",
+          "is_question": false,
+          "segment_position": 386,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00110",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1304.3935000000001,
+        "end_seconds": 1308.3305000000003,
+        "text": "(夏希) ん？ 10年？(美穂) あれ もう20年近く前だよ｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1305.698,
+          "end_seconds": 1305.819,
+          "text": "ん?",
+          "is_question": true,
+          "segment_position": 397,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1305.819,
+          "end_seconds": 1306.06,
+          "text": "10年?",
+          "is_question": true,
+          "segment_position": 397,
+          "sentence_index": 1
+        },
+        {
+          "start_seconds": 1306.581,
+          "end_seconds": 1308.419,
+          "text": "あれもう20年近く前だよ",
+          "is_question": false,
+          "segment_position": 398,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": "elliptical_question",
+      "review_status": "reviewed",
+      "review_note": "输出已有『ん?』『10年?』。",
+      "error_attribution": "already_visible_question_mark"
+    },
+    {
+      "id": "missed-reference-00111",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1308.3975000000003,
+        "end_seconds": 1312.3345000000002,
+        "text": "(麻美) え… そんな経つ？(美穂) はい｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1306.581,
+          "end_seconds": 1308.419,
+          "text": "あれもう20年近く前だよ",
+          "is_question": false,
+          "segment_position": 398,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1310.42,
+          "end_seconds": 1311.3,
+          "text": "そんな経つ?",
+          "is_question": true,
+          "segment_position": 399,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00112",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1313.9915,
+        "end_seconds": 1318.4295000000002,
+        "text": "(夏希) 何かさ 30過ぎてから時間経つの早過ぎじゃない？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1314.361,
+          "end_seconds": 1318.06,
+          "text": "なんかさ、30過ぎてから時間経つの早すぎじゃない?",
+          "is_question": true,
+          "segment_position": 401,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1318.361,
+          "end_seconds": 1318.917,
+          "text": "早い",
+          "is_question": false,
+          "segment_position": 402,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00113",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1330.7880000000002,
+        "end_seconds": 1333.2240000000002,
+        "text": "ごめん ｢へぇ～｣って言ったけどどういうこと？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1331.573,
+          "end_seconds": 1332.75,
+          "text": "へーって言ったけどどういうこと?",
+          "is_question": true,
+          "segment_position": 404,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00114",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1350.0455,
+        "end_seconds": 1354.4834999999998,
+        "text": "(夏希) てか 最近 １日過ぎるのも早くない？(麻美) 早いよ～｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1348.372,
+          "end_seconds": 1351.017,
+          "text": "確かにそのくらい早いよねてか",
+          "is_question": false,
+          "segment_position": 408,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1351.017,
+          "end_seconds": 1352.79,
+          "text": "最近1日過ぎるのも早くない?",
+          "is_question": true,
+          "segment_position": 409,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1353.071,
+          "end_seconds": 1353.419,
+          "text": "早いよ",
+          "is_question": false,
+          "segment_position": 410,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "当前语言句已包含「最近1日過ぎるのも早くない?」。",
+      "error_attribution": "already_visible_question_mark"
+    },
+    {
+      "id": "missed-reference-00115",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1372.8805,
+        "end_seconds": 1375.8175,
+        "text": "あ～ コンビニ寄っていい？(夏希) 私も行きたい｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1373.588,
+          "end_seconds": 1374.26,
+          "text": "そこに身に置いていい?",
+          "is_question": true,
+          "segment_position": 417,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1374.887,
+          "end_seconds": 1375.64,
+          "text": "あ、私も行きたい",
+          "is_question": false,
+          "segment_position": 418,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00116",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1406.398,
+        "end_seconds": 1408.8329999999999,
+        "text": "(麻美) え？ ３人だけで？(夏希) うん 楽しそうじゃない？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1406.645,
+          "end_seconds": 1407.48,
+          "text": "え、3人だけで?",
+          "is_question": true,
+          "segment_position": 428,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1407.88,
+          "end_seconds": 1408.78,
+          "text": "うん、楽しそうじゃない?",
+          "is_question": true,
+          "segment_position": 429,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00117",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1415.8105,
+        "end_seconds": 1418.2455,
+        "text": "３人 うちら同い年だからね？(夏希) あっ そっか｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1414.682,
+          "end_seconds": 1417.098,
+          "text": "面倒見るって、3人うちら同いでしたからね",
+          "is_question": false,
+          "segment_position": 432,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1417.604,
+          "end_seconds": 1418.139,
+          "text": "あ、そっか",
+          "is_question": false,
+          "segment_position": 433,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00118",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1425.0320000000002,
+        "end_seconds": 1428.469,
+        "text": "(美穂) じゃあさ ３人で同じ老人ホームに入ればよくない？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1425.181,
+          "end_seconds": 1428.32,
+          "text": "じゃあさ、3人で同じ老人ホームに入ればよくない?",
+          "is_question": true,
+          "segment_position": 436,
+          "sentence_index": 1
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00119",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1434.5420000000001,
+        "end_seconds": 1438.479,
+        "text": "超ハイテク老人ホームみたいになってそうじゃない？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1433.441,
+          "end_seconds": 1438.6,
+          "text": "その頃にはさ、超ハイテク老人ホームみたいになってもんじゃない?",
+          "is_question": true,
+          "segment_position": 439,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00120",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1438.546,
+        "end_seconds": 1440.9150000000002,
+        "text": "(麻美) 車いすが浮いちゃってんでしょ？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1433.441,
+          "end_seconds": 1438.6,
+          "text": "その頃にはさ、超ハイテク老人ホームみたいになってもんじゃない?",
+          "is_question": true,
+          "segment_position": 439,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1439.045,
+          "end_seconds": 1439.9,
+          "text": "車椅子とか浮いちゃってるでしょ",
+          "is_question": false,
+          "segment_position": 440,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00121",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1440.8034999999998,
+        "end_seconds": 1443.2395,
+        "text": "(美穂) あれでしょフリーザ乗ってるやつでしょ？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1441.641,
+          "end_seconds": 1442.55,
+          "text": "あれでしょ?",
+          "is_question": true,
+          "segment_position": 441,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1442.55,
+          "end_seconds": 1443.379,
+          "text": "フリーザー乗ってやっちゃう",
+          "is_question": false,
+          "segment_position": 441,
+          "sentence_index": 1
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00122",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1446.3094999999998,
+        "end_seconds": 1448.2444999999998,
+        "text": "(麻美) 決まりなの？(夏希) うん 決まりでしょ｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1445.423,
+          "end_seconds": 1446.42,
+          "text": "よし、決まりだね",
+          "is_question": false,
+          "segment_position": 442,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1446.481,
+          "end_seconds": 1447.04,
+          "text": "決まりなの?",
+          "is_question": true,
+          "segment_position": 443,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00123",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1448.3114999999998,
+        "end_seconds": 1449.7465,
+        "text": "(美穂) 行く？",
+        "is_question": true
+      },
+      "language_sentence_context": [],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "短问句「行く？」在当前语言句时间轴没有对应内容。",
+      "error_attribution": "asr_omission_or_misalignment"
+    },
+    {
+      "id": "missed-reference-00124",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1449.8124999999998,
+        "end_seconds": 1452.2485,
+        "text": "(麻美) 私 歩いて帰るわ｡(美穂) ホント？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1450.523,
+          "end_seconds": 1451.538,
+          "text": "私歩いて帰るわ",
+          "is_question": false,
+          "segment_position": 444,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00125",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1490.8735,
+        "end_seconds": 1493.8094999999998,
+        "text": "(麻美) ⟨ん？ え？⟩",
+        "is_question": true
+      },
+      "language_sentence_context": [],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "两个极短疑问回应在当前时间轴没有对应语言句。",
+      "error_attribution": "asr_omission_or_misalignment"
+    },
+    {
+      "id": "missed-reference-00126",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1493.8764999999999,
+        "end_seconds": 1496.3124999999998,
+        "text": "⟨死んだ…？⟩",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1494.224,
+          "end_seconds": 1494.738,
+          "text": "死んだ",
+          "is_question": false,
+          "segment_position": 450,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00127",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1498.8814999999997,
+        "end_seconds": 1502.2514999999999,
+        "text": "⟨こんなあっけないの？⟩",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1499.182,
+          "end_seconds": 1499.979,
+          "text": "こんなあっけないの",
+          "is_question": false,
+          "segment_position": 452,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00128",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1507.3234999999997,
+        "end_seconds": 1510.2595,
+        "text": "⟨で どうすればいいんだろ？⟩",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1508.204,
+          "end_seconds": 1509.379,
+          "text": "どうすればいいんだろう",
+          "is_question": false,
+          "segment_position": 453,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "独立自问句「どうすればいいんだろう」文本完整但未生成候选。",
+      "error_attribution": "candidate_rule_missing"
+    },
+    {
+      "id": "missed-reference-00129",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1510.3265,
+        "end_seconds": 1514.2634999999998,
+        "text": "⟨ん？ ん？ ん？ ん？⟩",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1513.111,
+          "end_seconds": 1513.52,
+          "text": "ん?",
+          "is_question": true,
+          "segment_position": 454,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00130",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1514.3304999999998,
+        "end_seconds": 1517.2665,
+        "text": "⟨いや ずっとこのままじゃないよね？⟩",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1514.9,
+          "end_seconds": 1516.739,
+          "text": "いやずっとこのままじゃないよね",
+          "is_question": false,
+          "segment_position": 455,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": "sentence_terminal_question",
+      "review_status": "reviewed",
+      "review_note": "『ずっとこのままじゃないよね』文本完整，是确认问句但无短回应证据。",
+      "error_attribution": "candidate_rule_missing"
+    },
+    {
+      "id": "missed-reference-00131",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1517.3334999999997,
+        "end_seconds": 1522.3384999999998,
+        "text": "⟨え？ こういう地獄なのかな？⟩",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1517.718,
+          "end_seconds": 1517.76,
+          "text": "え?",
+          "is_question": true,
+          "segment_position": 456,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1520.464,
+          "end_seconds": 1521.619,
+          "text": "こういう地獄なのかな",
+          "is_question": false,
+          "segment_position": 457,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00132",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1544.715,
+        "end_seconds": 1547.651,
+        "text": "どうしたらいいですか？>> はい ではですね→",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1545.305,
+          "end_seconds": 1546.36,
+          "text": "どうしたらいいですか",
+          "is_question": false,
+          "segment_position": 460,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1546.829,
+          "end_seconds": 1547.32,
+          "text": "ではですね",
+          "is_question": false,
+          "segment_position": 460,
+          "sentence_index": 1
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00133",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1580.209,
+        "end_seconds": 1583.146,
+        "text": "近藤麻美様ですね？(麻美) はい｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1580.35,
+          "end_seconds": 1582.17,
+          "text": "近藤あさみ様ですね",
+          "is_question": false,
+          "segment_position": 464,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1583.05,
+          "end_seconds": 1585.05,
+          "text": "はい33年間お疲れ様でした",
+          "is_question": false,
+          "segment_position": 465,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00134",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1589.786,
+        "end_seconds": 1593.79,
+        "text": "(麻美) あの もう今からってことですか？>> はい｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1591.495,
+          "end_seconds": 1592.7,
+          "text": "もう今からってことですか",
+          "is_question": false,
+          "segment_position": 467,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00135",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1595.7920000000001,
+        "end_seconds": 1599.729,
+        "text": "(麻美) 何か こう インターバルみたいなのはないんですね？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1597.034,
+          "end_seconds": 1599.81,
+          "text": "なんかこうインターバルみたいなのはないんですね",
+          "is_question": false,
+          "segment_position": 468,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00136",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1604.6094999999998,
+        "end_seconds": 1606.5445,
+        "text": ">> よろしいですか？(麻美) はい 分かりました｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1605.129,
+          "end_seconds": 1605.479,
+          "text": "よろしいですか",
+          "is_question": false,
+          "segment_position": 471,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1605.521,
+          "end_seconds": 1606.199,
+          "text": "はい分かりました",
+          "is_question": false,
+          "segment_position": 472,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "「よろしいですか」已是独立完整问句，回答也独立，但没有生成候选。",
+      "error_attribution": "candidate_rule_missing"
+    },
+    {
+      "id": "missed-reference-00137",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1623.1885,
+        "end_seconds": 1626.6255,
+        "text": "次 どこに生まれ変わるとかって分かったりしますか？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1622.124,
+          "end_seconds": 1623.28,
+          "text": "ちなみになんですけど",
+          "is_question": false,
+          "segment_position": 478,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1623.783,
+          "end_seconds": 1626.7,
+          "text": "次どこに生まれ変わるとかって分かったりしますか",
+          "is_question": false,
+          "segment_position": 479,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00138",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1626.6925,
+        "end_seconds": 1628.6275,
+        "text": "次？ あっ 分かりますよ｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1623.783,
+          "end_seconds": 1626.7,
+          "text": "次どこに生まれ変わるとかって分かったりしますか",
+          "is_question": false,
+          "segment_position": 479,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1626.861,
+          "end_seconds": 1628.459,
+          "text": "次、あ、分かりますよ",
+          "is_question": false,
+          "segment_position": 480,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "参考「次？」与当前「次、あ、分かりますよ」对应关系不稳定，仅凭文本不足以确认问句范围。",
+      "error_attribution": "reference_punctuation_ambiguity"
+    },
+    {
+      "id": "missed-reference-00139",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1642.5335,
+        "end_seconds": 1645.9705000000001,
+        "text": "(麻美) すいません 何ですか？>> え～ グアテマラ南東部の→",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1643.164,
+          "end_seconds": 1644.0,
+          "text": "すいません何ですか",
+          "is_question": false,
+          "segment_position": 484,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1644.524,
+          "end_seconds": 1646.82,
+          "text": "グアテマラ南東部のオオアリクイ",
+          "is_question": false,
+          "segment_position": 485,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00140",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1652.0435,
+        "end_seconds": 1654.0455000000002,
+        "text": "(麻美) オオアリクイ？>> はい｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1651.814,
+          "end_seconds": 1652.298,
+          "text": "オオアリクイ",
+          "is_question": false,
+          "segment_position": 487,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "名词省略问句「オオアリクイ」后有独立回答，符合保守候选条件。",
+      "error_attribution": "candidate_rule_missing"
+    },
+    {
+      "id": "missed-reference-00141",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1656.0475000000001,
+        "end_seconds": 1659.0505,
+        "text": "(麻美) 人間じゃないっていうことですか？>> そうですね｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1656.033,
+          "end_seconds": 1661.143,
+          "text": "人間じゃないっていうことですかな",
+          "is_question": false,
+          "segment_position": 488,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "参考「ですか？」被识别为形态异常的「ですかな」，应先归入 ASR 错误。",
+      "error_attribution": "asr_error"
+    },
+    {
+      "id": "missed-reference-00142",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1660.838,
+        "end_seconds": 1663.2740000000001,
+        "text": "(麻美) 何で私オオアリクイなんですかね？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1656.033,
+          "end_seconds": 1661.143,
+          "text": "人間じゃないっていうことですかな",
+          "is_question": false,
+          "segment_position": 488,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1661.143,
+          "end_seconds": 1662.969,
+          "text": "んで私オオアリクイなんですかね",
+          "is_question": false,
+          "segment_position": 489,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00143",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1668.345,
+        "end_seconds": 1671.7820000000002,
+        "text": "(麻美) 私の その 行いが良くなかったってことですか？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1668.531,
+          "end_seconds": 1671.51,
+          "text": "私の行いがよくなかったってことですか",
+          "is_question": false,
+          "segment_position": 491,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00144",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1678.355,
+        "end_seconds": 1687.0125000000003,
+        "text": "(麻美) 徳が不足？>> はい｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1672.974,
+          "end_seconds": 1678.924,
+          "text": "ご希望の生命でないのだとしたら必要な得が不足している可能性は高い得が不足",
+          "is_question": false,
+          "segment_position": 493,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1679.342,
+          "end_seconds": 1679.489,
+          "text": "はい",
+          "is_question": false,
+          "segment_position": 494,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1682.842,
+          "end_seconds": 1683.455,
+          "text": "得が不足",
+          "is_question": false,
+          "segment_position": 495,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1686.957,
+          "end_seconds": 1687.14,
+          "text": "うーん",
+          "is_question": false,
+          "segment_position": 496,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00145",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1687.0795000000003,
+        "end_seconds": 1690.5165000000004,
+        "text": "え～それは何とかならないんですか？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1686.957,
+          "end_seconds": 1687.14,
+          "text": "うーん",
+          "is_question": false,
+          "segment_position": 496,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1690.2,
+          "end_seconds": 1690.579,
+          "text": "そうですね",
+          "is_question": false,
+          "segment_position": 497,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00146",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1698.1834999999999,
+        "end_seconds": 1702.1205,
+        "text": "(市民)〔だから 何とかならないの？〕",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1699.14,
+          "end_seconds": 1700.978,
+          "text": "だからなんとかならないの",
+          "is_question": false,
+          "segment_position": 499,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00147",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1719.7044999999998,
+        "end_seconds": 1722.6415,
+        "text": "私は オオアリクイの人生ということですよね？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1717.401,
+          "end_seconds": 1721.98,
+          "text": "もうあそこから私は終わり食いの人生ということですよね",
+          "is_question": false,
+          "segment_position": 504,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "核心实体「オオアリクイ」被识别为「終わり食い」，不能归责于问句候选。",
+      "error_attribution": "asr_error"
+    },
+    {
+      "id": "missed-reference-00148",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1726.0259999999998,
+        "end_seconds": 1730.464,
+        "text": "今世をやり直すか ですよね｡(麻美) ん？ どういうことですか？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1724.08,
+          "end_seconds": 1728.7,
+          "text": "あとは来世ではなくて今世をやり直すかですよね",
+          "is_question": false,
+          "segment_position": 506,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1730.447,
+          "end_seconds": 1731.06,
+          "text": "どういうことですか",
+          "is_question": false,
+          "segment_position": 507,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00149",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1737.7224999999999,
+        "end_seconds": 1740.1585,
+        "text": "(麻美) それもあり!?>> ええ まぁ そこで→",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1738.285,
+          "end_seconds": 1747.02,
+          "text": "それもありそこでご自身の人生を修正していただいてそのご希望の生命に生まれ変わる確率を上げることはできますけど",
+          "is_question": false,
+          "segment_position": 509,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "短确认「それもあり」与后续说明被合并，需先恢复说话人/语言句边界。",
+      "error_attribution": "language_sentence_error"
+    },
+    {
+      "id": "missed-reference-00150",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1746.404,
+        "end_seconds": 1749.84,
+        "text": "(麻美) ん？ 要するに その→",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1738.285,
+          "end_seconds": 1747.02,
+          "text": "それもありそこでご自身の人生を修正していただいてそのご希望の生命に生まれ変わる確率を上げることはできますけど",
+          "is_question": false,
+          "segment_position": 509,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1748.83,
+          "end_seconds": 1753.42,
+          "text": "要するにその徳をたくさん積んでいくっていうことですよね",
+          "is_question": false,
+          "segment_position": 510,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": "sentence_terminal_question",
+      "review_status": "reviewed",
+      "review_note": "参考 cue 问号落在『要するにその…ですよね』，输出跨句粘连且缺明确落点。",
+      "error_attribution": "language_sentence_error"
+    },
+    {
+      "id": "missed-reference-00151",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1749.907,
+        "end_seconds": 1752.3429999999998,
+        "text": "徳をたくさん積んでいくっていうことですよね？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1748.83,
+          "end_seconds": 1753.42,
+          "text": "要するにその徳をたくさん積んでいくっていうことですよね",
+          "is_question": false,
+          "segment_position": 510,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "完整确认句「ということですよね」与参考高度一致但未生成候选。",
+      "error_attribution": "candidate_rule_missing"
+    },
+    {
+      "id": "missed-reference-00152",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1902.9205,
+        "end_seconds": 1905.8564999999999,
+        "text": "(洋子) えっ！ 麻美ちゃんこれ自分で書いたの？",
+        "is_question": true
+      },
+      "language_sentence_context": [],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "参考问句在当前语言句时间轴没有对应内容。",
+      "error_attribution": "asr_omission_or_misalignment"
+    },
+    {
+      "id": "missed-reference-00153",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1905.9234999999999,
+        "end_seconds": 1908.8595,
+        "text": "(麻美) うん 先生の名前も書けるよ｡>> ホントに？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1906.027,
+          "end_seconds": 1907.41,
+          "text": "先生の名前も書けるよ",
+          "is_question": false,
+          "segment_position": 535,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00154",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1932.1029999999998,
+        "end_seconds": 1935.5399999999997,
+        "text": ">> 麻美ちゃんは？(麻美) じゃ 私 悪者やる｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1932.485,
+          "end_seconds": 1933.1,
+          "text": "はさみちゃんは?",
+          "is_question": true,
+          "segment_position": 541,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1933.701,
+          "end_seconds": 1936.68,
+          "text": "うーんじゃあ私悪者やる悪者?",
+          "is_question": true,
+          "segment_position": 542,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00155",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1935.6069999999997,
+        "end_seconds": 1940.0449999999998,
+        "text": ">> 悪者？(麻美) うん 私は怪獣… ミタコング｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1933.701,
+          "end_seconds": 1936.68,
+          "text": "うーんじゃあ私悪者やる悪者?",
+          "is_question": true,
+          "segment_position": 542,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1937.202,
+          "end_seconds": 1939.557,
+          "text": "うん私は怪獣ミタコング",
+          "is_question": false,
+          "segment_position": 543,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00156",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1940.1109999999999,
+        "end_seconds": 1943.0479999999998,
+        "text": ">> ミタコングって何？(麻美) ミタコングは→",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1940.648,
+          "end_seconds": 1941.379,
+          "text": "ミタコングって何?",
+          "is_question": true,
+          "segment_position": 544,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1941.861,
+          "end_seconds": 1945.039,
+          "text": "ミタコングは人の物を獲る怪獣なの",
+          "is_question": false,
+          "segment_position": 545,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00157",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 2019.6535,
+        "end_seconds": 2023.0905,
+        "text": "(洋子) お仕事は帰りとか遅いんですか？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 2020.464,
+          "end_seconds": 2022.28,
+          "text": "お仕事は帰るとか遅いんですか",
+          "is_question": false,
+          "segment_position": 557,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00158",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 2042.6765,
+        "end_seconds": 2047.6154999999999,
+        "text": ">> やった～ 先生は何やろうかな？>> 玲奈 そろそろ帰ろうか｡",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 2043.582,
+          "end_seconds": 2044.898,
+          "text": "先生は何やろうかな",
+          "is_question": false,
+          "segment_position": 566,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 2045.08,
+          "end_seconds": 2046.799,
+          "text": "よしじゃあリナそろそろ帰ろうか",
+          "is_question": false,
+          "segment_position": 567,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "独立自问句「先生は何やろうかな」与后续话题重启分开，但未生成候选。",
+      "error_attribution": "candidate_rule_missing"
+    },
+    {
+      "id": "missed-reference-00159",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 2149.4289999999996,
+        "end_seconds": 2151.865,
+        "text": "きっと何かしらアクションを起こすでしょ？⟩",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 2147.762,
+          "end_seconds": 2151.66,
+          "text": "何日経っても連絡が来なかったらきっと何かしらアクション起こすでしょ",
+          "is_question": false,
+          "segment_position": 578,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "目标问句被并入更长的条件句，需先修语言句边界再评估问号候选。",
+      "error_attribution": "language_sentence_error"
+    },
+    {
+      "id": "missed-reference-00160",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 2167.616,
+        "end_seconds": 2169.051,
+        "text": "⟨あ？⟩",
+        "is_question": true
+      },
+      "language_sentence_context": [],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "极短回应「​​あ？」在当前时间轴没有对应语言句。",
+      "error_attribution": "asr_omission_or_misalignment"
+    },
+    {
+      "id": "missed-reference-00161",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 2171.6200000000003,
+        "end_seconds": 2175.0570000000002,
+        "text": "⟨今って まだケータイもピッチも普及してないよね？⟩",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 2169.546,
+          "end_seconds": 2172.134,
+          "text": "あ?",
+          "is_question": true,
+          "segment_position": 581,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 2172.134,
+          "end_seconds": 2174.04,
+          "text": "ってまだ携帯のピッチも普及してないよね",
+          "is_question": false,
+          "segment_position": 581,
+          "sentence_index": 1
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00162",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 2175.2035,
+        "end_seconds": 2179.0745,
+        "text": "⟨020って何？⟩",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 2176.262,
+          "end_seconds": 2177.299,
+          "text": "020って何?",
+          "is_question": true,
+          "segment_position": 582,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00163",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 2179.1415,
+        "end_seconds": 2181.5765,
+        "text": "〔ポケベルってだいぶ上の世代だよね？〕",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 2179.69,
+          "end_seconds": 2181.028,
+          "text": "020ってだいぶ上の世代だよね",
+          "is_question": false,
+          "segment_position": 583,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 2181.51,
+          "end_seconds": 2187.377,
+          "text": "うーんうちらが保育園ぐらいのときじゃなかったポケベルだ",
+          "is_question": false,
+          "segment_position": 584,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00164",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 2181.6435,
+        "end_seconds": 2184.5795000000003,
+        "text": "(美穂)〔うちらが保育園ぐらいの時じゃなかった？〕",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 2181.51,
+          "end_seconds": 2187.377,
+          "text": "うーんうちらが保育園ぐらいのときじゃなかったポケベルだ",
+          "is_question": false,
+          "segment_position": 584,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00165",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 2231.3480000000004,
+        "end_seconds": 2235.853,
+        "text": "(麻美) ⟨あ… ポケベルって番号通知 出んのかな？⟩",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 2233.009,
+          "end_seconds": 2235.01,
+          "text": "ポケベルって番号通知出んのかな",
+          "is_question": false,
+          "segment_position": 586,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "完整自问句「番号通知出んのかな」与参考高度一致，但未形成候选。",
+      "error_attribution": "candidate_rule_missing"
+    },
+    {
+      "id": "missed-reference-00166",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 2239.289,
+        "end_seconds": 2241.2250000000004,
+        "text": ">> あれ？ 麻美？(麻美) ⟨おぉ…⟩",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 2239.766,
+          "end_seconds": 2240.32,
+          "text": "おい遊び",
+          "is_question": false,
+          "segment_position": 587,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "参考「麻美？」没有被正确识别，当前文本「おい遊び」无法支持候选。",
+      "error_attribution": "asr_error"
+    },
+    {
+      "id": "missed-reference-00167",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 2241.291,
+        "end_seconds": 2243.7270000000003,
+        "text": "どうした？ おしっこ？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 2242.418,
+          "end_seconds": 2242.6,
+          "text": "どうした",
+          "is_question": false,
+          "segment_position": 588,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 2243.36,
+          "end_seconds": 2243.423,
+          "text": "うん",
+          "is_question": false,
+          "segment_position": 589,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00168",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 2291.8534999999997,
+        "end_seconds": 2294.7904999999996,
+        "text": "(麻美) ⟨公衆電話ってどこにあんだろ？⟩",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 2291.797,
+          "end_seconds": 2293.86,
+          "text": "公衆電話ってどこにあるんだろう",
+          "is_question": false,
+          "segment_position": 597,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00169",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 2297.3594999999996,
+        "end_seconds": 2302.7314999999994,
+        "text": "⟨公衆電話？公衆電話～ 公衆電話…⟩",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 2298.164,
+          "end_seconds": 2299.275,
+          "text": "公衆電話",
+          "is_question": false,
+          "segment_position": 600,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 2299.78,
+          "end_seconds": 2300.776,
+          "text": "公衆電話",
+          "is_question": false,
+          "segment_position": 601,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "「公衆電話？」更像重复确认或搜索式自言自语，仅凭字幕文本不足以确认应自动补问号。",
+      "error_attribution": "reference_punctuation_ambiguity"
+    },
+    {
+      "id": "missed-reference-00170",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 2302.7984999999994,
+        "end_seconds": 2305.7344999999996,
+        "text": "〔あれ？ 公園の電話ボックスなくなってる〕",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 2303.885,
+          "end_seconds": 2305.319,
+          "text": "あれ公園の電話ボックスなくなってる",
+          "is_question": false,
+          "segment_position": 602,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 2305.46,
+          "end_seconds": 2306.0,
+          "text": "ん?",
+          "is_question": true,
+          "segment_position": 603,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00171",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 2305.8014999999996,
+        "end_seconds": 2309.2374999999997,
+        "text": "(麻美)〔ん？ あんなとこに電話ﾎﾞｯｸｽなんてあったっけ？〕",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 2305.46,
+          "end_seconds": 2306.0,
+          "text": "ん?",
+          "is_question": true,
+          "segment_position": 603,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 2306.591,
+          "end_seconds": 2308.448,
+          "text": "あんなとこに電話ボックスなんてあったっけ",
+          "is_question": false,
+          "segment_position": 604,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "短回应「ん?」已有问号；后续问句范围需另行评估，不计为本条候选漏报。",
+      "error_attribution": "already_visible_question_mark"
+    },
+    {
+      "id": "missed-reference-00172",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 2386.3284999999996,
+        "end_seconds": 2388.7644999999998,
+        "text": "⟨お金って どこにあるんだ？⟩",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 2386.803,
+          "end_seconds": 2388.29,
+          "text": "お金ってどこにあるんだ",
+          "is_question": false,
+          "segment_position": 611,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00173",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 2390.3324999999995,
+        "end_seconds": 2392.2684999999997,
+        "text": "〔お父さん へそくりしてんの？〕",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 2389.951,
+          "end_seconds": 2394.1,
+          "text": "お父さんへそくりしてんのなんか靴の中にコツコツ食べてるらしいよ",
+          "is_question": false,
+          "segment_position": 612,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "问句「へそくりしてんの」与后续回答被吞入同一语言句。",
+      "error_attribution": "language_sentence_error"
+    },
+    {
+      "id": "missed-reference-00174",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 2413.8565,
+        "end_seconds": 2417.2934999999998,
+        "text": "(麻美) ⟨これ 徳下がるかな？⟩",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 2415.479,
+          "end_seconds": 2416.14,
+          "text": "腐がるかな",
+          "is_question": false,
+          "segment_position": 615,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00175",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 2421.2974999999997,
+        "end_seconds": 2425.3014999999996,
+        "text": "プラス… だよね？⟩",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 2417.587,
+          "end_seconds": 2422.211,
+          "text": "でもレナちゃんのためだから差し引いてもプラスだよね",
+          "is_question": false,
+          "segment_position": 616,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "确认结构「プラスだよね」位于当前语言句末且文本完整，未生成候选。",
+      "error_attribution": "candidate_rule_missing"
+    },
+    {
+      "id": "missed-reference-00176",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 2500.416,
+        "end_seconds": 2503.42,
+        "text": "お嬢ちゃん お嬢ちゃん？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 2500.182,
+          "end_seconds": 2503.02,
+          "text": "待ってお嬢ちゃん",
+          "is_question": false,
+          "segment_position": 625,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00177",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 2565.938,
+        "end_seconds": 2569.442,
+        "text": "⟨ん？子供って筋肉痛になんのか？⟩",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 2566.92,
+          "end_seconds": 2568.46,
+          "text": "思って筋肉痛になるのか",
+          "is_question": false,
+          "segment_position": 626,
+          "sentence_index": 2
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "needs_review",
+      "review_note": ""
+    },
+    {
+      "id": "missed-reference-00178",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 2607.48,
+        "end_seconds": 2611.918,
+        "text": "玲奈 帰るよ｡(玲奈) え～ もう帰るの～？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 2608.176,
+          "end_seconds": 2608.99,
+          "text": "れな替えるよ。",
+          "is_question": false,
+          "segment_position": 629,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": null,
+      "review_status": "reviewed",
+      "review_note": "参考问句「もう帰るの？」未进入当前重叠文本，且「帰る」被识别为「替える」。",
+      "error_attribution": "asr_error"
+    },
+    {
+      "id": "missed-reference-00179",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 2673.4725,
+        "end_seconds": 2677.4094999999998,
+        "text": "でも アリって小さいけど主食になるのかな？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 2674.173,
+          "end_seconds": 2676.709,
+          "text": "でもアリって小さいけど主食になるのかな",
+          "is_question": false,
+          "segment_position": 639,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": "sentence_terminal_question",
+      "review_status": "reviewed",
+      "review_note": "『アリって小さいけど主食になるのかな』文本完整，自问式问句未覆盖。",
+      "error_attribution": "candidate_rule_missing"
+    }
+  ]
+}

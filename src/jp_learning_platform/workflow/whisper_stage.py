@@ -79,6 +79,43 @@ class WhisperRetryDecision:
     original_grammar_penalty: int
     candidate_grammar_penalty: int
     deletes_content_or_particle: bool
+    passed_validation: bool = False
+    selected: bool = False
+    candidate_support_count: int = 1
+    selection_score: float | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class ShortAnomalyRetryAudit:
+    """Trace one short malformed utterance through bounded ASR retries."""
+
+    segment_position: int
+    time_range: TimeRange
+    original_text: str
+    short_anomaly_detected: bool
+    retry_attempted: bool
+    short_window_candidate_texts: tuple[str, ...] = ()
+    extracted_candidate_texts: tuple[str, ...] = ()
+    left_anchor_matches: tuple[bool, ...] = ()
+    right_anchor_matches: tuple[bool, ...] = ()
+    anchor_orders_valid: tuple[bool, ...] = ()
+    accepted: bool = False
+    failure_reasons: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class ShortUtteranceAnalysisAudit:
+    """Record the morphological evidence used to classify one short ASR segment."""
+
+    segment_position: int
+    time_range: TimeRange
+    original_text: str
+    normalized_text: str
+    morpheme_surfaces: tuple[str, ...]
+    morpheme_part_of_speech: tuple[tuple[str, ...], ...]
+    morpheme_conjugation_types: tuple[str, ...]
+    structure_penalty: int
+    short_anomaly_detected: bool
 
 
 @dataclass(frozen=True, slots=True)
@@ -88,6 +125,8 @@ class WhisperTranscript:
     source_path: Path
     segments: tuple[Segment, ...] = ()
     retry_decisions: tuple[WhisperRetryDecision, ...] = ()
+    short_anomaly_retry_audits: tuple[ShortAnomalyRetryAudit, ...] = ()
+    short_utterance_analysis_audits: tuple[ShortUtteranceAnalysisAudit, ...] = ()
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "source_path", Path(self.source_path))
@@ -103,6 +142,24 @@ class WhisperTranscript:
                 self.retry_decisions,
                 WhisperRetryDecision,
                 "retry_decisions",
+            ),
+        )
+        object.__setattr__(
+            self,
+            "short_anomaly_retry_audits",
+            _tuple_of_type(
+                self.short_anomaly_retry_audits,
+                ShortAnomalyRetryAudit,
+                "short_anomaly_retry_audits",
+            ),
+        )
+        object.__setattr__(
+            self,
+            "short_utterance_analysis_audits",
+            _tuple_of_type(
+                self.short_utterance_analysis_audits,
+                ShortUtteranceAnalysisAudit,
+                "short_utterance_analysis_audits",
             ),
         )
 
@@ -178,7 +235,13 @@ class WhisperStage:
         return StageResult(
             stage_name=self.name,
             context=next_context,
-            data={"retry_decisions": transcript.retry_decisions},
+            data={
+                "retry_decisions": transcript.retry_decisions,
+                "short_anomaly_retry_audits": transcript.short_anomaly_retry_audits,
+                "short_utterance_analysis_audits": (
+                    transcript.short_utterance_analysis_audits
+                ),
+            },
         )
 
 
@@ -188,6 +251,8 @@ __all__ = [
     "WHISPER_STAGE_NAME",
     "WhisperStage",
     "WhisperStageError",
+    "ShortAnomalyRetryAudit",
+    "ShortUtteranceAnalysisAudit",
     "WhisperTranscriber",
     "WhisperTranscript",
     "WhisperRetryDecision",

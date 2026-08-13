@@ -1,4 +1,4 @@
-"""Text-independent candidates for ASR coverage gaps and secondary speech."""
+"""Non-destructive candidates for ASR coverage and recognition anomalies."""
 
 from __future__ import annotations
 
@@ -6,6 +6,10 @@ from dataclasses import dataclass
 from statistics import fmean
 
 from jp_learning_platform.domain import Segment, TimeRange
+from jp_learning_platform.infrastructure.japanese_word_normalizer import (
+    SudachiMorphologicalAnalyzer,
+    morphological_particle_chain_penalty,
+)
 from jp_learning_platform.workflow.transcript_anomaly_stage import (
     TranscriptAnomalyCandidate,
     TranscriptAnomalyRequest,
@@ -21,6 +25,7 @@ class ConservativeTranscriptAnomalyDetector:
     stable_context_confidence: float = 0.8
     min_internal_word_gap_seconds: float = 1.0
     uncertain_internal_edge_confidence: float = 0.65
+    morphological_word_confidence_threshold: float = 0.35
 
     def detect(
         self,
@@ -28,7 +33,38 @@ class ConservativeTranscriptAnomalyDetector:
     ) -> tuple[TranscriptAnomalyCandidate, ...]:
         candidates: list[TranscriptAnomalyCandidate] = []
         segments = request.segments
+        morphological_analyzer = None
         for segment in segments:
+            word_confidences = tuple(
+                word.confidence
+                for sentence in segment.sentences
+                for word in sentence.words
+                if word.confidence is not None
+            )
+            if (
+                word_confidences
+                and min(word_confidences)
+                <= self.morphological_word_confidence_threshold
+            ):
+                morphological_analyzer = (
+                    morphological_analyzer or SudachiMorphologicalAnalyzer()
+                )
+                if morphological_particle_chain_penalty(
+                    segment.text,
+                    morphological_analyzer,
+                ):
+                    candidates.append(
+                        TranscriptAnomalyCandidate(
+                            kind="possible_morphological_asr_error",
+                            time_range=segment.time_range,
+                            segment_positions=(segment.position,),
+                            confidence=round(1.0 - min(word_confidences), 3),
+                            evidence=(
+                                "low_confidence_word",
+                                "unlikely_morphological_particle_chain",
+                            ),
+                        )
+                    )
             for sentence in segment.sentences:
                 for left, right in zip(sentence.words, sentence.words[1:]):
                     gap = (

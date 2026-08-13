@@ -1,0 +1,219 @@
+{
+  "schema_version": 1,
+  "language": "ja",
+  "annotation_status": "silver_needs_review",
+  "reference": "input/source-text/【日本語散歩Vlog♯7】留学するか悩んでいる人に伝えたいこと [kIDaXEnkjmk].ja.srt",
+  "candidate_artifact": "output/.work/20260812_163227_664017/日本語散歩Vlog_7_留学するか悩んて_いる人に伝えたいこと_kIDaXEnkjmk/05b_question_punctuation_candidates.json",
+  "candidate_types": {
+    "sentence_terminal_question": "Question at a language-sentence endpoint.",
+    "embedded_quoted_question": "Question embedded inside quoted speech.",
+    "elliptical_question": "Short question without an explicit predicate."
+  },
+  "gold_labels": {
+    "question": "Reference evidence supports a question mark at this span.",
+    "non_question": "Reference evidence does not support the predicted question.",
+    "uncertain": "Human review cannot decide reliably."
+  },
+  "review_instructions": [
+    "Confirm gold_label for every prediction sample.",
+    "Assign gold_candidate_type for every confirmed question.",
+    "Review missed references before using recall by candidate type."
+  ],
+  "evaluation_snapshot": {
+    "metrics": {
+      "precision": null,
+      "recall": 0.0,
+      "f1": null,
+      "true_positive": 0,
+      "false_positive": 0,
+      "false_negative": 5,
+      "precision_target_met": null
+    },
+    "metrics_by_candidate_type": {
+      "sentence_terminal_question": {
+        "predicted_questions": 0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "precision": null,
+        "recall_contribution": 0.0,
+        "precision_target_met": null
+      },
+      "embedded_quoted_question": {
+        "predicted_questions": 0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "precision": null,
+        "recall_contribution": 0.0,
+        "precision_target_met": null
+      },
+      "elliptical_question": {
+        "predicted_questions": 0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "precision": null,
+        "recall_contribution": 0.0,
+        "precision_target_met": null
+      }
+    }
+  },
+  "samples": [
+    {
+      "id": "missed-reference-00001",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 124.7305,
+        "end_seconds": 131.2305,
+        "text": "みなさん、この背景見て何か気がつきましたか?",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 125.321,
+          "end_seconds": 130.36,
+          "text": "皆さんこの背景見て何か気がつきましたか",
+          "is_question": false,
+          "segment_position": 24,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": "sentence_terminal_question",
+      "review_status": "reviewed",
+      "review_note": "明确的敬体疑问句，ASR 文本完整但未形成候选。",
+      "error_attribution": "candidate_rule_missing"
+    },
+    {
+      "id": "missed-reference-00002",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 453.059,
+        "end_seconds": 456.119,
+        "text": "ちょっとごめん、リップぬっていい?",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 453.703,
+          "end_seconds": 455.059,
+          "text": "ちょっとごめんリップ塗っていい",
+          "is_question": false,
+          "segment_position": 77,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": "elliptical_question",
+      "review_status": "reviewed",
+      "review_note": "口语许可问句，省略句末疑问助词，需语用或语调证据。",
+      "error_attribution": "candidate_rule_missing"
+    },
+    {
+      "id": "missed-reference-00003",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 792.8225,
+        "end_seconds": 793.8025,
+        "text": "わからなくないですか?",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 792.875,
+          "end_seconds": 793.75,
+          "text": "わからなくないですか",
+          "is_question": false,
+          "segment_position": 131,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": "sentence_terminal_question",
+      "review_status": "reviewed",
+      "review_note": "否定确认问句，ASR 文本完整但 sentence.is_question 未建立。",
+      "error_attribution": "candidate_rule_missing"
+    },
+    {
+      "id": "missed-reference-00004",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 854.3280000000001,
+        "end_seconds": 856.7180000000001,
+        "text": "そうなんだ、じゃあこうしたらどうですか？",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 852.062,
+          "end_seconds": 856.699,
+          "text": "例えば私が相談を聞いててそうなんだじゃあこうしたらどうですか",
+          "is_question": false,
+          "segment_position": 141,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": "sentence_terminal_question",
+      "review_status": "reviewed",
+      "review_note": "建议型敬体问句，句内位置清楚。",
+      "error_attribution": "candidate_rule_missing"
+    },
+    {
+      "id": "missed-reference-00005",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 993.7955000000001,
+        "end_seconds": 997.0455000000001,
+        "text": "みなさんどうですか？この新しいカメラは",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 993.922,
+          "end_seconds": 994.829,
+          "text": "皆さんどうですか",
+          "is_question": false,
+          "segment_position": 167,
+          "sentence_index": 1
+        },
+        {
+          "start_seconds": 994.829,
+          "end_seconds": 1000.46,
+          "text": "この新しいカメラは、あと私ね散歩Vlogすごく楽しい",
+          "is_question": false,
+          "segment_position": 168,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": "sentence_terminal_question",
+      "review_status": "reviewed",
+      "review_note": "问句与后续话题被拆为相邻语言句；问句文本本身完整。",
+      "error_attribution": "language_sentence_error"
+    }
+  ]
+}

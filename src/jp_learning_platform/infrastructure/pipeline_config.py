@@ -29,12 +29,15 @@ class WhisperTranscriptionConfig:
     retry_context_confidence_threshold: float = 0.85
     retry_min_confidence_improvement: float = 0.05
     retry_max_segments: int = 12
+    retry_local_candidate_count: int = 3
+    retry_morphological_word_confidence_threshold: float = 0.35
     retry_internal_word_gap_seconds: float = 1.0
     retry_internal_gap_edge_confidence: float = 0.65
     retry_minimum_gap_reduction_ratio: float = 0.5
     retry_minimum_text_similarity: float = 0.75
     retry_minimum_original_character_coverage: float = 0.8
     retry_max_language_model_regression: float = 0.05
+    retry_morphological_repair_max_language_model_regression: float = 0.15
     retry_max_confidence_regression: float = 0.02
 
 

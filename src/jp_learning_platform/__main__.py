@@ -21,6 +21,7 @@ from jp_learning_platform.infrastructure import (
     AuditableRepeatedTextCleaner,
     CompositeSubtitleWriter,
     ConservativeTranscriptAnomalyDetector,
+    ConservativeJapaneseQuestionCandidateDetector,
     ConservativeSubtitleMerger,
     ConsoleProgressReporter,
     DEFAULT_HOMOPHONE_MODEL_ID,
@@ -38,6 +39,7 @@ from jp_learning_platform.infrastructure import (
     FFmpegAudioNormalizer,
     HomophoneResolverDependencyError,
     JapaneseLearningWordNormalizer,
+    PauseAwareJapaneseCommaRestorer,
     JapaneseSentenceBoundaryResolver,
     SudachiMorphologicalAnalyzer,
     ListeningJsonWriter,
@@ -65,6 +67,7 @@ _PIPELINE_STAGES = (
     "Transcript Anomaly Analysis",
     "Sentence Boundary Resolution",
     "Punctuation Attribution",
+    "Question Punctuation Candidates",
     "Learning Word Normalization (optional)",
     "Subtitle Builder",
     "Subtitle Display Normalization",
@@ -240,6 +243,16 @@ def _run_transcribe(args: Namespace, output: TextIO, error_output: TextIO) -> in
         sentence_boundary_resolver=JapaneseSentenceBoundaryResolver(
             morphological_analyzer=morphological_analyzer
         ),
+        punctuation_restorer=(
+            PauseAwareJapaneseCommaRestorer(morphological_analyzer)
+            if morphological_analyzer is not None
+            else None
+        ),
+        question_punctuation_candidate_detector=(
+            ConservativeJapaneseQuestionCandidateDetector(morphological_analyzer)
+            if morphological_analyzer is not None
+            else None
+        ),
         merger=ConservativeSubtitleMerger(),
         optimizer=LocalReadabilityOptimizer(),
         validator=DomainSubtitleValidator(),
@@ -254,7 +267,7 @@ def _run_transcribe(args: Namespace, output: TextIO, error_output: TextIO) -> in
         ),
         audio_normalizer=FFmpegAudioNormalizer(),
         cache_namespace=(
-            f"jp-learning-platform-{__version__}-sentence-provenance-v24"
+            f"jp-learning-platform-{__version__}-sentence-provenance-v25"
         ),
     )
 

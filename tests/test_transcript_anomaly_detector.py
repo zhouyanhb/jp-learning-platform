@@ -65,3 +65,29 @@ def test_detects_low_confidence_gap_inside_one_asr_segment() -> None:
     assert len(candidates) == 1
     assert candidates[0].kind == "possible_internal_asr_omission"
     assert candidates[0].time_range == TimeRange(37.9, 41.4)
+
+
+def test_preserves_rejected_morphological_asr_error_for_review() -> None:
+    time_range = TimeRange(658.88, 669.57)
+    sentence = Sentence(
+        "多分、いいなっても悩まないことなんてないと思います。",
+        time_range,
+        (
+            Word("多分、", TimeRange(658.88, 661.88), 0.95),
+            Word("いい", TimeRange(662.12, 662.36), 0.226),
+            Word(
+                "なっても悩まないことなんてないと思います。",
+                TimeRange(662.78, 669.57),
+                0.95,
+            ),
+        ),
+    )
+    segment = Segment(151, sentence.text, time_range, (sentence,))
+
+    candidates = ConservativeTranscriptAnomalyDetector().detect(
+        TranscriptAnomalyRequest(Path("audio.mp3"), (segment,))
+    )
+
+    assert len(candidates) == 1
+    assert candidates[0].kind == "possible_morphological_asr_error"
+    assert candidates[0].time_range == time_range

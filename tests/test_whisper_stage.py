@@ -15,6 +15,8 @@ from jp_learning_platform.domain import (
 from jp_learning_platform.workflow import (
     InvalidWhisperTranscriberError,
     InvalidWhisperTranscriptError,
+    ShortAnomalyRetryAudit,
+    ShortUtteranceAnalysisAudit,
     StageResult,
     WhisperStage,
     WhisperRetryDecision,
@@ -78,7 +80,11 @@ def test_whisper_stage_transcribes_document_source(tmp_path: Path) -> None:
     assert result.context.document.segments == (segment,)
     assert result.context.run_id == "run-001"
     assert result.context.working_directory == tmp_path / "work"
-    assert result.data == {"retry_decisions": ()}
+    assert result.data == {
+        "retry_decisions": (),
+        "short_anomaly_retry_audits": (),
+        "short_utterance_analysis_audits": (),
+    }
 
 
 def test_whisper_stage_exposes_retry_decisions_as_audit_data(tmp_path: Path) -> None:
@@ -110,7 +116,62 @@ def test_whisper_stage_exposes_retry_decisions_as_audit_data(tmp_path: Path) -> 
 
     result = WhisperStage(transcriber=transcriber).run(_context(source_path))
 
-    assert result.data == {"retry_decisions": (decision,)}
+    assert result.data == {
+        "retry_decisions": (decision,),
+        "short_anomaly_retry_audits": (),
+        "short_utterance_analysis_audits": (),
+    }
+
+
+def test_whisper_stage_exposes_short_anomaly_retry_audit(tmp_path: Path) -> None:
+    source_path = tmp_path / "input.wav"
+    audit = ShortAnomalyRetryAudit(
+        segment_position=3,
+        time_range=TimeRange(4.0, 4.8),
+        original_text="なにょ",
+        short_anomaly_detected=True,
+        retry_attempted=True,
+        failure_reasons=("right_anchor_missing",),
+    )
+    transcriber = FakeTranscriber(
+        transcript=WhisperTranscript(
+            source_path=source_path,
+            segments=(_segment(),),
+            short_anomaly_retry_audits=(audit,),
+        ),
+        requests=[],
+    )
+
+    result = WhisperStage(transcriber=transcriber).run(_context(source_path))
+
+    assert result.data["short_anomaly_retry_audits"] == (audit,)
+
+
+def test_whisper_stage_exposes_short_utterance_analysis_audit(tmp_path: Path) -> None:
+    source_path = tmp_path / "input.wav"
+    audit = ShortUtteranceAnalysisAudit(
+        segment_position=2,
+        time_range=TimeRange(3.0, 3.7),
+        original_text="なにょ",
+        normalized_text="なにょ",
+        morpheme_surfaces=("な", "にょ"),
+        morpheme_part_of_speech=(("助動詞",), ("助詞", "終助詞")),
+        morpheme_conjugation_types=("助動詞-ダ", "*"),
+        structure_penalty=1,
+        short_anomaly_detected=True,
+    )
+    transcriber = FakeTranscriber(
+        transcript=WhisperTranscript(
+            source_path=source_path,
+            segments=(_segment(),),
+            short_utterance_analysis_audits=(audit,),
+        ),
+        requests=[],
+    )
+
+    result = WhisperStage(transcriber=transcriber).run(_context(source_path))
+
+    assert result.data["short_utterance_analysis_audits"] == (audit,)
 
 
 def test_whisper_stage_preserves_existing_subtitles(tmp_path: Path) -> None:

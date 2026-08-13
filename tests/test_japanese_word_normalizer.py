@@ -207,6 +207,8 @@ class _Analyzer:
 def _normalize(
     text: str,
     token_texts: tuple[str, ...],
+    *,
+    use_sudachi: bool = False,
 ) -> tuple[tuple[Word, ...], tuple[LearningWord, ...]]:
     duration = 1 / len(token_texts)
     words = tuple(
@@ -215,7 +217,8 @@ def _normalize(
     )
     sentence = Sentence(text, TimeRange(0, 1), words)
     segment = Segment(0, text, TimeRange(0, 1), (sentence,))
-    result = JapaneseLearningWordNormalizer(_Analyzer()).normalize(
+    analyzer = SudachiMorphologicalAnalyzer() if use_sudachi else _Analyzer()
+    result = JapaneseLearningWordNormalizer(analyzer).normalize(
         WordNormalizationRequest(Path("audio.mp3"), (segment,))
     )
     normalized_sentence = result.segments[0].sentences[0]
@@ -291,6 +294,73 @@ def test_learning_words_never_include_punctuation(text: str) -> None:
         for word in learning_words
     )
     assert learning_words[-1].end_char < len(text)
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    (
+        ("じゃあさ", ("じゃあ", "さ")),
+        ("行ってもいい", ("行って", "も", "いい")),
+        ("そうかも", ("そう", "かも")),
+        ("そうだよね", ("そう", "だ", "よね")),
+        ("そうなんだ", ("そう", "な", "んだ")),
+    ),
+)
+def test_builds_learning_units_from_functional_morphology(
+    text: str,
+    expected: tuple[str, ...],
+) -> None:
+    _aligned_words, learning_words = _normalize(text, (text,), use_sudachi=True)
+
+    assert tuple(word.text for word in learning_words) == expected
+
+
+def test_learning_units_are_reconstructed_across_asr_word_boundaries() -> None:
+    aligned_words, learning_words = _normalize(
+        "じゃあさ",
+        ("じゃ", "あさ"),
+        use_sudachi=True,
+    )
+
+    assert tuple(word.text for word in aligned_words) == ("じゃ", "あさ")
+    assert tuple(word.text for word in learning_words) == ("じゃあ", "さ")
+    assert learning_words[0].aligned_word_indexes == (0, 1)
+
+
+def test_learning_units_repair_context_sensitive_functional_boundary() -> None:
+    text = "じゃあさ、3人で同じ老人ホームに入ればよくない?"
+    _aligned_words, learning_words = _normalize(
+        text,
+        tuple(text),
+        use_sudachi=True,
+    )
+
+    assert tuple(word.text for word in learning_words[:3]) == (
+        "じゃあ",
+        "さ",
+        "3人",
+    )
+
+
+def test_contextual_reanalysis_preserves_genuine_connective_noun_boundary() -> None:
+    text = "でも朝から行きます"
+    _aligned_words, learning_words = _normalize(
+        text,
+        (text,),
+        use_sudachi=True,
+    )
+
+    assert tuple(word.text for word in learning_words[:2]) == ("でも", "朝")
+
+
+def test_functional_units_do_not_merge_across_punctuation() -> None:
+    _aligned_words, learning_words = _normalize(
+        "か、も",
+        ("か、も",),
+        use_sudachi=True,
+    )
+
+    assert tuple(word.text for word in learning_words) == ("か", "も")
 
 
 def test_marks_incrementing_sentence_prefixes_as_structure() -> None:

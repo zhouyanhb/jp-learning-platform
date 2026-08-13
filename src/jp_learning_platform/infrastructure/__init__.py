@@ -50,6 +50,12 @@ from jp_learning_platform.infrastructure.japanese_sentence_boundary_resolver imp
     DEFAULT_SENTENCE_BOUNDARY_TERMINAL_MARKS,
     JapaneseSentenceBoundaryResolver,
 )
+from jp_learning_platform.infrastructure.japanese_punctuation_restorer import (
+    PauseAwareJapaneseCommaRestorer,
+)
+from jp_learning_platform.infrastructure.japanese_question_punctuation_candidate_detector import (
+    ConservativeJapaneseQuestionCandidateDetector,
+)
 from jp_learning_platform.infrastructure.overlap_text_cleaner import (
     AuditableOverlapTextCleaner,
 )
@@ -160,6 +166,7 @@ __all__ = [
     "BertHomophoneResolver",
     "BertMaskedLanguageHomophoneCandidateGenerator",
     "ConservativeSubtitleMerger",
+    "ConservativeJapaneseQuestionCandidateDetector",
     "ConsoleProgressReporter",
     "CompositeSubtitleWriter",
     "DEFAULT_NORMALIZATION_VERSION",
@@ -213,6 +220,7 @@ __all__ = [
     "HomophonePrefilterCandidateGenerator",
     "HomophoneResolverDependencyError",
     "JapaneseSentenceBoundaryResolver",
+    "PauseAwareJapaneseCommaRestorer",
     "HomophoneTarget",
     "InvalidStageArtifactRecordError",
     "LlamaCppQwenRepairer",

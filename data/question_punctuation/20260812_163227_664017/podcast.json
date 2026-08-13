@@ -1,0 +1,455 @@
+{
+  "schema_version": 1,
+  "language": "ja",
+  "annotation_status": "silver_needs_review",
+  "reference": "input/source-text/Podcastを使った話す練習のやり方 ⧸ How to Improve Your Japanese Speaking with Podcasts [vQuGmq_tyyI].ja.srt",
+  "candidate_artifact": "output/.work/20260812_163227_664017/Podcastを使った話す練習のやり方_How_to_Improve_Your_Japanese_Speaking_with_Podcasts_vQuGmq_tyyI/05b_question_punctuation_candidates.json",
+  "candidate_types": {
+    "sentence_terminal_question": "Question at a language-sentence endpoint.",
+    "embedded_quoted_question": "Question embedded inside quoted speech.",
+    "elliptical_question": "Short question without an explicit predicate."
+  },
+  "gold_labels": {
+    "question": "Reference evidence supports a question mark at this span.",
+    "non_question": "Reference evidence does not support the predicted question.",
+    "uncertain": "Human review cannot decide reliably."
+  },
+  "review_instructions": [
+    "Confirm gold_label for every prediction sample.",
+    "Assign gold_candidate_type for every confirmed question.",
+    "Review missed references before using recall by candidate type."
+  ],
+  "evaluation_snapshot": {
+    "metrics": {
+      "precision": null,
+      "recall": 0.0,
+      "f1": null,
+      "true_positive": 0,
+      "false_positive": 0,
+      "false_negative": 11,
+      "precision_target_met": null
+    },
+    "metrics_by_candidate_type": {
+      "sentence_terminal_question": {
+        "predicted_questions": 0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "precision": null,
+        "recall_contribution": 0.0,
+        "precision_target_met": null
+      },
+      "embedded_quoted_question": {
+        "predicted_questions": 0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "precision": null,
+        "recall_contribution": 0.0,
+        "precision_target_met": null
+      },
+      "elliptical_question": {
+        "predicted_questions": 0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "precision": null,
+        "recall_contribution": 0.0,
+        "precision_target_met": null
+      }
+    }
+  },
+  "samples": [
+    {
+      "id": "missed-reference-00001",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 68.98500000000001,
+        "end_seconds": 71.935,
+        "text": "を使ったスピーキングの練習についてです。はい。どうでしょう?皆さんは色々な",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 62.307,
+          "end_seconds": 70.8,
+          "text": "で早速ね始めていきたいと思うんですが今日のテーマはポッドキャストを使ったスピーキングの練習についてです",
+          "is_question": false,
+          "segment_position": 5,
+          "sentence_index": 1
+        },
+        {
+          "start_seconds": 71.201,
+          "end_seconds": 75.66,
+          "text": "はいどうでしょう皆さんはいろいろなスピーキングの練習ってしてますかね",
+          "is_question": false,
+          "segment_position": 6,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": "sentence_terminal_question",
+      "review_status": "reviewed",
+      "review_note": "与下一条参考 cue 重叠，属于同一『どうでしょう』问句的宽时间窗。",
+      "error_attribution": "reference_overlap_duplicate"
+    },
+    {
+      "id": "missed-reference-00002",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 71.935,
+        "end_seconds": 71.94500000000001,
+        "text": "。はい。どうでしょう?皆さんは色々な",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 71.201,
+          "end_seconds": 75.66,
+          "text": "はいどうでしょう皆さんはいろいろなスピーキングの練習ってしてますかね",
+          "is_question": false,
+          "segment_position": 6,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": "sentence_terminal_question",
+      "review_status": "reviewed",
+      "review_note": "与上一条参考 cue 重叠重复，不应单独计为第二个 FN。",
+      "error_attribution": "reference_overlap_duplicate"
+    },
+    {
+      "id": "missed-reference-00003",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 71.118,
+        "end_seconds": 77.788,
+        "text": "スピーキングの練習ってしてますかね?中には会話レッスンに参加して会話の練習を",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 71.201,
+          "end_seconds": 75.66,
+          "text": "はいどうでしょう皆さんはいろいろなスピーキングの練習ってしてますかね",
+          "is_question": false,
+          "segment_position": 6,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 76.441,
+          "end_seconds": 80.799,
+          "text": "中には会話レッスンに参加して会話の練習をしている人",
+          "is_question": false,
+          "segment_position": 7,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": "sentence_terminal_question",
+      "review_status": "reviewed",
+      "review_note": "句末『してますかね』是真实问句，ASR 文本存在但未形成候选。",
+      "error_attribution": "candidate_rule_missing"
+    },
+    {
+      "id": "missed-reference-00004",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 398.64549999999997,
+        "end_seconds": 402.3155,
+        "text": "、あ、ここの文章おかしいなとか、あー、このな、何だっけ?めちゃくちゃ美味し",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 393.68,
+          "end_seconds": 399.8,
+          "text": "でそれをわーっと書き起こすで書いていく中であここの文章おかしいなーとか",
+          "is_question": false,
+          "segment_position": 39,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 400.361,
+          "end_seconds": 416.76,
+          "text": "あーこのなんだっけめちゃくちゃ美味しいっていう表現ってこないだクラスで勉強したんだよななんだったっけなここで辞書を使ってくださいねとか皆さんの作っている単語メモを見てください",
+          "is_question": false,
+          "segment_position": 40,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": "sentence_terminal_question",
+      "review_status": "reviewed",
+      "review_note": "与下一条参考 cue 重叠，『何だっけ』同一问句被字幕切窗重复覆盖。",
+      "error_attribution": "reference_overlap_duplicate"
+    },
+    {
+      "id": "missed-reference-00005",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 402.3155,
+        "end_seconds": 406.7555,
+        "text": "このな、何だっけ?めちゃくちゃ美味しいっていう表現ってこな間だクラスで勉強",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 400.361,
+          "end_seconds": 416.76,
+          "text": "あーこのなんだっけめちゃくちゃ美味しいっていう表現ってこないだクラスで勉強したんだよななんだったっけなここで辞書を使ってくださいねとか皆さんの作っている単語メモを見てください",
+          "is_question": false,
+          "segment_position": 40,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": "sentence_terminal_question",
+      "review_status": "reviewed",
+      "review_note": "『何だっけ』嵌在过长语言句中，问句落点未独立。",
+      "error_attribution": "language_sentence_error"
+    },
+    {
+      "id": "missed-reference-00006",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 425.118,
+        "end_seconds": 428.38800000000003,
+        "text": "くるとね、ビ味とか絶品とかうん。めちゃ美味しいとか。どれだ?あ、絶品だ。",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 426.026,
+          "end_seconds": 430.76,
+          "text": "めちゃ美味しいとか、どれだ絶品だこの間見た単語",
+          "is_question": false,
+          "segment_position": 43,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": "elliptical_question",
+      "review_status": "reviewed",
+      "review_note": "与下一条参考 cue 重叠，『どれだ』同一省略问句重复覆盖。",
+      "error_attribution": "reference_overlap_duplicate"
+    },
+    {
+      "id": "missed-reference-00007",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 428.38800000000003,
+        "end_seconds": 431.708,
+        "text": "美味しいとか。どれだ?あ、絶品だ。こな間だ見た単語。そうだ。絶品使いたい",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 426.026,
+          "end_seconds": 430.76,
+          "text": "めちゃ美味しいとか、どれだ絶品だこの間見た単語",
+          "is_question": false,
+          "segment_position": 43,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 431.302,
+          "end_seconds": 434.278,
+          "text": "そうだ絶品使いたいな作文に書く",
+          "is_question": false,
+          "segment_position": 44,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": "elliptical_question",
+      "review_status": "reviewed",
+      "review_note": "『どれだ』位于含后续陈述的语言句中，缺独立问句落点。",
+      "error_attribution": "language_sentence_error"
+    },
+    {
+      "id": "missed-reference-00008",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 804.0965,
+        "end_seconds": 810.0865,
+        "text": "ドってこんなにうまく話せてないの?いや、僕頑張ったな。これがモチベーションに",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 803.272,
+          "end_seconds": 808.07,
+          "text": "そうするとうわ最初のエピソードってこんなにうまく話せてないの",
+          "is_question": false,
+          "segment_position": 102,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 808.613,
+          "end_seconds": 811.789,
+          "text": "いや僕頑張ったなこれがモチベーションになる",
+          "is_question": false,
+          "segment_position": 103,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": "sentence_terminal_question",
+      "review_status": "reviewed",
+      "review_note": "『うまく話せてないの』为普通句末问句，文本完整。",
+      "error_attribution": "candidate_rule_missing"
+    },
+    {
+      "id": "missed-reference-00009",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1101.2359999999999,
+        "end_seconds": 1108.7869999999998,
+        "text": "に向いている人っているんですよ。それが内光的な人。はい。どうでしょう?皆さん",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1101.352,
+          "end_seconds": 1104.069,
+          "text": "それが内向的な人",
+          "is_question": false,
+          "segment_position": 144,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1104.894,
+          "end_seconds": 1107.246,
+          "text": "はいどうでしょう皆さんは内向的",
+          "is_question": false,
+          "segment_position": 145,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1108.392,
+          "end_seconds": 1112.39,
+          "text": "インターベルトイントロベルティード",
+          "is_question": false,
+          "segment_position": 146,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": "sentence_terminal_question",
+      "review_status": "reviewed",
+      "review_note": "『どうでしょう』为话语性提问，后续文本存在，候选规则未覆盖。",
+      "error_attribution": "candidate_rule_missing"
+    },
+    {
+      "id": "missed-reference-00010",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1471.7885,
+        "end_seconds": 1474.6585,
+        "text": "、のんびりだな。1ヶ月に4エピソードしか取られないの?ええって思うかもしれ",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1469.647,
+          "end_seconds": 1473.92,
+          "text": "のんびりだな1ヶ月に4エピソードしか撮られないの",
+          "is_question": false,
+          "segment_position": 212,
+          "sentence_index": 0
+        },
+        {
+          "start_seconds": 1474.361,
+          "end_seconds": 1480.84,
+          "text": "えーって思うかもしれないんですがそのプロセスこそが自分なりを探す旅だと思ってください",
+          "is_question": false,
+          "segment_position": 213,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": "sentence_terminal_question",
+      "review_status": "reviewed",
+      "review_note": "与下一条参考 cue 重叠，『4エピソードしか…の』同一问句重复覆盖。",
+      "error_attribution": "reference_overlap_duplicate"
+    },
+    {
+      "id": "missed-reference-00011",
+      "sample_kind": "missed_reference",
+      "candidate_type": null,
+      "predicted_text": null,
+      "predicted_time_range": null,
+      "evidence": [],
+      "automatic_match": "false_negative",
+      "reference": {
+        "start_seconds": 1474.6585,
+        "end_seconds": 1477.7395,
+        "text": "しか取られないの?ええって思うかもしれないんですが、そのプロセスこそが自分",
+        "is_question": true
+      },
+      "language_sentence_context": [
+        {
+          "start_seconds": 1474.361,
+          "end_seconds": 1480.84,
+          "text": "えーって思うかもしれないんですがそのプロセスこそが自分なりを探す旅だと思ってください",
+          "is_question": false,
+          "segment_position": 213,
+          "sentence_index": 0
+        }
+      ],
+      "gold_label": "question",
+      "gold_candidate_type": "sentence_terminal_question",
+      "review_status": "reviewed",
+      "review_note": "问句与后续『えーって思う』粘连，问句落点未独立。",
+      "error_attribution": "language_sentence_error"
+    }
+  ]
+}

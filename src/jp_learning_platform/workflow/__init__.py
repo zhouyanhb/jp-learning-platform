@@ -66,9 +66,17 @@ from jp_learning_platform.workflow.sentence_boundary_stage import (
     SpeakerTurnCandidate,
 )
 from jp_learning_platform.workflow.punctuation_attribution_stage import (
+    InternalPunctuationRestoration,
+    InternalPunctuationRestorer,
     PUNCTUATION_ATTRIBUTION_STAGE_NAME,
     PunctuationAttributionDecision,
     PunctuationAttributionStage,
+)
+from jp_learning_platform.workflow.question_punctuation_candidate_stage import (
+    QUESTION_PUNCTUATION_CANDIDATE_STAGE_NAME,
+    QuestionPunctuationCandidate,
+    QuestionPunctuationCandidateDetector,
+    QuestionPunctuationCandidateStage,
 )
 from jp_learning_platform.workflow.subtitle_display_normalization_stage import (
     SUBTITLE_DISPLAY_NORMALIZATION_STAGE_NAME,
@@ -150,6 +158,8 @@ from jp_learning_platform.workflow.qwen_repair_stage import (
 from jp_learning_platform.workflow.whisper_stage import (
     InvalidWhisperTranscriberError,
     InvalidWhisperTranscriptError,
+    ShortAnomalyRetryAudit,
+    ShortUtteranceAnalysisAudit,
     WHISPER_STAGE_NAME,
     WhisperStage,
     WhisperStageError,
@@ -222,8 +232,14 @@ __all__ = [
     "NoOpProgressReporter",
     "Pipeline",
     "PUNCTUATION_ATTRIBUTION_STAGE_NAME",
+    "InternalPunctuationRestoration",
+    "InternalPunctuationRestorer",
     "PunctuationAttributionDecision",
     "PunctuationAttributionStage",
+    "QUESTION_PUNCTUATION_CANDIDATE_STAGE_NAME",
+    "QuestionPunctuationCandidate",
+    "QuestionPunctuationCandidateDetector",
+    "QuestionPunctuationCandidateStage",
     "PipelineProgressEvent",
     "PipelineProgressStatus",
     "ProgressReporter",
@@ -252,6 +268,8 @@ __all__ = [
     "SentenceBoundaryResolutionStage",
     "SentenceBoundaryResolver",
     "SentenceBoundaryStageError",
+    "ShortAnomalyRetryAudit",
+    "ShortUtteranceAnalysisAudit",
     "SpeakerTurnCandidate",
     "Stage",
     "StageArtifactRecord",
