@@ -240,8 +240,9 @@
       ],
       "gold_label": "question",
       "gold_candidate_type": null,
-      "review_status": "needs_review",
-      "review_note": ""
+      "review_status": "reviewed",
+      "review_note": "当前语言句已包含「もう5時2分だけど大丈夫?」；时间表达虽有识别差异，但不属于问号候选漏报。",
+      "error_attribution": "already_visible_question_mark"
     },
     {
       "id": "missed-reference-00005",
@@ -331,8 +332,8 @@
       ],
       "gold_label": "question",
       "gold_candidate_type": null,
-      "review_status": "needs_review",
-      "review_note": ""
+      "review_status": "needs_audio_review",
+      "review_note": "参考「あと何分？」与当前「あとラムさん」差异较大，需听音频区分 ASR 错误和时间轴错位。"
     },
     {
       "id": "missed-reference-00007",
@@ -550,8 +551,9 @@
       ],
       "gold_label": "question",
       "gold_candidate_type": null,
-      "review_status": "needs_review",
-      "review_note": ""
+      "review_status": "reviewed",
+      "review_note": "当前语言句中的名词确认「結婚?」已经带问号。",
+      "error_attribution": "already_visible_question_mark"
     },
     {
       "id": "missed-reference-00015",
@@ -579,8 +581,9 @@
       ],
       "gold_label": "question",
       "gold_candidate_type": null,
-      "review_status": "needs_review",
-      "review_note": ""
+      "review_status": "reviewed",
+      "review_note": "当前语言句已包含「お父さんへそくりしてんの?」。",
+      "error_attribution": "already_visible_question_mark"
     },
     {
       "id": "missed-reference-00016",
@@ -809,8 +812,9 @@
       ],
       "gold_label": "question",
       "gold_candidate_type": null,
-      "review_status": "needs_review",
-      "review_note": ""
+      "review_status": "reviewed",
+      "review_note": "当前语言句已包含「窓口の締めの挨拶ってムズくない?」。",
+      "error_attribution": "already_visible_question_mark"
     },
     {
       "id": "missed-reference-00023",
@@ -1257,8 +1261,9 @@
       ],
       "gold_label": "question",
       "gold_candidate_type": null,
-      "review_status": "needs_review",
-      "review_note": ""
+      "review_status": "reviewed",
+      "review_note": "两个问句已被分为独立语言句，「伝えとこうか」和「何を」均未产生候选。",
+      "error_attribution": "candidate_rule_missing"
     },
     {
       "id": "missed-reference-00036",
@@ -1353,8 +1358,9 @@
       ],
       "gold_label": "question",
       "gold_candidate_type": null,
-      "review_status": "needs_review",
-      "review_note": ""
+      "review_status": "reviewed",
+      "review_note": "省略问句「なにこれいつ頃」包含明确疑问词且形成独立语言句。",
+      "error_attribution": "candidate_rule_missing"
     },
     {
       "id": "missed-reference-00039",
@@ -1585,8 +1591,9 @@
       ],
       "gold_label": "question",
       "gold_candidate_type": null,
-      "review_status": "needs_review",
-      "review_note": ""
+      "review_status": "reviewed",
+      "review_note": "目标问句「どういうこと」与后续解释起点「だってほら」被合并，应先修语言句范围。",
+      "error_attribution": "language_sentence_error"
     },
     {
       "id": "missed-reference-00045",
@@ -1981,8 +1988,9 @@
       ],
       "gold_label": "question",
       "gold_candidate_type": null,
-      "review_status": "needs_review",
-      "review_note": ""
+      "review_status": "reviewed",
+      "review_note": "当前语言句已包含完整接客问句「何名様ですか?」。",
+      "error_attribution": "already_visible_question_mark"
     },
     {
       "id": "missed-reference-00056",
@@ -2464,8 +2472,9 @@
       ],
       "gold_label": "question",
       "gold_candidate_type": null,
-      "review_status": "needs_review",
-      "review_note": ""
+      "review_status": "reviewed",
+      "review_note": "当前语言句已包含「福ちゃんってまだ音楽やってんだっけ?」。",
+      "error_attribution": "already_visible_question_mark"
     },
     {
       "id": "missed-reference-00069",
@@ -2688,8 +2697,9 @@
       ],
       "gold_label": "question",
       "gold_candidate_type": null,
-      "review_status": "needs_review",
-      "review_note": ""
+      "review_status": "reviewed",
+      "review_note": "完整回忆确认句「サインもらってなかったっけ」与参考高度一致。",
+      "error_attribution": "candidate_rule_missing"
     },
     {
       "id": "missed-reference-00075",
@@ -2977,8 +2987,9 @@
       ],
       "gold_label": "question",
       "gold_candidate_type": null,
-      "review_status": "needs_review",
-      "review_note": ""
+      "review_status": "reviewed",
+      "review_note": "完整问句「なんで別れちゃったの」与后续回答分离，但未生成候选。",
+      "error_attribution": "candidate_rule_missing"
     },
     {
       "id": "missed-reference-00083",
@@ -3223,8 +3234,9 @@
       ],
       "gold_label": "question",
       "gold_candidate_type": null,
-      "review_status": "needs_review",
-      "review_note": ""
+      "review_status": "reviewed",
+      "review_note": "参考问句的核心内容被识别为「話されてくちゃ悪いのに」，无法评价候选规则。",
+      "error_attribution": "asr_error"
     },
     {
       "id": "missed-reference-00090",
@@ -3596,8 +3608,9 @@
       ],
       "gold_label": "question",
       "gold_candidate_type": null,
-      "review_status": "needs_review",
-      "review_note": ""
+      "review_status": "reviewed",
+      "review_note": "当前语言句已包含「これ何の主題歌だっけ?」。",
+      "error_attribution": "already_visible_question_mark"
     },
     {
       "id": "missed-reference-00100",
@@ -4117,8 +4130,9 @@
       ],
       "gold_label": "question",
       "gold_candidate_type": null,
-      "review_status": "needs_review",
-      "review_note": ""
+      "review_status": "reviewed",
+      "review_note": "当前语言句已包含「どういうこと?」。",
+      "error_attribution": "already_visible_question_mark"
     },
     {
       "id": "missed-reference-00114",
@@ -4274,8 +4288,9 @@
       ],
       "gold_label": "question",
       "gold_candidate_type": null,
-      "review_status": "needs_review",
-      "review_note": ""
+      "review_status": "reviewed",
+      "review_note": "参考「同い年だからね？」被识别为形态异常的「同いでしたからね」，需先修 ASR。",
+      "error_attribution": "asr_error"
     },
     {
       "id": "missed-reference-00118",
@@ -4493,8 +4508,9 @@
       ],
       "gold_label": "question",
       "gold_candidate_type": null,
-      "review_status": "needs_review",
-      "review_note": ""
+      "review_status": "reviewed",
+      "review_note": "参考中的短回应「ホント？」未出现在重叠语言句。",
+      "error_attribution": "asr_omission_or_misalignment"
     },
     {
       "id": "missed-reference-00125",
@@ -4543,8 +4559,8 @@
       ],
       "gold_label": "question",
       "gold_candidate_type": null,
-      "review_status": "needs_review",
-      "review_note": ""
+      "review_status": "needs_audio_review",
+      "review_note": "极短「死んだ？」仅靠文字无法区分震惊确认与陈述，需要语调证据。"
     },
     {
       "id": "missed-reference-00127",
@@ -4830,8 +4846,8 @@
       ],
       "gold_label": "question",
       "gold_candidate_type": null,
-      "review_status": "needs_review",
-      "review_note": ""
+      "review_status": "needs_audio_review",
+      "review_note": "「ないんですね」可能是确认询问，也可能是陈述性接受，需要语调或后续回应判断。"
     },
     {
       "id": "missed-reference-00136",
@@ -4980,8 +4996,9 @@
       ],
       "gold_label": "question",
       "gold_candidate_type": null,
-      "review_status": "needs_review",
-      "review_note": ""
+      "review_status": "reviewed",
+      "review_note": "完整「何ですか」与后续回答独立，但未生成候选。",
+      "error_attribution": "candidate_rule_missing"
     },
     {
       "id": "missed-reference-00140",
@@ -5292,8 +5309,9 @@
       ],
       "gold_label": "question",
       "gold_candidate_type": null,
-      "review_status": "needs_review",
-      "review_note": ""
+      "review_status": "reviewed",
+      "review_note": "完整敬体问句「どういうことですか」已形成独立语言句，但未生成候选。",
+      "error_attribution": "candidate_rule_missing"
     },
     {
       "id": "missed-reference-00149",
@@ -5477,8 +5495,9 @@
       ],
       "gold_label": "question",
       "gold_candidate_type": null,
-      "review_status": "needs_review",
-      "review_note": ""
+      "review_status": "reviewed",
+      "review_note": "当前语言句已带问号；人名「麻美」被识别为「はさみ」属于独立 ASR 问题。",
+      "error_attribution": "already_visible_question_mark"
     },
     {
       "id": "missed-reference-00155",
@@ -5580,8 +5599,9 @@
       ],
       "gold_label": "question",
       "gold_candidate_type": null,
-      "review_status": "needs_review",
-      "review_note": ""
+      "review_status": "reviewed",
+      "review_note": "完整敬体问句「お仕事は帰るとか遅いんですか」虽有轻微词形识别偏差，疑问结构仍完整。",
+      "error_attribution": "candidate_rule_missing"
     },
     {
       "id": "missed-reference-00158",
@@ -5801,8 +5821,9 @@
       ],
       "gold_label": "question",
       "gold_candidate_type": null,
-      "review_status": "needs_review",
-      "review_note": ""
+      "review_status": "reviewed",
+      "review_note": "问句「保育園ぐらいのときじゃなかった」与后续「ポケベルだ」被合并。",
+      "error_attribution": "language_sentence_error"
     },
     {
       "id": "missed-reference-00165",
@@ -6069,8 +6090,8 @@
       ],
       "gold_label": "question",
       "gold_candidate_type": null,
-      "review_status": "needs_review",
-      "review_note": ""
+      "review_status": "needs_audio_review",
+      "review_note": "「どこにあるんだ」可能是向听者询问或自言自语，需要语调和说话人上下文。"
     },
     {
       "id": "missed-reference-00173",
@@ -6187,8 +6208,9 @@
       ],
       "gold_label": "question",
       "gold_candidate_type": null,
-      "review_status": "needs_review",
-      "review_note": ""
+      "review_status": "reviewed",
+      "review_note": "重复呼叫「お嬢ちゃん」是否为疑问主要依赖语调，不应自动作为问号候选。",
+      "error_attribution": "reference_punctuation_ambiguity"
     },
     {
       "id": "missed-reference-00177",

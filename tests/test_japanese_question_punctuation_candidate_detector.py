@@ -327,6 +327,83 @@ def test_unmarked_negative_polite_confirmation_rejects_topic_restart() -> None:
     assert "adjacent_independent_response" in candidate.evidence
 
 
+def test_real_context_listener_question_regressions() -> None:
+    detector = _detector()
+    accepted = (
+        (
+            "国に帰るんで家具とか電気製品いらなくなるんだけどどうしたらいいかな",
+            "僕の場合はアルバイト先の友達に譲るんだ",
+            "following_complete_answer",
+        ),
+        (
+            "公衆電話ってどこにあるんだろう",
+            "使ったことないから分かんないな",
+            "following_complete_answer",
+        ),
+        (
+            "よろしいですか",
+            "はい分かりました",
+            "adjacent_independent_response",
+        ),
+        (
+            "すいません何ですか",
+            "グアテマラ南東部のオオアリクイ",
+            "following_entity_answer",
+        ),
+        (
+            "どういうことですか",
+            "新しい生命ではなくてもう一度同じ人生をやり直すことでしたら可能です",
+            "following_complete_answer",
+        ),
+    )
+
+    for question, answer, expected_evidence in accepted:
+        candidate = detector.detect(
+            0,
+            0,
+            _sentence(question, 1.0, 2.0),
+            _sentence(answer, 2.1, 3.2),
+        )
+        assert candidate is not None
+        assert expected_evidence in candidate.evidence
+
+
+def test_real_context_non_question_regressions() -> None:
+    detector = _detector()
+    rejected = (
+        (
+            "なんとか直りそうなんですが修理までに15日間半日かかると今日言われましてどうしようかな",
+            "次の話を続けます",
+        ),
+        (
+            "どうしようちょっと歩きながら話そうかな",
+            "歩き始めます",
+        ),
+        (
+            "今度は先生も一緒に遊ぼうかな",
+            "はいそうしましょう",
+        ),
+        (
+            "でもアリって小さいけど主食になるのかな",
+            "引き続き精進しようと心に誓った",
+        ),
+        (
+            "自分がやりたいことが出てくるかもしれないじゃないですか",
+            "次は日本の生活について話します",
+        ),
+        ("すいません何ですか", "次の話"),
+        ("すいません何ですか", "明日の予定"),
+    )
+
+    for text, following in rejected:
+        assert detector.detect(
+            0,
+            0,
+            _sentence(text, 1.0, 2.0),
+            _sentence(following, 2.1, 3.2),
+        ) is None
+
+
 def test_explicit_question_accepts_auxiliary_volitional_form() -> None:
     candidate = _detector().detect(
         0,

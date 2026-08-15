@@ -904,6 +904,94 @@ def test_sentence_boundary_resolver_keeps_response_after_causal_clause() -> None
         )
 
 
+def test_second_episode_speaker_turns_veto_cross_asr_merge() -> None:
+    boundaries = (
+        ("次までに3人とも痩せとくから", "分かった", 0.553),
+        ("ミーポン何かと交換して", "私もいいよ", 0.181),
+        ("分かんない私ドラクエやらないから", "私も", 0.328),
+        (
+            "フクちゃん、騙されないで",
+            "フクちゃんはそこら辺の大学生くらいだよ",
+            0.683,
+        ),
+        ("いやとぼけてるとかじゃなくて触ってないから", "すいません", 0.423),
+        ("あのミタコングが", "黙ってじゃ分かんないだろ", 0.527),
+        ("大変だったみたいに", "実は私一昨年結婚しまして", 0.503),
+    )
+    resolver = JapaneseSentenceBoundaryResolver(
+        morphological_analyzer=SudachiMorphologicalAnalyzer()
+    )
+
+    for left, right, gap in boundaries:
+        result = resolver.resolve(
+            SentenceBoundaryResolutionRequest(
+                source_path=Path("episode-2.mp4"),
+                working_directory=Path("work"),
+                run_id="run-001",
+                segments=(
+                    _sentence_segment(0, left, 0.0, 1.0),
+                    _sentence_segment(1, right, 1.0 + gap, 2.5 + gap),
+                ),
+            )
+        )
+
+        assert tuple(segment.text for segment in result.segments) == (left, right)
+        assert not result.cross_segment_merges
+
+
+def test_first_person_agreement_with_full_predicate_remains_continuous() -> None:
+    left = "みんなこれ使ってるから私も使おうみたいな人多くて"
+    right = "私も同じ感じで空気を読んでます"
+    request = SentenceBoundaryResolutionRequest(
+        source_path=Path("culture-shock.m4a"),
+        working_directory=Path("work"),
+        run_id="run-001",
+        segments=(
+            _sentence_segment(0, left, 0.0, 1.0),
+            _sentence_segment(1, right, 1.483, 2.5),
+        ),
+    )
+
+    result = JapaneseSentenceBoundaryResolver(
+        morphological_analyzer=SudachiMorphologicalAnalyzer()
+    ).resolve(request)
+
+    assert tuple(segment.text for segment in result.segments) == (f"{left}{right}",)
+    assert len(result.cross_segment_merges) == 1
+
+
+def test_unaligned_sentence_is_not_merged_across_asr_boundary() -> None:
+    left = _sentence_segment(0, "ちょっと", 0.0, 1.0)
+    unaligned = Sentence(
+        text="ご視聴ありがとうございました?",
+        time_range=TimeRange(1.02, 2.0),
+        words=(),
+    )
+    right = Segment(
+        position=1,
+        text=unaligned.text,
+        time_range=unaligned.time_range,
+        sentences=(unaligned,),
+    )
+
+    result = JapaneseSentenceBoundaryResolver(
+        morphological_analyzer=SudachiMorphologicalAnalyzer()
+    ).resolve(
+        SentenceBoundaryResolutionRequest(
+            source_path=Path("unaligned.mp3"),
+            working_directory=Path("work"),
+            run_id="run-001",
+            segments=(left, right),
+        )
+    )
+
+    assert tuple(segment.text for segment in result.segments) == (
+        "ちょっと",
+        "ご視聴ありがとうございました?",
+    )
+    assert not result.cross_segment_merges
+
+
 def test_sentence_boundary_resolver_keeps_topic_shift_after_causal_clause() -> None:
     request = SentenceBoundaryResolutionRequest(
         source_path=Path("input.mp3"),

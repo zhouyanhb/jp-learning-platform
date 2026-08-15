@@ -91,3 +91,44 @@ def test_preserves_rejected_morphological_asr_error_for_review() -> None:
     assert len(candidates) == 1
     assert candidates[0].kind == "possible_morphological_asr_error"
     assert candidates[0].time_range == time_range
+
+
+def test_detects_repeated_laughter_as_independent_anomaly() -> None:
+    segment = _segment(7, "あははは", 12.0, 13.2, 0.96)
+
+    candidates = ConservativeTranscriptAnomalyDetector().detect(
+        TranscriptAnomalyRequest(Path("drama.mp4"), (segment,))
+    )
+
+    assert len(candidates) == 1
+    assert candidates[0].kind == "possible_repeated_laughter"
+    assert candidates[0].time_range == segment.time_range
+    assert candidates[0].evidence == (
+        "non_lexical_utterance",
+        "repeated_laughter_syllables",
+    )
+
+
+def test_detects_explicit_background_sound_annotation() -> None:
+    segment = _segment(3, "【拍手】", 8.0, 9.5, 0.99)
+
+    candidates = ConservativeTranscriptAnomalyDetector().detect(
+        TranscriptAnomalyRequest(Path("video.webm"), (segment,))
+    )
+
+    assert len(candidates) == 1
+    assert candidates[0].kind == "possible_background_sound"
+    assert candidates[0].time_range == segment.time_range
+
+
+def test_does_not_treat_lexical_laughter_or_music_as_background_sound() -> None:
+    segments = (
+        _segment(0, "笑顔で話しています", 0.0, 1.0, 0.95),
+        _segment(1, "音楽教室へ行きます", 1.1, 2.1, 0.95),
+    )
+
+    candidates = ConservativeTranscriptAnomalyDetector().detect(
+        TranscriptAnomalyRequest(Path("speech.mp3"), segments)
+    )
+
+    assert candidates == ()

@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import re
 from statistics import fmean
+import unicodedata
 
 from jp_learning_platform.domain import Segment, TimeRange
 from jp_learning_platform.infrastructure.japanese_word_normalizer import (
@@ -35,6 +37,32 @@ class ConservativeTranscriptAnomalyDetector:
         segments = request.segments
         morphological_analyzer = None
         for segment in segments:
+            if _is_repeated_laughter(segment.text):
+                candidates.append(
+                    TranscriptAnomalyCandidate(
+                        kind="possible_repeated_laughter",
+                        time_range=segment.time_range,
+                        segment_positions=(segment.position,),
+                        confidence=0.9,
+                        evidence=(
+                            "non_lexical_utterance",
+                            "repeated_laughter_syllables",
+                        ),
+                    )
+                )
+            elif _is_background_sound_annotation(segment.text):
+                candidates.append(
+                    TranscriptAnomalyCandidate(
+                        kind="possible_background_sound",
+                        time_range=segment.time_range,
+                        segment_positions=(segment.position,),
+                        confidence=0.95,
+                        evidence=(
+                            "non_speech_annotation",
+                            "background_sound_label",
+                        ),
+                    )
+                )
             word_confidences = tuple(
                 word.confidence
                 for sentence in segment.sentences
@@ -162,3 +190,51 @@ def _edge_confidence(left: Segment, right: Segment) -> float | None:
     right_values = [word.confidence for word in right.sentences[0].words[:3]] if right.sentences else []
     values = [value for value in (*left_values, *right_values) if value is not None]
     return fmean(values) if values else None
+
+
+def _is_repeated_laughter(text: str) -> bool:
+    normalized = "".join(
+        character.lower()
+        for character in unicodedata.normalize("NFKC", text)
+        if not character.isspace()
+        and not unicodedata.category(character).startswith(("P", "S"))
+    )
+    if re.fullmatch(r"(?:w{3,}|(?:ha){2,}|(?:he){2,}|(?:lol)+)", normalized):
+        return True
+    if not re.fullmatch(r"[あいうえおはひふへほっー]+", normalized):
+        return False
+    laughter_consonants = "".join(
+        character for character in normalized if character in "はひふへほ"
+    )
+    return (
+        len(normalized) >= 2
+        and len(laughter_consonants) >= 2
+        and len(set(normalized.replace("ー", ""))) <= 3
+    )
+
+
+def _is_background_sound_annotation(text: str) -> bool:
+    normalized = unicodedata.normalize("NFKC", text).strip()
+    if normalized and all(character in "♪♫♬♩~〜 " for character in normalized):
+        return True
+    match = re.fullmatch(r"[\[(【<〈《「『（](.+?)[\])】>〉》」』）]", normalized)
+    if match is None:
+        return False
+    label = re.sub(r"\s+", "", match.group(1)).lower()
+    sound_labels = (
+        "音楽",
+        "bgm",
+        "効果音",
+        "環境音",
+        "雑音",
+        "拍手",
+        "歓声",
+        "笑い声",
+        "笑声",
+        "ざわめき",
+        "ノイズ",
+        "music",
+        "applause",
+        "laughter",
+    )
+    return any(label == value or label.startswith(f"{value}:") for value in sound_labels)

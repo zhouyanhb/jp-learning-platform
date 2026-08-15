@@ -73,6 +73,53 @@ def test_punctuation_attribution_attaches_period_to_statement() -> None:
     assert not decision.is_question
 
 
+def test_punctuation_attribution_attaches_period_split_by_strong_pause() -> None:
+    statement_words = (
+        Word("仕事帰りに", TimeRange(7.086, 8.287)),
+        Word("平凡な生活を送っていたのですが", TimeRange(14.313, 19.718)),
+    )
+    period_word = Word("。", TimeRange(19.718, 20.779))
+    next_word = Word("そこで告げられた来世は。", TimeRange(20.779, 22.220))
+    sentences = (
+        Sentence(
+            "仕事帰りに平凡な生活を送っていたのですが",
+            TimeRange(7.086, 19.718),
+            words=statement_words,
+        ),
+        Sentence("。", period_word.time_range, words=(period_word,)),
+        Sentence(next_word.text, next_word.time_range, words=(next_word,)),
+    )
+    context = PipelineContext(
+        run_id="run-001",
+        document=Document(
+            source_path=Path("episode-2.mp4"),
+            segments=(
+                Segment(
+                    0,
+                    "".join(sentence.text for sentence in sentences),
+                    TimeRange(7.086, 22.220),
+                    sentences,
+                ),
+            ),
+        ),
+        working_directory=Path("work"),
+    )
+
+    result = PunctuationAttributionStage().run(context)
+
+    output_sentences = result.context.document.segments[0].sentences
+    assert tuple(sentence.text for sentence in output_sentences) == (
+        "仕事帰りに平凡な生活を送っていたのですが。",
+        "そこで告げられた来世は。",
+    )
+    assert output_sentences[0].time_range == TimeRange(7.086, 20.779)
+    assert tuple(word.text for word in output_sentences[0].words) == (
+        "仕事帰りに",
+        "平凡な生活を送っていたのですが",
+        "。",
+    )
+
+
 def test_punctuation_attribution_does_not_attach_opening_punctuation() -> None:
     result = PunctuationAttributionStage().run(
         _context("前の文。", "「", is_question=False)

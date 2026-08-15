@@ -78,8 +78,8 @@ def evaluate_question_punctuation(
             if reference_time_offset_seconds is not None
             else _local_reference_offset(item, alignment_anchors),
         )
-        for item in prepared_reference
-        if item.is_question
+        for cue in prepared_reference
+        for item in _reference_questions_in_cue(cue)
     ))
     predictions, prediction_source = _artifact_predictions(artifact, sentences)
     raw_matches = _match_questions(
@@ -413,6 +413,39 @@ def _parse_srt(content: str) -> tuple[_TimedQuestion, ...]:
     return tuple(cues)
 
 
+def _reference_questions_in_cue(
+    cue: _TimedQuestion,
+) -> tuple[_TimedQuestion, ...]:
+    question_mark_indexes = tuple(
+        index for index, character in enumerate(cue.text) if character in "?？"
+    )
+    if not question_mark_indexes:
+        return ()
+    questions: list[_TimedQuestion] = []
+    clause_start = 0
+    cue_duration = cue.end_seconds - cue.start_seconds
+    text_length = len(cue.text)
+    for question_mark_index in question_mark_indexes:
+        text = cue.text[clause_start : question_mark_index + 1].strip()
+        if text:
+            question_start = cue.start_seconds + cue_duration * (
+                clause_start / text_length
+            )
+            question_end = cue.start_seconds + cue_duration * (
+                (question_mark_index + 1) / text_length
+            )
+            questions.append(
+                _TimedQuestion(
+                    question_start,
+                    question_end,
+                    text,
+                    True,
+                )
+            )
+        clause_start = question_mark_index + 1
+    return tuple(questions)
+
+
 def _artifact_sentences(artifact: dict[str, object]) -> tuple[_TimedQuestion, ...]:
     document = ((artifact.get("context") or {}).get("document") or {})
     results: list[_TimedQuestion] = []
@@ -470,7 +503,8 @@ def _deduplicate_reference_questions(
             (
                 index
                 for index in range(len(deduplicated) - 1, max(-1, len(deduplicated) - 6), -1)
-                if abs(_center_seconds(deduplicated[index]) - _center_seconds(question))
+                if _overlap_seconds(deduplicated[index], question) > 0
+                and abs(_center_seconds(deduplicated[index]) - _center_seconds(question))
                 <= 6.0
                 and SequenceMatcher(
                     None,
@@ -603,10 +637,21 @@ def _match_questions(
                 prediction,
                 gold,
             )
+            terminal_clause_alignment = _matches_reference_terminal_clause(
+                prediction,
+                gold,
+                padding_seconds,
+            )
             if (
-                temporal_iou >= min_temporal_iou
+                (
+                    temporal_iou >= min_temporal_iou
+                    or terminal_clause_alignment
+                )
                 and text_similarity >= min_text_similarity
-                and terminal_text_similarity >= min_terminal_text_similarity
+                and (
+                    terminal_text_similarity >= min_terminal_text_similarity
+                    or terminal_clause_alignment
+                )
             ):
                 score = (
                     0.5 * temporal_iou
@@ -793,6 +838,22 @@ def _question_endpoint_similarity(
     if predicted and predicted in reference_prefix:
         return 1.0
     return terminal_similarity
+
+
+def _matches_reference_terminal_clause(
+    prediction: _TimedQuestion,
+    reference: _TimedQuestion,
+    padding_seconds: float,
+) -> bool:
+    if _candidate_type(prediction) == "embedded_quoted_question":
+        return False
+    predicted = _normalize_text(prediction.text)
+    reference_prefix = _normalize_text(
+        reference.text[: _last_question_mark_index(reference.text)]
+    )
+    if not predicted or not reference_prefix.endswith(predicted):
+        return False
+    return abs(prediction.start_seconds - reference.end_seconds) <= padding_seconds
 
 
 def _last_question_mark_index(text: str) -> int:

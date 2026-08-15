@@ -1949,7 +1949,9 @@ def _merge_high_confidence_cross_segment_continuations(
             right.text,
         )
         if (
-            not left_analysis
+            not left.words
+            or not right.words
+            or not left_analysis
             or not right_analysis
             or _ends_with_terminal_mark(
                 left.text,
@@ -1961,6 +1963,13 @@ def _merge_high_confidence_cross_segment_continuations(
             )
             or _starts_topic_shift_expression(right_analysis)
             or _starts_cross_segment_response(right.text, right_analysis)
+            or _has_cross_segment_speaker_turn_veto(
+                left.text,
+                right.text,
+                left_analysis,
+                right_analysis,
+                gap_seconds,
+            )
             or (
                 _is_functional_continuation(right_analysis[0])
                 and not has_fragment_reconstruction
@@ -2132,7 +2141,9 @@ def _merge_high_confidence_adjacent_sentences(
                 else config.max_cross_segment_grammar_gap_seconds
             )
             if (
-                not right_analysis
+                not left.words
+                or not sentence.words
+                or not right_analysis
                 or gap_seconds < 0
                 or gap_seconds > allowed_gap
                 or score < config.cross_segment_merge_score_threshold
@@ -2143,6 +2154,13 @@ def _merge_high_confidence_adjacent_sentences(
                 or _starts_independent_discourse(sentence.text)
                 or _starts_topic_shift_expression(right_analysis)
                 or _starts_cross_segment_response(sentence.text, right_analysis)
+                or _has_cross_segment_speaker_turn_veto(
+                    left.text,
+                    sentence.text,
+                    analyzer.analyze(_compact_text(left.text)),
+                    right_analysis,
+                    gap_seconds,
+                )
             ):
                 sentences.append(sentence)
                 continue
@@ -2554,7 +2572,9 @@ def _merge_adjacent_dependent_continuations(
             is not None
         )
         if (
-            gap_seconds < 0
+            not left.words
+            or not right.words
+            or gap_seconds < 0
             or gap_seconds > config.max_continuation_candidate_gap_seconds
             or preserves_numbering_restart
             or _ends_with_terminal_mark(
@@ -2564,6 +2584,16 @@ def _merge_adjacent_dependent_continuations(
             or (
                 analyzer is not None
                 and _starts_cross_segment_response(right.text, right_analysis)
+            )
+            or (
+                analyzer is not None
+                and _has_cross_segment_speaker_turn_veto(
+                    left.text,
+                    right.text,
+                    left_analysis,
+                    right_analysis,
+                    gap_seconds,
+                )
             )
             or (
                 analyzer is not None
@@ -3242,12 +3272,24 @@ def _merge_adjacent_connective_continuations(
         )
         gap_seconds = right.time_range.start_seconds - left.time_range.end_seconds
         if (
-            gap_seconds < 0
+            not left.words
+            or not right.words
+            or gap_seconds < 0
             or gap_seconds > config.max_connective_continuation_gap_seconds
             or _starts_independent_discourse(right.text)
             or (
                 analyzer is not None
                 and _starts_cross_segment_response(right.text, right_analysis)
+            )
+            or (
+                analyzer is not None
+                and _has_cross_segment_speaker_turn_veto(
+                    left.text,
+                    right.text,
+                    left_analysis,
+                    right_analysis,
+                    gap_seconds,
+                )
             )
             or (
                 analyzer is not None
@@ -3479,6 +3521,144 @@ def _has_connective_tail(
 
 def _starts_independent_discourse(text: str) -> bool:
     return _compact_text(text).startswith(_INDEPENDENT_DISCOURSE_STARTS)
+
+
+def _has_cross_segment_speaker_turn_veto(
+    left_text: str,
+    right_text: str,
+    left: tuple[JapaneseMorpheme, ...],
+    right: tuple[JapaneseMorpheme, ...],
+    gap_seconds: float,
+) -> bool:
+    if not left or not right:
+        return False
+    normalized_right = _compact_text(right_text)
+    if normalized_right.startswith("すいません"):
+        return True
+    if _is_compact_acknowledgement(right, normalized_right):
+        return True
+    if _starts_first_person_agreement(right) and (
+        _contains_first_person_subject(left)
+        or _is_addressee_request(left)
+    ):
+        return True
+    if _starts_disclosure_restart(right):
+        return True
+    if (
+        gap_seconds >= DEFAULT_SENTENCE_BOUNDARY_CONFIG.min_pause_seconds
+        and _is_deictic_elliptical_subject(left)
+        and _is_complete_clause(right)
+    ):
+        return True
+    return _ends_with_negative_request(left) and _repeats_addressee(left, right)
+
+
+def _is_compact_acknowledgement(
+    morphemes: tuple[JapaneseMorpheme, ...],
+    normalized_text: str,
+) -> bool:
+    return bool(
+        len(normalized_text) <= 8
+        and _is_complete_clause(morphemes)
+        and any(
+            morpheme.part_of_speech
+            and morpheme.part_of_speech[0] == "動詞"
+            and morpheme.dictionary_form == "分かる"
+            for morpheme in morphemes
+        )
+    )
+
+
+def _starts_first_person_agreement(
+    morphemes: tuple[JapaneseMorpheme, ...],
+) -> bool:
+    surface_text = "".join(morpheme.surface for morpheme in morphemes)
+    return bool(
+        len(morphemes) >= 2
+        and len(surface_text) <= 8
+        and morphemes[0].part_of_speech
+        and morphemes[0].part_of_speech[0] == "代名詞"
+        and morphemes[0].dictionary_form in {"私", "僕", "俺"}
+        and morphemes[1].part_of_speech[:2] == ("助詞", "係助詞")
+        and morphemes[1].dictionary_form == "も"
+    )
+
+
+def _contains_first_person_subject(
+    morphemes: tuple[JapaneseMorpheme, ...],
+) -> bool:
+    return any(
+        morpheme.part_of_speech
+        and morpheme.part_of_speech[0] == "代名詞"
+        and morpheme.dictionary_form in {"私", "僕", "俺"}
+        for morpheme in morphemes
+    )
+
+
+def _is_addressee_request(morphemes: tuple[JapaneseMorpheme, ...]) -> bool:
+    return bool(
+        _ends_with_conjunctive_particle_chain(morphemes)
+        and morphemes[0].part_of_speech
+        and morphemes[0].part_of_speech[0] == "名詞"
+        and any(
+            morpheme.part_of_speech
+            and morpheme.part_of_speech[0] == "代名詞"
+            and morpheme.dictionary_form in {"何", "どれ", "どこ", "誰"}
+            for morpheme in morphemes[1:4]
+        )
+    )
+
+
+def _starts_disclosure_restart(
+    morphemes: tuple[JapaneseMorpheme, ...],
+) -> bool:
+    return bool(
+        len(morphemes) >= 2
+        and morphemes[0].dictionary_form == "実"
+        and morphemes[1].part_of_speech[:2] == ("助詞", "係助詞")
+        and morphemes[1].dictionary_form == "は"
+    )
+
+
+def _is_deictic_elliptical_subject(
+    morphemes: tuple[JapaneseMorpheme, ...],
+) -> bool:
+    return bool(
+        len(morphemes) <= 4
+        and morphemes[0].part_of_speech
+        and morphemes[0].part_of_speech[0] == "連体詞"
+        and morphemes[-1].part_of_speech[:2] == ("助詞", "格助詞")
+        and morphemes[-1].dictionary_form == "が"
+    )
+
+
+def _ends_with_negative_request(
+    morphemes: tuple[JapaneseMorpheme, ...],
+) -> bool:
+    return bool(
+        len(morphemes) >= 2
+        and morphemes[-1].part_of_speech[:2] == ("助詞", "接続助詞")
+        and morphemes[-1].dictionary_form == "で"
+        and morphemes[-2].dictionary_form == "ない"
+    )
+
+
+def _repeats_addressee(
+    left: tuple[JapaneseMorpheme, ...],
+    right: tuple[JapaneseMorpheme, ...],
+) -> bool:
+    left_names = {
+        morpheme.dictionary_form
+        for morpheme in left
+        if morpheme.part_of_speech[:2] == ("名詞", "固有名詞")
+    }
+    return bool(
+        left_names
+        and any(
+            morpheme.dictionary_form in left_names
+            for morpheme in right[:2]
+        )
+    )
 
 
 def _append_comma(sentence: Sentence) -> Sentence:

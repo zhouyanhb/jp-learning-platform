@@ -30,8 +30,10 @@ _INTERROGATIVE_FORMS = frozenset(
         "なぜ",
         "如何",
         "どう",
+        "どういう",
         "何時",
         "いつ",
+        "いつ頃",
         "幾つ",
         "いくつ",
         "幾ら",
@@ -121,6 +123,7 @@ class ConservativeJapaneseQuestionCandidateDetector:
                     following,
                     self.analyzer,
                     self.maximum_response_gap_seconds,
+                    question_morphemes=morphemes,
                 )
             )
             if polite_relation is not None:
@@ -281,9 +284,30 @@ def _following_independent_relation(
         and _has_no_forward_dependency(response)
     ):
         return "following_complete_answer"
+    if (
+        _contains_interrogative_form(question_morphemes)
+        and _is_entity_nominal_answer(response)
+    ):
+        return "following_entity_answer"
     if _is_independent_topic_restart(response):
         return "following_topic_restart"
     return None
+
+
+def _is_entity_nominal_answer(
+    morphemes: tuple[JapaneseMorpheme, ...],
+) -> bool:
+    if not morphemes or len(morphemes) > 8:
+        return False
+    allowed = {"名詞", "接頭辞", "接尾辞", "助詞"}
+    if any(item.part_of_speech[0] not in allowed for item in morphemes):
+        return False
+    if morphemes[-1].part_of_speech[0] != "名詞":
+        return False
+    return any(
+        item.part_of_speech[:2] == ("名詞", "固有名詞")
+        for item in morphemes
+    )
 
 
 def _has_complete_answer_clause(
@@ -292,6 +316,14 @@ def _has_complete_answer_clause(
     if _has_complete_predicate(morphemes):
         return True
     core = _without_terminal_particles(morphemes)
+    if (
+        len(core) >= 2
+        and core[-2].part_of_speech[0] == "形状詞"
+        and core[-1].part_of_speech[0] == "助動詞"
+        and core[-1].normalized_form == "です"
+        and "終止形" in core[-1].conjugation_form
+    ):
+        return True
     if len(core) < 3:
         return False
     explanatory, copula = core[-2:]
@@ -481,7 +513,7 @@ def _contains_interrogative_form(
     return any(
         item.normalized_form in _INTERROGATIVE_FORMS
         for item in morphemes
-        if item.part_of_speech[0] in {"代名詞", "副詞", "連体詞"}
+        if item.part_of_speech[0] in {"名詞", "代名詞", "副詞", "連体詞"}
     )
 
 

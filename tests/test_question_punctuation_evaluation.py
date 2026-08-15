@@ -209,6 +209,197 @@ def test_does_not_match_sentence_terminal_to_embedded_reference_question(
     assert report["metrics"]["false_negative"] == 1
 
 
+def test_matches_short_question_at_end_of_combined_reference_cue(
+    tmp_path: Path,
+) -> None:
+    reference = tmp_path / "reference.srt"
+    reference.write_text(
+        """1
+00:28:46,026 --> 00:28:50,464
+今世をやり直すかですよね。ん？どういうことですか？
+""",
+        encoding="utf-8",
+    )
+    artifact = tmp_path / "artifact.json"
+    artifact.write_text(
+        json.dumps(
+            {
+                "data": {
+                    "candidates": [
+                        {
+                            "segment_position": 0,
+                            "sentence_index": 0,
+                            "text": "どういうことですか",
+                            "time_range": {
+                                "start_seconds": 1730.447,
+                                "end_seconds": 1731.060,
+                            },
+                        }
+                    ]
+                }
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+
+    report = evaluate_question_punctuation(
+        reference,
+        artifact,
+        reference_time_offset_seconds=0.0,
+    )
+
+    assert report["metrics"]["true_positive"] == 1
+    assert report["metrics"]["false_positive"] == 0
+
+
+def test_evaluates_each_question_inside_one_reference_cue(
+    tmp_path: Path,
+) -> None:
+    reference = tmp_path / "reference.srt"
+    reference.write_text(
+        """1
+00:00:01,000 --> 00:00:05,000
+今日はどこへ行きますか？電車で行きますか？
+""",
+        encoding="utf-8",
+    )
+    artifact = tmp_path / "artifact.json"
+    artifact.write_text(
+        json.dumps(
+            {
+                "data": {
+                    "candidates": [
+                        {
+                            "segment_position": 0,
+                            "sentence_index": 0,
+                            "text": "今日はどこへ行きますか",
+                            "time_range": {
+                                "start_seconds": 1.0,
+                                "end_seconds": 3.0,
+                            },
+                        },
+                        {
+                            "segment_position": 0,
+                            "sentence_index": 1,
+                            "text": "電車で行きますか",
+                            "time_range": {
+                                "start_seconds": 3.0,
+                                "end_seconds": 5.0,
+                            },
+                        },
+                    ]
+                }
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+
+    report = evaluate_question_punctuation(
+        reference,
+        artifact,
+        reference_time_offset_seconds=0.0,
+    )
+
+    assert report["coverage"]["reference_questions"] == 2
+    assert report["metrics"]["true_positive"] == 2
+    assert report["metrics"]["false_positive"] == 0
+    assert report["metrics"]["false_negative"] == 0
+    assert {
+        match["reference"]["text"] for match in report["matches"]
+    } == {"今日はどこへ行きますか？", "電車で行きますか？"}
+
+
+def test_reports_unmatched_question_inside_multi_question_reference_cue(
+    tmp_path: Path,
+) -> None:
+    reference = tmp_path / "reference.srt"
+    reference.write_text(
+        """1
+00:00:01,000 --> 00:00:05,000
+最初の質問ですか？次の質問ですか？
+""",
+        encoding="utf-8",
+    )
+    artifact = tmp_path / "artifact.json"
+    artifact.write_text(
+        json.dumps(
+            {
+                "data": {
+                    "candidates": [
+                        {
+                            "segment_position": 0,
+                            "sentence_index": 0,
+                            "text": "次の質問ですか",
+                            "time_range": {
+                                "start_seconds": 3.0,
+                                "end_seconds": 5.0,
+                            },
+                        }
+                    ]
+                }
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+
+    report = evaluate_question_punctuation(
+        reference,
+        artifact,
+        reference_time_offset_seconds=0.0,
+    )
+
+    assert report["metrics"]["true_positive"] == 1
+    assert report["metrics"]["false_negative"] == 1
+    assert report["errors"]["false_negative"][0]["text"] == "最初の質問ですか？"
+
+
+def test_terminal_endpoint_exception_requires_exact_reference_suffix(
+    tmp_path: Path,
+) -> None:
+    reference = tmp_path / "reference.srt"
+    reference.write_text(
+        """1
+00:00:01,000 --> 00:00:05,000
+前の発言です。どういうことですか？
+""",
+        encoding="utf-8",
+    )
+    artifact = tmp_path / "artifact.json"
+    artifact.write_text(
+        json.dumps(
+            {
+                "data": {
+                    "candidates": [
+                        {
+                            "segment_position": 0,
+                            "sentence_index": 0,
+                            "text": "次の話は何ですか",
+                            "time_range": {
+                                "start_seconds": 5.05,
+                                "end_seconds": 6.0,
+                            },
+                        }
+                    ]
+                }
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+
+    report = evaluate_question_punctuation(
+        reference,
+        artifact,
+        reference_time_offset_seconds=0.0,
+    )
+
+    assert report["metrics"]["true_positive"] == 0
+    assert report["metrics"]["false_positive"] == 1
+
+
 def test_reports_metrics_separately_by_candidate_type(tmp_path: Path) -> None:
     reference = tmp_path / "reference.srt"
     reference.write_text(
