@@ -1,10 +1,18 @@
 from pathlib import Path
 
-from jp_learning_platform.domain import Segment, Sentence, TimeRange, Word
+from jp_learning_platform.domain import (
+    Document,
+    PipelineContext,
+    Segment,
+    Sentence,
+    TimeRange,
+    Word,
+)
 from jp_learning_platform.infrastructure.transcript_anomaly_detector import (
     ConservativeTranscriptAnomalyDetector,
 )
 from jp_learning_platform.workflow.transcript_anomaly_stage import (
+    TranscriptAnomalyIsolationStage,
     TranscriptAnomalyRequest,
 )
 
@@ -132,3 +140,57 @@ def test_does_not_treat_lexical_laughter_or_music_as_background_sound() -> None:
     )
 
     assert candidates == ()
+
+
+def test_does_not_treat_repeated_acknowledgement_as_laughter() -> None:
+    segment = _segment(0, "あーはいはい", 0.0, 1.0, 0.95)
+
+    candidates = ConservativeTranscriptAnomalyDetector().detect(
+        TranscriptAnomalyRequest(Path("speech.mp3"), (segment,))
+    )
+
+    assert candidates == ()
+
+
+def test_classifies_unaligned_repeated_vocalization_separately() -> None:
+    time_range = TimeRange(10.0, 11.0)
+    sentence = Sentence("ペッドペッドペッドペッド", time_range)
+    segment = Segment(4, sentence.text, time_range, (sentence,))
+
+    candidates = ConservativeTranscriptAnomalyDetector().detect(
+        TranscriptAnomalyRequest(Path("drama.mp4"), (segment,))
+    )
+
+    assert {candidate.kind for candidate in candidates} == {
+        "possible_alignment_failure",
+        "possible_repeated_vocalization",
+    }
+    alignment = next(
+        item for item in candidates if item.kind == "possible_alignment_failure"
+    )
+    assert alignment.sentence_indexes == (0,)
+
+
+def test_isolation_keeps_text_but_suppresses_unreliable_learning_words(
+    tmp_path: Path,
+) -> None:
+    time_range = TimeRange(10.0, 11.0)
+    sentence = Sentence("ご視聴ありがとうございました", time_range)
+    segment = Segment(4, sentence.text, time_range, (sentence,))
+    context = PipelineContext(
+        run_id="run-1",
+        document=Document(Path("drama.mp4"), (segment,)),
+        working_directory=tmp_path,
+    )
+
+    result = TranscriptAnomalyIsolationStage(
+        ConservativeTranscriptAnomalyDetector()
+    ).run(context)
+
+    isolated = result.context.document.segments[0].sentences[0]
+    assert isolated.text == sentence.text
+    assert isolated.anomaly_kinds == ("possible_alignment_failure",)
+    assert isolated.excluded_from_language_evaluation
+    assert isolated.learning_words_suppressed
+    assert isolated.learning_words == ()
+    assert result.data["isolated_sentence_count"] == 1

@@ -37,6 +37,20 @@ class ConservativeTranscriptAnomalyDetector:
         segments = request.segments
         morphological_analyzer = None
         for segment in segments:
+            for sentence_index, sentence in enumerate(segment.sentences):
+                if not _has_lexical_alignment(sentence):
+                    candidates.append(
+                        TranscriptAnomalyCandidate(
+                            kind="possible_alignment_failure",
+                            time_range=sentence.time_range,
+                            segment_positions=(segment.position,),
+                            sentence_indexes=(sentence_index,),
+                            confidence=0.95,
+                            evidence=(
+                                "recognized_text_without_lexical_alignment",
+                            ),
+                        )
+                    )
             if _is_repeated_laughter(segment.text):
                 candidates.append(
                     TranscriptAnomalyCandidate(
@@ -47,6 +61,25 @@ class ConservativeTranscriptAnomalyDetector:
                         evidence=(
                             "non_lexical_utterance",
                             "repeated_laughter_syllables",
+                        ),
+                    )
+                )
+            elif (
+                not any(
+                    _has_lexical_alignment(sentence)
+                    for sentence in segment.sentences
+                )
+                and _is_repeated_vocalization(segment.text)
+            ):
+                candidates.append(
+                    TranscriptAnomalyCandidate(
+                        kind="possible_repeated_vocalization",
+                        time_range=segment.time_range,
+                        segment_positions=(segment.position,),
+                        confidence=0.9,
+                        evidence=(
+                            "missing_lexical_alignment",
+                            "repeated_short_text_unit",
                         ),
                     )
                 )
@@ -209,8 +242,35 @@ def _is_repeated_laughter(text: str) -> bool:
     return (
         len(normalized) >= 2
         and len(laughter_consonants) >= 2
+        and len(laughter_consonants) / len(normalized.replace("ー", "")) >= 0.6
         and len(set(normalized.replace("ー", ""))) <= 3
     )
+
+
+def _has_lexical_alignment(sentence) -> bool:
+    return any(
+        any(character.isalnum() for character in word.text)
+        for word in sentence.words
+    )
+
+
+def _is_repeated_vocalization(text: str) -> bool:
+    normalized = "".join(
+        character.lower()
+        for character in unicodedata.normalize("NFKC", text)
+        if not character.isspace()
+        and not unicodedata.category(character).startswith(("P", "S"))
+    )
+    if len(normalized) < 8:
+        return False
+    if len(set(normalized)) <= 2:
+        return True
+    for unit_length in range(1, min(6, len(normalized) // 4 + 1)):
+        unit = normalized[:unit_length]
+        repetitions, remainder = divmod(len(normalized), unit_length)
+        if remainder == 0 and repetitions >= 4 and unit * repetitions == normalized:
+            return True
+    return False
 
 
 def _is_background_sound_annotation(text: str) -> bool:

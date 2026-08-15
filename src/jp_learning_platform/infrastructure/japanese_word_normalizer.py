@@ -155,6 +155,8 @@ class JapaneseLearningWordNormalizer:
         sentence: Sentence,
         has_structural_number: bool,
     ) -> Sentence:
+        if sentence.learning_words_suppressed:
+            return sentence
         morphemes = self._analyzer.analyze(sentence.text)
         morphemes = self._repair_contextual_functional_boundaries(morphemes)
         units = self._learning_units(morphemes, has_structural_number)
@@ -171,6 +173,11 @@ class JapaneseLearningWordNormalizer:
             learning_words=learning_words,
             is_question=sentence.is_question,
             asr_boundary_word_indexes=sentence.asr_boundary_word_indexes,
+            anomaly_kinds=sentence.anomaly_kinds,
+            excluded_from_language_evaluation=(
+                sentence.excluded_from_language_evaluation
+            ),
+            learning_words_suppressed=sentence.learning_words_suppressed,
         )
 
     def _repair_contextual_functional_boundaries(

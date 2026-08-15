@@ -99,6 +99,11 @@ from jp_learning_platform.workflow.repeated_text_cleanup_stage import (
     RepeatedTextCleanupRequest,
     RepeatedTextCleanupStage,
 )
+from jp_learning_platform.workflow.transcript_anomaly_stage import (
+    ISOLATED_CONTENT_ANOMALY_KINDS,
+    TRANSCRIPT_ANOMALY_ISOLATION_STAGE_NAME,
+    TranscriptAnomalyIsolationStage,
+)
 from jp_learning_platform.workflow.subtitle_builder_stage import (
     InvalidSubtitleBuildError,
     InvalidSubtitleBuilderError,

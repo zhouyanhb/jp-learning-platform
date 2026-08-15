@@ -75,6 +75,20 @@ def test_sentence_keeps_aligned_and_learning_words_separate() -> None:
     assert sentence.learning_words == (learning,)
 
 
+def test_sentence_keeps_anomaly_isolation_metadata() -> None:
+    sentence = Sentence(
+        text="ご視聴ありがとうございました",
+        time_range=TimeRange(0.0, 1.0),
+        anomaly_kinds=("possible_alignment_failure",),
+        excluded_from_language_evaluation=True,
+        learning_words_suppressed=True,
+    )
+
+    assert sentence.anomaly_kinds == ("possible_alignment_failure",)
+    assert sentence.excluded_from_language_evaluation
+    assert sentence.learning_words_suppressed
+
+
 def test_segment_converts_sentence_collection_to_tuple() -> None:
     sentence = Sentence(
         text="nihongo desu",

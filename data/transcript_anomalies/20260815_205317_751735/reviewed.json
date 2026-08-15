@@ -1,0 +1,179 @@
+{
+  "schema_version": 1,
+  "language": "ja",
+  "annotation_status": "reviewed",
+  "anomaly_kinds": [
+    "possible_alignment_failure",
+    "possible_background_sound",
+    "possible_repeated_laughter",
+    "possible_repeated_vocalization"
+  ],
+  "documents": [
+    {
+      "id": "document-001",
+      "artifact": "output/.work/20260815_205317_751735/少数精鋭て_ふ_ん回せ_巨大帝国を率いるアウク_ストゥスの統治術_66-5_COTEN_RADIO_帝政ローマ編5/05c_transcript_anomaly_isolation.json",
+      "source_path": "input/temp-audio/少数精鋭でぶん回せ！巨大帝国を率いるアウグストゥスの統治術【66-5 COTEN RADIO 帝政ローマ編5】.m4a"
+    },
+    {
+      "id": "document-002",
+      "artifact": "output/.work/20260815_205317_751735/慶應の教授を呼ひ_出して説教しました/05c_transcript_anomaly_isolation.json",
+      "source_path": "input/temp-audio/慶應の教授を呼び出して説教しました。.m4a"
+    },
+    {
+      "id": "document-003",
+      "artifact": "output/.work/20260815_205317_751735/第4集_恋爱啥的就是插曲/05c_transcript_anomaly_isolation.json",
+      "source_path": "output/.work/20260815_205317_751735/第4集_恋爱啥的就是插曲/video-audio/pcm-s16le-mono-16000-v1.wav"
+    },
+    {
+      "id": "document-004",
+      "artifact": "output/.work/20260815_205317_751735/説明か_上手い_頭か_良い_は本当なのか/05c_transcript_anomaly_isolation.json",
+      "source_path": "input/temp-audio/説明が上手い=頭が良い」は本当なのか？.m4a"
+    }
+  ],
+  "samples": [
+    {
+      "id": "anomaly-sample-00001",
+      "document_id": "document-001",
+      "segment_position": 436,
+      "sentence_index": 0,
+      "time_range": {
+        "end_seconds": 2326.02,
+        "start_seconds": 2323.14
+      },
+      "text": "ふううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううう",
+      "predicted_anomaly_kinds": [
+        "possible_alignment_failure",
+        "possible_repeated_vocalization"
+      ],
+      "gold_anomaly_kinds": [
+        "possible_alignment_failure",
+        "possible_repeated_vocalization"
+      ],
+      "review_status": "reviewed",
+      "review_note": "Unaligned long repeated vocalization; keep text isolated from learning words."
+    },
+    {
+      "id": "anomaly-sample-00002",
+      "document_id": "document-002",
+      "segment_position": 170,
+      "sentence_index": 0,
+      "time_range": {
+        "end_seconds": 426.26,
+        "start_seconds": 426.02
+      },
+      "text": "ペッドペッドペッドペッドペッドペッドペッドペッドペッドペッドペッドペッドペッドペッドペッドペッドペッドペッドペッドペッドペッドペッドペッドペッドペッドペッドペッドペッドペッドペッドペッドペッドペッドペッドペッドペッドペッドペッド?",
+      "predicted_anomaly_kinds": [
+        "possible_alignment_failure",
+        "possible_repeated_vocalization"
+      ],
+      "gold_anomaly_kinds": [
+        "possible_alignment_failure",
+        "possible_repeated_vocalization"
+      ],
+      "review_status": "reviewed",
+      "review_note": "Unaligned repeated pseudo-word sequence."
+    },
+    {
+      "id": "anomaly-sample-00003",
+      "document_id": "document-002",
+      "segment_position": 346,
+      "sentence_index": 0,
+      "time_range": {
+        "end_seconds": 949.11,
+        "start_seconds": 948.83
+      },
+      "text": "ご視聴ありがとうございました",
+      "predicted_anomaly_kinds": [
+        "possible_alignment_failure"
+      ],
+      "gold_anomaly_kinds": [
+        "possible_alignment_failure"
+      ],
+      "review_status": "reviewed",
+      "review_note": "Recognized outro text has no lexical alignment."
+    },
+    {
+      "id": "anomaly-sample-00004",
+      "document_id": "document-003",
+      "segment_position": 220,
+      "sentence_index": 0,
+      "time_range": {
+        "end_seconds": 951.7,
+        "start_seconds": 951.68
+      },
+      "text": "え?",
+      "predicted_anomaly_kinds": [
+        "possible_alignment_failure"
+      ],
+      "gold_anomaly_kinds": [
+        "possible_alignment_failure"
+      ],
+      "review_status": "reviewed",
+      "review_note": "Real short response retained, but its timing has no lexical alignment."
+    },
+    {
+      "id": "anomaly-sample-00005",
+      "document_id": "document-004",
+      "segment_position": 414,
+      "sentence_index": 0,
+      "time_range": {
+        "end_seconds": 1950.78,
+        "start_seconds": 1950.68
+      },
+      "text": "ご視聴ありがとうございました",
+      "predicted_anomaly_kinds": [
+        "possible_alignment_failure"
+      ],
+      "gold_anomaly_kinds": [
+        "possible_alignment_failure"
+      ],
+      "review_status": "reviewed",
+      "review_note": "Recognized outro text has no lexical alignment."
+    },
+    {
+      "id": "anomaly-sample-00006",
+      "document_id": "document-004",
+      "segment_position": 114,
+      "sentence_index": 0,
+      "time_range": {
+        "start_seconds": 535.102,
+        "end_seconds": 535.84
+      },
+      "text": "あーはいはい",
+      "predicted_anomaly_kinds": [],
+      "gold_anomaly_kinds": [],
+      "review_status": "reviewed",
+      "review_note": "Normal lexical acknowledgement; explicit repeated-laughter negative."
+    },
+    {
+      "id": "anomaly-sample-00007",
+      "document_id": "document-003",
+      "segment_position": 580,
+      "sentence_index": 0,
+      "time_range": {
+        "start_seconds": 2547.082,
+        "end_seconds": 2548.913
+      },
+      "text": "え?",
+      "predicted_anomaly_kinds": [],
+      "gold_anomaly_kinds": [],
+      "review_status": "reviewed",
+      "review_note": "Aligned short response; explicit alignment-failure negative."
+    },
+    {
+      "id": "anomaly-sample-00008",
+      "document_id": "document-003",
+      "segment_position": 610,
+      "sentence_index": 0,
+      "time_range": {
+        "start_seconds": 2663.358,
+        "end_seconds": 2663.4
+      },
+      "text": "え?",
+      "predicted_anomaly_kinds": [],
+      "gold_anomaly_kinds": [],
+      "review_status": "reviewed",
+      "review_note": "Aligned short response; explicit alignment-failure negative."
+    }
+  ]
+}

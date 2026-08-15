@@ -21,7 +21,7 @@ from jp_learning_platform.workflow.subtitle_writer_stage import (
     SubtitleWriter,
 )
 
-LISTENING_JSON_SCHEMA_VERSION = "1.4"
+LISTENING_JSON_SCHEMA_VERSION = "1.5"
 DEFAULT_LISTENING_JSON_EXTENSION = ".json"
 
 
@@ -58,6 +58,11 @@ def _sentence_payload(sentence: Sentence) -> Mapping[str, object]:
         "text": sentence.text,
         "is_question": sentence.is_question,
         "asr_boundary_word_indexes": list(sentence.asr_boundary_word_indexes),
+        "anomaly_kinds": list(sentence.anomaly_kinds),
+        "excluded_from_language_evaluation": (
+            sentence.excluded_from_language_evaluation
+        ),
+        "learning_words_suppressed": sentence.learning_words_suppressed,
         **_time_range_payload(sentence.time_range),
         "words": [_word_payload(word) for word in sentence.words],
         "learning_words": [

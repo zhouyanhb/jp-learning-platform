@@ -192,12 +192,19 @@ class Sentence:
     learning_words: tuple[LearningWord, ...] = ()
     is_question: bool = False
     asr_boundary_word_indexes: tuple[int, ...] = ()
+    anomaly_kinds: tuple[str, ...] = ()
+    excluded_from_language_evaluation: bool = False
+    learning_words_suppressed: bool = False
 
     def __post_init__(self) -> None:
         if not isinstance(self.time_range, TimeRange):
             raise TypeError("time_range must be a TimeRange.")
         if not isinstance(self.is_question, bool):
             raise TypeError("is_question must be a bool.")
+        if not isinstance(self.excluded_from_language_evaluation, bool):
+            raise TypeError("excluded_from_language_evaluation must be a bool.")
+        if not isinstance(self.learning_words_suppressed, bool):
+            raise TypeError("learning_words_suppressed must be a bool.")
 
         words = _tuple_of_type(self.words, Word, "words")
         for word in words:
@@ -224,11 +231,17 @@ class Sentence:
             raise ValueError("asr_boundary_word_indexes must fall between words.")
         if tuple(sorted(set(asr_boundaries))) != asr_boundaries:
             raise ValueError("asr_boundary_word_indexes must be unique and increasing.")
+        anomaly_kinds = tuple(self.anomaly_kinds)
+        if any(not isinstance(kind, str) or not kind.strip() for kind in anomaly_kinds):
+            raise TypeError("anomaly_kinds must contain non-empty strings.")
+        if tuple(dict.fromkeys(anomaly_kinds)) != anomaly_kinds:
+            raise ValueError("anomaly_kinds must be unique.")
 
         object.__setattr__(self, "text", _normalize_text(self.text, "text"))
         object.__setattr__(self, "words", words)
         object.__setattr__(self, "learning_words", learning_words)
         object.__setattr__(self, "asr_boundary_word_indexes", asr_boundaries)
+        object.__setattr__(self, "anomaly_kinds", anomaly_kinds)
 
 
 @dataclass(frozen=True, slots=True)

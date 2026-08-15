@@ -61,6 +61,7 @@ from jp_learning_platform.workflow.subtitle_display_normalization_stage import (
 )
 from jp_learning_platform.workflow.transcript_anomaly_stage import (
     TranscriptAnomalyAnalysisStage,
+    TranscriptAnomalyIsolationStage,
     TranscriptAnomalyDetector,
 )
 from jp_learning_platform.workflow.word_normalization_stage import (
@@ -844,6 +845,12 @@ class SubtitlePipelineRunner:
                 )
 
         if self.word_normalizer is not None:
+            if self.transcript_anomaly_detector is not None:
+                stages.append(
+                    TranscriptAnomalyIsolationStage(
+                        self.transcript_anomaly_detector
+                    )
+                )
             stages.append(WordNormalizationStage(self.word_normalizer))
 
         stages.append(SubtitleBuilderStage(self.builder))

@@ -70,7 +70,7 @@ def test_listening_json_writer_writes_structured_transcript_json(
 
     assert result.output_path == output_directory / "lesson.json"
     payload = json.loads(result.output_path.read_text(encoding="utf-8"))
-    assert payload["schema_version"] == "1.4"
+    assert payload["schema_version"] == "1.5"
     assert payload["source_path"] == str(tmp_path / "lesson.mp3")
     assert payload["run_id"] == "run-001"
     assert payload["segments"][0]["sentences"][0]["words"][0] == {
@@ -80,6 +80,13 @@ def test_listening_json_writer_writes_structured_transcript_json(
         "end_seconds": 0.4,
         "duration_seconds": 0.4,
     }
+    assert payload["segments"][0]["sentences"][0]["anomaly_kinds"] == []
+    assert not payload["segments"][0]["sentences"][0][
+        "excluded_from_language_evaluation"
+    ]
+    assert not payload["segments"][0]["sentences"][0][
+        "learning_words_suppressed"
+    ]
     assert payload["segments"][0]["sentences"][0]["learning_words"][0] == {
         "text": "日本語",
         "start_char": 0,

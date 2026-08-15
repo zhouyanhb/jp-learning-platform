@@ -331,6 +331,11 @@ def _sentence_payload(value: Sentence) -> Mapping[str, object]:
         ],
         "is_question": value.is_question,
         "asr_boundary_word_indexes": list(value.asr_boundary_word_indexes),
+        "anomaly_kinds": list(value.anomaly_kinds),
+        "excluded_from_language_evaluation": (
+            value.excluded_from_language_evaluation
+        ),
+        "learning_words_suppressed": value.learning_words_suppressed,
     }
 
 
@@ -346,6 +351,13 @@ def _sentence_from_payload(value: Mapping[str, object]) -> Sentence:
         is_question=bool(value.get("is_question", False)),
         asr_boundary_word_indexes=tuple(
             int(index) for index in value.get("asr_boundary_word_indexes", ())
+        ),
+        anomaly_kinds=tuple(str(kind) for kind in value.get("anomaly_kinds", ())),
+        excluded_from_language_evaluation=bool(
+            value.get("excluded_from_language_evaluation", False)
+        ),
+        learning_words_suppressed=bool(
+            value.get("learning_words_suppressed", False)
         ),
     )
 

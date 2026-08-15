@@ -1,0 +1,660 @@
+{
+  "schema_version": 1,
+  "language": "ja",
+  "annotation_status": "reviewed",
+  "anomaly_kinds": [
+    "possible_alignment_failure",
+    "possible_background_sound",
+    "possible_repeated_laughter",
+    "possible_repeated_vocalization"
+  ],
+  "documents": [
+    {
+      "id": "document-001",
+      "artifact": "output/.work/20260815_222341_638285/N4-N2_30Mins_intermediate_Japanese_Conversation_with_Wasabito.Listening.Japanese_Culture_Shock/05c_transcript_anomaly_isolation.json",
+      "source_path": "input/temp-audio/【N4-N2】30Mins intermediate Japanese Conversation with @Wasabito.Listening.Japanese : Culture Shock.m4a"
+    },
+    {
+      "id": "document-002",
+      "artifact": "output/.work/20260815_222341_638285/Pontaハ_ス天気予報_今週のPonta色_2026年8月13日配信_出演_福吉貴文キャスター/05c_transcript_anomaly_isolation.json",
+      "source_path": "input/temp-audio/【Pontaパス天気予報】今週のPonta色／2026年8月13日配信　出演：福吉貴文キャスター.m4a"
+    },
+    {
+      "id": "document-003",
+      "artifact": "output/.work/20260815_222341_638285/なせ_東京の人は冷たく思えるのか/05c_transcript_anomaly_isolation.json",
+      "source_path": "input/temp-audio/なぜ東京の人は冷たく思えるのか？.m4a"
+    },
+    {
+      "id": "document-004",
+      "artifact": "output/.work/20260815_222341_638285/学校て_は正しいことを教えるへ_き_本当に/05c_transcript_anomaly_isolation.json",
+      "source_path": "input/temp-audio/「学校では正しいことを教えるべき」。本当に？.m4a"
+    },
+    {
+      "id": "document-005",
+      "artifact": "output/.work/20260815_222341_638285/第3集_啊_真就是道路安全宣传片/05c_transcript_anomaly_isolation.json",
+      "source_path": "output/.work/20260815_222341_638285/第3集_啊_真就是道路安全宣传片/video-audio/pcm-s16le-mono-16000-v1.wav"
+    }
+  ],
+  "samples": [
+    {
+      "id": "anomaly-sample-00001",
+      "document_id": "document-001",
+      "segment_position": 0,
+      "sentence_index": 2,
+      "time_range": {
+        "end_seconds": 10.008,
+        "start_seconds": 2.995
+      },
+      "text": "今日は、わさびリスニングデイリージャパニーズのヨシエさんに来てもらいました。",
+      "sample_kind": "context_negative_candidate",
+      "predicted_anomaly_kinds": [],
+      "gold_anomaly_kinds": [],
+      "review_status": "reviewed",
+      "review_note": "Confirmed neighboring lexical context; negative sample."
+    },
+    {
+      "id": "anomaly-sample-00002",
+      "document_id": "document-001",
+      "segment_position": 0,
+      "sentence_index": 3,
+      "time_range": {
+        "end_seconds": 10.83,
+        "start_seconds": 10.008
+      },
+      "text": "よろしくお願いします。",
+      "sample_kind": "context_negative_candidate",
+      "predicted_anomaly_kinds": [],
+      "gold_anomaly_kinds": [],
+      "review_status": "reviewed",
+      "review_note": "Confirmed neighboring lexical context; negative sample."
+    },
+    {
+      "id": "anomaly-sample-00003",
+      "document_id": "document-001",
+      "segment_position": 1,
+      "sentence_index": 0,
+      "time_range": {
+        "end_seconds": 11.87,
+        "start_seconds": 11.43
+      },
+      "text": "お願いします。",
+      "sample_kind": "context_negative_candidate",
+      "predicted_anomaly_kinds": [],
+      "gold_anomaly_kinds": [],
+      "review_status": "reviewed",
+      "review_note": "Confirmed neighboring lexical context; negative sample."
+    },
+    {
+      "id": "anomaly-sample-00004",
+      "document_id": "document-001",
+      "segment_position": 2,
+      "sentence_index": 0,
+      "time_range": {
+        "end_seconds": 12.89,
+        "start_seconds": 12.57
+      },
+      "text": "それでは、ご視聴ありがとうございました。",
+      "sample_kind": "prediction",
+      "predicted_anomaly_kinds": [
+        "possible_alignment_failure"
+      ],
+      "gold_anomaly_kinds": [
+        "possible_alignment_failure"
+      ],
+      "review_status": "reviewed",
+      "review_note": "Confirmed content-isolation anomaly in reference context."
+    },
+    {
+      "id": "anomaly-sample-00005",
+      "document_id": "document-001",
+      "segment_position": 3,
+      "sentence_index": 0,
+      "time_range": {
+        "end_seconds": 15.65,
+        "start_seconds": 14.713
+      },
+      "text": "久しぶりですね。",
+      "sample_kind": "context_negative_candidate",
+      "predicted_anomaly_kinds": [],
+      "gold_anomaly_kinds": [],
+      "review_status": "reviewed",
+      "review_note": "Confirmed neighboring lexical context; negative sample."
+    },
+    {
+      "id": "anomaly-sample-00006",
+      "document_id": "document-001",
+      "segment_position": 4,
+      "sentence_index": 0,
+      "time_range": {
+        "end_seconds": 17.938,
+        "start_seconds": 16.531
+      },
+      "text": "久しぶりですね。",
+      "sample_kind": "context_negative_candidate",
+      "predicted_anomaly_kinds": [],
+      "gold_anomaly_kinds": [],
+      "review_status": "reviewed",
+      "review_note": "Confirmed neighboring lexical context; negative sample."
+    },
+    {
+      "id": "anomaly-sample-00007",
+      "document_id": "document-001",
+      "segment_position": 4,
+      "sentence_index": 1,
+      "time_range": {
+        "end_seconds": 20.45,
+        "start_seconds": 17.938
+      },
+      "text": "もう何ヶ月ぶりでしょうか。",
+      "sample_kind": "context_negative_candidate",
+      "predicted_anomaly_kinds": [],
+      "gold_anomaly_kinds": [],
+      "review_status": "reviewed",
+      "review_note": "Confirmed neighboring lexical context; negative sample."
+    },
+    {
+      "id": "anomaly-sample-00008",
+      "document_id": "document-002",
+      "segment_position": 62,
+      "sentence_index": 0,
+      "time_range": {
+        "end_seconds": 321.08,
+        "start_seconds": 320.386
+      },
+      "text": "私が決めた",
+      "sample_kind": "context_negative_candidate",
+      "predicted_anomaly_kinds": [],
+      "gold_anomaly_kinds": [],
+      "review_status": "reviewed",
+      "review_note": "Confirmed neighboring lexical context; negative sample."
+    },
+    {
+      "id": "anomaly-sample-00009",
+      "document_id": "document-002",
+      "segment_position": 63,
+      "sentence_index": 0,
+      "time_range": {
+        "end_seconds": 327.82,
+        "start_seconds": 321.583
+      },
+      "text": "でもやっぱゲストに今日来てもらってますから今日はポンタ君に決めてもらいましょうかね",
+      "sample_kind": "context_negative_candidate",
+      "predicted_anomaly_kinds": [],
+      "gold_anomaly_kinds": [],
+      "review_status": "reviewed",
+      "review_note": "Confirmed neighboring lexical context; negative sample."
+    },
+    {
+      "id": "anomaly-sample-00010",
+      "document_id": "document-002",
+      "segment_position": 64,
+      "sentence_index": 0,
+      "time_range": {
+        "end_seconds": 330.47,
+        "start_seconds": 329.694
+      },
+      "text": "ポンタ君どう",
+      "sample_kind": "context_negative_candidate",
+      "predicted_anomaly_kinds": [],
+      "gold_anomaly_kinds": [],
+      "review_status": "reviewed",
+      "review_note": "Confirmed neighboring lexical context; negative sample."
+    },
+    {
+      "id": "anomaly-sample-00011",
+      "document_id": "document-002",
+      "segment_position": 65,
+      "sentence_index": 0,
+      "time_range": {
+        "end_seconds": 342.07,
+        "start_seconds": 331.82
+      },
+      "text": "ほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほほ",
+      "sample_kind": "prediction",
+      "predicted_anomaly_kinds": [
+        "possible_repeated_laughter"
+      ],
+      "gold_anomaly_kinds": [
+        "possible_repeated_laughter"
+      ],
+      "review_status": "reviewed",
+      "review_note": "Confirmed content-isolation anomaly in reference context."
+    },
+    {
+      "id": "anomaly-sample-00012",
+      "document_id": "document-002",
+      "segment_position": 65,
+      "sentence_index": 1,
+      "time_range": {
+        "end_seconds": 351.18,
+        "start_seconds": 344.773
+      },
+      "text": "ほほほほほほほほほほほほほほほほほほほほほほほほほほ",
+      "sample_kind": "prediction",
+      "predicted_anomaly_kinds": [
+        "possible_repeated_laughter"
+      ],
+      "gold_anomaly_kinds": [
+        "possible_repeated_laughter"
+      ],
+      "review_status": "reviewed",
+      "review_note": "Confirmed content-isolation anomaly in reference context."
+    },
+    {
+      "id": "anomaly-sample-00013",
+      "document_id": "document-002",
+      "segment_position": 65,
+      "sentence_index": 2,
+      "time_range": {
+        "end_seconds": 351.48,
+        "start_seconds": 351.18
+      },
+      "text": "ほほ",
+      "sample_kind": "prediction",
+      "predicted_anomaly_kinds": [
+        "possible_repeated_laughter"
+      ],
+      "gold_anomaly_kinds": [
+        "possible_repeated_laughter"
+      ],
+      "review_status": "reviewed",
+      "review_note": "Confirmed content-isolation anomaly in reference context."
+    },
+    {
+      "id": "anomaly-sample-00014",
+      "document_id": "document-002",
+      "segment_position": 66,
+      "sentence_index": 0,
+      "time_range": {
+        "end_seconds": 357.959,
+        "start_seconds": 351.721
+      },
+      "text": "デザートリポートでしたということですなぜかと言いますとポンちゃんね",
+      "sample_kind": "context_negative_candidate",
+      "predicted_anomaly_kinds": [],
+      "gold_anomaly_kinds": [],
+      "review_status": "reviewed",
+      "review_note": "Confirmed neighboring lexical context; negative sample."
+    },
+    {
+      "id": "anomaly-sample-00015",
+      "document_id": "document-002",
+      "segment_position": 66,
+      "sentence_index": 1,
+      "time_range": {
+        "end_seconds": 358.32,
+        "start_seconds": 357.959
+      },
+      "text": "やっぱり",
+      "sample_kind": "context_negative_candidate",
+      "predicted_anomaly_kinds": [],
+      "gold_anomaly_kinds": [],
+      "review_status": "reviewed",
+      "review_note": "Confirmed neighboring lexical context; negative sample."
+    },
+    {
+      "id": "anomaly-sample-00016",
+      "document_id": "document-002",
+      "segment_position": 67,
+      "sentence_index": 0,
+      "time_range": {
+        "end_seconds": 362.645,
+        "start_seconds": 359.5
+      },
+      "text": "美味しいものが大好きだし一番ね",
+      "sample_kind": "context_negative_candidate",
+      "predicted_anomaly_kinds": [],
+      "gold_anomaly_kinds": [],
+      "review_status": "reviewed",
+      "review_note": "Confirmed neighboring lexical context; negative sample."
+    },
+    {
+      "id": "anomaly-sample-00017",
+      "document_id": "document-003",
+      "segment_position": 186,
+      "sentence_index": 0,
+      "time_range": {
+        "end_seconds": 716.869,
+        "start_seconds": 715.712
+      },
+      "text": "えーそれだいぶ消えたね",
+      "sample_kind": "context_negative_candidate",
+      "predicted_anomaly_kinds": [],
+      "gold_anomaly_kinds": [],
+      "review_status": "reviewed",
+      "review_note": "Confirmed neighboring lexical context; negative sample."
+    },
+    {
+      "id": "anomaly-sample-00018",
+      "document_id": "document-003",
+      "segment_position": 187,
+      "sentence_index": 0,
+      "time_range": {
+        "end_seconds": 720.387,
+        "start_seconds": 717.031
+      },
+      "text": "料理の仕込み中とか電話するチャンスだからって言って浅井さん極端すぎますね",
+      "sample_kind": "context_negative_candidate",
+      "predicted_anomaly_kinds": [],
+      "gold_anomaly_kinds": [],
+      "review_status": "reviewed",
+      "review_note": "Confirmed neighboring lexical context; negative sample."
+    },
+    {
+      "id": "anomaly-sample-00019",
+      "document_id": "document-003",
+      "segment_position": 187,
+      "sentence_index": 1,
+      "time_range": {
+        "end_seconds": 720.57,
+        "start_seconds": 720.387
+      },
+      "text": "ちょっと",
+      "sample_kind": "context_negative_candidate",
+      "predicted_anomaly_kinds": [],
+      "gold_anomaly_kinds": [],
+      "review_status": "reviewed",
+      "review_note": "Confirmed neighboring lexical context; negative sample."
+    },
+    {
+      "id": "anomaly-sample-00020",
+      "document_id": "document-003",
+      "segment_position": 188,
+      "sentence_index": 0,
+      "time_range": {
+        "end_seconds": 720.75,
+        "start_seconds": 720.59
+      },
+      "text": "ご視聴ありがとうございました?",
+      "sample_kind": "prediction",
+      "predicted_anomaly_kinds": [
+        "possible_alignment_failure"
+      ],
+      "gold_anomaly_kinds": [
+        "possible_alignment_failure"
+      ],
+      "review_status": "reviewed",
+      "review_note": "Confirmed content-isolation anomaly in reference context."
+    },
+    {
+      "id": "anomaly-sample-00021",
+      "document_id": "document-003",
+      "segment_position": 189,
+      "sentence_index": 0,
+      "time_range": {
+        "end_seconds": 721.969,
+        "start_seconds": 720.931
+      },
+      "text": "ガラリと変わりすぎてるな",
+      "sample_kind": "context_negative_candidate",
+      "predicted_anomaly_kinds": [],
+      "gold_anomaly_kinds": [],
+      "review_status": "reviewed",
+      "review_note": "Confirmed neighboring lexical context; negative sample."
+    },
+    {
+      "id": "anomaly-sample-00022",
+      "document_id": "document-003",
+      "segment_position": 190,
+      "sentence_index": 0,
+      "time_range": {
+        "end_seconds": 722.768,
+        "start_seconds": 722.194
+      },
+      "text": "一個のことで",
+      "sample_kind": "context_negative_candidate",
+      "predicted_anomaly_kinds": [],
+      "gold_anomaly_kinds": [],
+      "review_status": "reviewed",
+      "review_note": "Confirmed neighboring lexical context; negative sample."
+    },
+    {
+      "id": "anomaly-sample-00023",
+      "document_id": "document-003",
+      "segment_position": 191,
+      "sentence_index": 0,
+      "time_range": {
+        "end_seconds": 723.189,
+        "start_seconds": 722.976
+      },
+      "text": "あそう",
+      "sample_kind": "context_negative_candidate",
+      "predicted_anomaly_kinds": [],
+      "gold_anomaly_kinds": [],
+      "review_status": "reviewed",
+      "review_note": "Confirmed neighboring lexical context; negative sample."
+    },
+    {
+      "id": "anomaly-sample-00024",
+      "document_id": "document-004",
+      "segment_position": 240,
+      "sentence_index": 0,
+      "time_range": {
+        "end_seconds": 1027.297,
+        "start_seconds": 1018.321
+      },
+      "text": "学校教育をベースにして面白い話をしてるんだったら学校教育のことを悪く言っちゃいけないだろうと思うんだけどそれがなんか卑怯に感じるから僕は良くないなと思うし",
+      "sample_kind": "context_negative_candidate",
+      "predicted_anomaly_kinds": [],
+      "gold_anomaly_kinds": [],
+      "review_status": "reviewed",
+      "review_note": "Confirmed neighboring lexical context; negative sample."
+    },
+    {
+      "id": "anomaly-sample-00025",
+      "document_id": "document-004",
+      "segment_position": 241,
+      "sentence_index": 0,
+      "time_range": {
+        "end_seconds": 1028.098,
+        "start_seconds": 1027.601
+      },
+      "text": "えっと",
+      "sample_kind": "context_negative_candidate",
+      "predicted_anomaly_kinds": [],
+      "gold_anomaly_kinds": [],
+      "review_status": "reviewed",
+      "review_note": "Confirmed neighboring lexical context; negative sample."
+    },
+    {
+      "id": "anomaly-sample-00026",
+      "document_id": "document-004",
+      "segment_position": 242,
+      "sentence_index": 0,
+      "time_range": {
+        "end_seconds": 1029.439,
+        "start_seconds": 1028.926
+      },
+      "text": "あ忘れました",
+      "sample_kind": "context_negative_candidate",
+      "predicted_anomaly_kinds": [],
+      "gold_anomaly_kinds": [],
+      "review_status": "reviewed",
+      "review_note": "Confirmed neighboring lexical context; negative sample."
+    },
+    {
+      "id": "anomaly-sample-00027",
+      "document_id": "document-004",
+      "segment_position": 243,
+      "sentence_index": 0,
+      "time_range": {
+        "end_seconds": 1030.072,
+        "start_seconds": 1029.685
+      },
+      "text": "へへへ",
+      "sample_kind": "prediction",
+      "predicted_anomaly_kinds": [
+        "possible_repeated_laughter"
+      ],
+      "gold_anomaly_kinds": [
+        "possible_repeated_laughter"
+      ],
+      "review_status": "reviewed",
+      "review_note": "Confirmed content-isolation anomaly in reference context."
+    },
+    {
+      "id": "anomaly-sample-00028",
+      "document_id": "document-004",
+      "segment_position": 244,
+      "sentence_index": 0,
+      "time_range": {
+        "end_seconds": 1031.25,
+        "start_seconds": 1031.043
+      },
+      "text": "えぇ",
+      "sample_kind": "context_negative_candidate",
+      "predicted_anomaly_kinds": [],
+      "gold_anomaly_kinds": [],
+      "review_status": "reviewed",
+      "review_note": "Confirmed neighboring lexical context; negative sample."
+    },
+    {
+      "id": "anomaly-sample-00029",
+      "document_id": "document-004",
+      "segment_position": 245,
+      "sentence_index": 0,
+      "time_range": {
+        "end_seconds": 1033.98,
+        "start_seconds": 1032.363
+      },
+      "text": "思うCのあと急に忘れたの",
+      "sample_kind": "context_negative_candidate",
+      "predicted_anomaly_kinds": [],
+      "gold_anomaly_kinds": [],
+      "review_status": "reviewed",
+      "review_note": "Confirmed neighboring lexical context; negative sample."
+    },
+    {
+      "id": "anomaly-sample-00030",
+      "document_id": "document-004",
+      "segment_position": 246,
+      "sentence_index": 0,
+      "time_range": {
+        "end_seconds": 1034.319,
+        "start_seconds": 1034.191
+      },
+      "text": "はい",
+      "sample_kind": "context_negative_candidate",
+      "predicted_anomaly_kinds": [],
+      "gold_anomaly_kinds": [],
+      "review_status": "reviewed",
+      "review_note": "Confirmed neighboring lexical context; negative sample."
+    },
+    {
+      "id": "anomaly-sample-00031",
+      "document_id": "document-005",
+      "segment_position": 7,
+      "sentence_index": 0,
+      "time_range": {
+        "end_seconds": 75.795,
+        "start_seconds": 74.783
+      },
+      "text": "あ、そうだ",
+      "sample_kind": "context_negative_candidate",
+      "predicted_anomaly_kinds": [],
+      "gold_anomaly_kinds": [],
+      "review_status": "reviewed",
+      "review_note": "Confirmed neighboring lexical context; negative sample."
+    },
+    {
+      "id": "anomaly-sample-00032",
+      "document_id": "document-005",
+      "segment_position": 8,
+      "sentence_index": 0,
+      "time_range": {
+        "end_seconds": 78.619,
+        "start_seconds": 76.845
+      },
+      "text": "今度の日曜日おじいちゃんち行ってくる",
+      "sample_kind": "context_negative_candidate",
+      "predicted_anomaly_kinds": [],
+      "gold_anomaly_kinds": [],
+      "review_status": "reviewed",
+      "review_note": "Confirmed neighboring lexical context; negative sample."
+    },
+    {
+      "id": "anomaly-sample-00033",
+      "document_id": "document-005",
+      "segment_position": 9,
+      "sentence_index": 0,
+      "time_range": {
+        "end_seconds": 79.94,
+        "start_seconds": 79.045
+      },
+      "text": "え、ほんと?",
+      "sample_kind": "context_negative_candidate",
+      "predicted_anomaly_kinds": [],
+      "gold_anomaly_kinds": [],
+      "review_status": "reviewed",
+      "review_note": "Confirmed neighboring lexical context; negative sample."
+    },
+    {
+      "id": "anomaly-sample-00034",
+      "document_id": "document-005",
+      "segment_position": 10,
+      "sentence_index": 0,
+      "time_range": {
+        "end_seconds": 80.16,
+        "start_seconds": 80.06
+      },
+      "text": "ご視聴ありがとうございました",
+      "sample_kind": "prediction",
+      "predicted_anomaly_kinds": [
+        "possible_alignment_failure"
+      ],
+      "gold_anomaly_kinds": [
+        "possible_alignment_failure"
+      ],
+      "review_status": "reviewed",
+      "review_note": "Confirmed content-isolation anomaly in reference context."
+    },
+    {
+      "id": "anomaly-sample-00035",
+      "document_id": "document-005",
+      "segment_position": 11,
+      "sentence_index": 0,
+      "time_range": {
+        "end_seconds": 82.54,
+        "start_seconds": 80.765
+      },
+      "text": "じゃあお土産渡すから持って行って",
+      "sample_kind": "context_negative_candidate",
+      "predicted_anomaly_kinds": [],
+      "gold_anomaly_kinds": [],
+      "review_status": "reviewed",
+      "review_note": "Confirmed neighboring lexical context; negative sample."
+    },
+    {
+      "id": "anomaly-sample-00036",
+      "document_id": "document-005",
+      "segment_position": 12,
+      "sentence_index": 0,
+      "time_range": {
+        "end_seconds": 82.997,
+        "start_seconds": 82.705
+      },
+      "text": "分かった",
+      "sample_kind": "context_negative_candidate",
+      "predicted_anomaly_kinds": [],
+      "gold_anomaly_kinds": [],
+      "review_status": "reviewed",
+      "review_note": "Confirmed neighboring lexical context; negative sample."
+    },
+    {
+      "id": "anomaly-sample-00037",
+      "document_id": "document-005",
+      "segment_position": 13,
+      "sentence_index": 0,
+      "time_range": {
+        "end_seconds": 85.01,
+        "start_seconds": 84.376
+      },
+      "text": "春日も行かない?",
+      "sample_kind": "context_negative_candidate",
+      "predicted_anomaly_kinds": [],
+      "gold_anomaly_kinds": [],
+      "review_status": "reviewed",
+      "review_note": "Confirmed neighboring lexical context; negative sample."
+    }
+  ]
+}
