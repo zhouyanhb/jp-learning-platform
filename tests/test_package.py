@@ -59,6 +59,7 @@ def test_transcribe_command_defaults_output_directory() -> None:
     assert args.compute_type == "int8"
     assert args.enable_whisperx
     assert not args.enable_homophone_resolver
+    assert not args.enable_homophone_context_probe_audit
     assert args.homophone_model_id == DEFAULT_HOMOPHONE_MODEL_ID
     assert args.homophone_top_k == DEFAULT_HOMOPHONE_TOP_K
     assert args.homophone_score_margin == DEFAULT_HOMOPHONE_SCORE_MARGIN
@@ -118,6 +119,7 @@ def test_transcribe_command_accepts_homophone_resolver_options() -> None:
             "transcribe",
             "audio.mp3",
             "--enable-homophone-resolver",
+            "--enable-homophone-context-probe-audit",
             "--homophone-model-id",
             "custom/japanese-bert",
             "--homophone-top-k",
@@ -128,6 +130,7 @@ def test_transcribe_command_accepts_homophone_resolver_options() -> None:
     )
 
     assert args.enable_homophone_resolver
+    assert args.enable_homophone_context_probe_audit
     assert args.homophone_model_id == "custom/japanese-bert"
     assert args.homophone_top_k == 40
     assert args.homophone_score_margin == 0.05
@@ -145,6 +148,7 @@ def test_transcribe_command_can_enable_homophone_resolver() -> None:
             "transcribe",
             "audio.mp3",
             "--enable-homophone-resolver",
+            "--enable-homophone-context-probe-audit",
             "--homophone-model-id",
             "custom/japanese-bert",
             "--homophone-top-k",
@@ -160,3 +164,4 @@ def test_transcribe_command_can_enable_homophone_resolver() -> None:
     assert resolver.model_id == "custom/japanese-bert"
     assert resolver.top_k == 40
     assert resolver.score_margin == 0.05
+    assert resolver.enable_context_probe_audit

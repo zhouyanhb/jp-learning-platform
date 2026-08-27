@@ -163,6 +163,14 @@ def build_parser() -> ArgumentParser:
         ),
     )
     transcribe_parser.add_argument(
+        "--enable-homophone-context-probe-audit",
+        action="store_true",
+        help=(
+            "Record expensive fixed-context shadow probe evidence. "
+            "Disabled by default and never changes transcript text."
+        ),
+    )
+    transcribe_parser.add_argument(
         "--enable-word-normalization",
         action="store_true",
         help="Normalize aligned Japanese tokens into learning words with Sudachi.",
@@ -332,6 +340,7 @@ def _build_homophone_resolver(args: Namespace) -> BertHomophoneResolver | None:
         device=args.device,
         top_k=args.homophone_top_k,
         score_margin=args.homophone_score_margin,
+        enable_context_probe_audit=args.enable_homophone_context_probe_audit,
     )
 
 

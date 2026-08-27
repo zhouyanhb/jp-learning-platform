@@ -382,9 +382,12 @@ class JapaneseSentenceBoundaryResolver:
             or _starts_topic_shift_expression(
                 self.morphological_analyzer.analyze(_compact_text(right.text))
             )
-            or _starts_cross_segment_response(
-                right.text,
-                self.morphological_analyzer.analyze(_compact_text(right.text)),
+            or (
+                _starts_cross_segment_response(
+                    right.text,
+                    self.morphological_analyzer.analyze(_compact_text(right.text)),
+                )
+                and not has_fragment
             )
         ):
             return None
@@ -1962,7 +1965,10 @@ def _merge_high_confidence_cross_segment_continuations(
                 and not has_coordinated_condition
             )
             or _starts_topic_shift_expression(right_analysis)
-            or _starts_cross_segment_response(right.text, right_analysis)
+            or (
+                _starts_cross_segment_response(right.text, right_analysis)
+                and not has_fragment_reconstruction
+            )
             or _has_cross_segment_speaker_turn_veto(
                 left.text,
                 right.text,
@@ -2153,7 +2159,10 @@ def _merge_high_confidence_adjacent_sentences(
                 )
                 or _starts_independent_discourse(sentence.text)
                 or _starts_topic_shift_expression(right_analysis)
-                or _starts_cross_segment_response(sentence.text, right_analysis)
+                or (
+                    _starts_cross_segment_response(sentence.text, right_analysis)
+                    and not has_fragment
+                )
                 or _has_cross_segment_speaker_turn_veto(
                     left.text,
                     sentence.text,
@@ -2262,12 +2271,17 @@ def _cross_segment_merge_score(
         evidence.append(CrossSegmentMergeEvidence("quotative_topic", 4))
     elif _ends_with_topic_location_tail(left_analysis):
         evidence.append(CrossSegmentMergeEvidence("incomplete_topic_location", 4))
+    elif _ends_with_suspended_topic(left_analysis, right_analysis, gap_seconds):
+        evidence.append(CrossSegmentMergeEvidence("suspended_topic_predicate", 4))
     elif _ends_with_suspended_subject(left_last, right_analysis, gap_seconds):
         evidence.append(CrossSegmentMergeEvidence("tight_subject_predicate", 4))
     elif _is_dependent_formal_noun_tail(left_analysis):
         evidence.append(CrossSegmentMergeEvidence("dependent_formal_noun", 4))
 
-    if _starts_independent_response(right_analysis):
+    if (
+        _starts_independent_response(right_analysis)
+        and not has_fragment_reconstruction
+    ):
         evidence.append(CrossSegmentMergeEvidence("independent_response", -5))
 
     if _starts_dependent_quotative_continuation(right_text):
@@ -2329,6 +2343,21 @@ def _reconstructs_cross_segment_fragment(
         _is_strongly_incomplete_predicate(separate_last)
         and following_morpheme is not None
         and _is_functional_continuation(following_morpheme)
+    ):
+        return True
+
+    separate_right = analyzer.analyze(right_text)
+    if (
+        has_boundary
+        and following_morpheme is not None
+        and separate_right
+        and separate_right[0].part_of_speech
+        and separate_right[0].part_of_speech[0] == "感動詞"
+        and len(separate_right[0].surface) <= 2
+        and following_morpheme.surface == separate_right[0].surface
+        and _is_functional_continuation(following_morpheme)
+        and following_morpheme.part_of_speech[:2]
+        != separate_right[0].part_of_speech[:2]
     ):
         return True
 
@@ -2511,6 +2540,23 @@ def _ends_with_topic_location_tail(
         and morphemes[-2].dictionary_form == "で"
         and morphemes[-1].part_of_speech[:2] == ("助詞", "係助詞")
         and morphemes[-1].dictionary_form == "は"
+    )
+
+
+def _ends_with_suspended_topic(
+    left: tuple[JapaneseMorpheme, ...],
+    right: tuple[JapaneseMorpheme, ...],
+    gap_seconds: float,
+) -> bool:
+    return bool(
+        gap_seconds
+        <= DEFAULT_SENTENCE_BOUNDARY_CONFIG.max_cross_segment_grammar_gap_seconds
+        and len(left) >= 2
+        and left[-1].part_of_speech[:2] == ("助詞", "係助詞")
+        and left[-1].dictionary_form == "は"
+        and left[-2].part_of_speech
+        and left[-2].part_of_speech[0] in {"名詞", "代名詞"}
+        and _has_early_predicate(right)
     )
 
 

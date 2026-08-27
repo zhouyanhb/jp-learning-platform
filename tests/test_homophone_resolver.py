@@ -13,9 +13,16 @@ from jp_learning_platform.domain import (
 )
 from jp_learning_platform.infrastructure.homophone_resolver import (
     BertHomophoneResolver,
+    BertMaskedLanguageHomophoneCandidateGenerator,
     HomophoneLanguageModelCandidate,
+    HomophoneReplacementScoringRequest,
     HomophoneTarget,
+    SudachiReadingAnalyzer,
     _AnalyzedMorpheme,
+    _VocabularyPiece,
+    _context_probe_verification,
+    _inflected_surface_from_lemma,
+    _plausible_asr_reading_variant,
     _unambiguous_confirmed_replacements,
 )
 from jp_learning_platform.workflow import (
@@ -92,6 +99,13 @@ class FakeCandidateGenerator:
 class PrefilterCandidateGenerator(FakeCandidateGenerator):
     original_scores: dict[str, float | None] = field(default_factory=dict)
     vocabulary_ranks: dict[str, float] = field(default_factory=dict)
+    inflected_candidates: dict[str, tuple[str, ...]] = field(default_factory=dict)
+    shadow_score_batches: list[
+        tuple[HomophoneReplacementScoringRequest, ...]
+    ] = field(default_factory=list)
+    context_probe_batches: list[
+        tuple[HomophoneReplacementScoringRequest, ...]
+    ] = field(default_factory=list)
 
     def lexical_candidates_for(self, target: HomophoneTarget) -> tuple[str, ...]:
         return tuple(candidate.text for candidate in self.candidates.get(target.text, ()))
@@ -105,6 +119,35 @@ class PrefilterCandidateGenerator(FakeCandidateGenerator):
 
     def vocabulary_rank_for(self, text: str) -> float:
         return self.vocabulary_ranks.get(text, 0.0)
+
+    def inflected_lexical_candidates_for(
+        self,
+        target: HomophoneTarget,
+    ) -> tuple[str, ...]:
+        return self.inflected_candidates.get(target.text, ())
+
+    def scores_for_replacements(
+        self,
+        requests: tuple[HomophoneReplacementScoringRequest, ...],
+    ) -> tuple[tuple[float | None, ...], ...]:
+        self.shadow_score_batches.append(requests)
+        return tuple(
+            tuple(self.scores.get(replacement) for replacement in request.replacements)
+            for request in requests
+        )
+
+    def context_probe_scores_for_replacements(
+        self,
+        requests: tuple[HomophoneReplacementScoringRequest, ...],
+    ) -> tuple[tuple[tuple[tuple[float, ...], tuple[float, ...]], ...], ...]:
+        self.context_probe_batches.append(requests)
+        return tuple(
+            tuple(
+                ((0.1,), (0.1,)) if index == 0 else ((0.2,), (0.2,))
+                for index, _replacement in enumerate(request.replacements)
+            )
+            for request in requests
+        )
 
 
 def _request(segment: Segment) -> HomophoneResolutionRequest:
@@ -694,3 +737,423 @@ def test_homophone_resolver_scores_at_most_three_suspicious_targets_per_sentence
 
     assert tuple(target.text for target in generator.seen_targets) == surfaces[1:]
     assert len(result.decisions) == 3
+    assert any(
+        audit.surface == "甲乙" and audit.reason == "prefilter_target_limit"
+        for audit in result.candidate_generation_audits
+    )
+
+
+def test_homophone_resolver_audits_short_and_cross_morpheme_targets() -> None:
+    analyzer = FakeAnalyzer(
+        tokens={
+            "年賞": (
+                ("年", "ねん", _GENERAL_NOUN_POS),
+                ("賞", "しょう", _GENERAL_NOUN_POS),
+            )
+        },
+        single_tokens={},
+    )
+    generator = PrefilterCandidateGenerator(candidates={}, scores={})
+
+    words = (
+        Word("年", TimeRange(0.0, 0.2), 0.98),
+        Word("賞", TimeRange(0.2, 0.4), 0.98),
+    )
+    sentence = Sentence("年賞", TimeRange(0.0, 0.5), words)
+    segment = Segment(0, sentence.text, sentence.time_range, (sentence,))
+    result = BertHomophoneResolver(
+        candidate_generator=generator,
+        analyzer=analyzer,
+    ).resolve(_request(segment))
+
+    reasons = {
+        (audit.surface, audit.reason)
+        for audit in result.candidate_generation_audits
+    }
+    assert ("年", "single_character_filtered") in reasons
+    assert ("賞", "single_character_filtered") in reasons
+    assert ("年賞", "cross_morpheme_target_not_generated") in reasons
+    assert result.segments[0].text == "年賞"
+    assert result.decisions == ()
+
+
+def test_homophone_resolver_audits_high_confidence_general_single_noun() -> None:
+    analyzer = FakeAnalyzer(
+        tokens={"得": (("得", "とく", _GENERAL_NOUN_POS),)},
+        single_tokens={
+            "徳": ("とく", _GENERAL_NOUN_POS),
+            "解く": ("とく", ("動詞", "一般", "*", "*", "五段-カ行", "終止形-一般")),
+            "とく": ("とく", _GENERAL_NOUN_POS),
+        },
+    )
+    generator = PrefilterCandidateGenerator(candidates={}, scores={})
+    word = Word("得", TimeRange(0.0, 0.5), 0.98)
+    sentence = Sentence("得", TimeRange(0.0, 0.5), (word,))
+    segment = Segment(0, sentence.text, sentence.time_range, (sentence,))
+
+    result = BertHomophoneResolver(
+        candidate_generator=generator,
+        analyzer=analyzer,
+    ).resolve(_request(segment))
+
+    assert tuple(
+        (audit.surface, audit.reason)
+        for audit in result.candidate_generation_audits
+    ) == (("得", "single_character_filtered"),)
+
+
+def test_homophone_resolver_audits_high_confidence_proper_noun_without_candidates(
+) -> None:
+    proper_place_pos = ("名詞", "固有名詞", "地名", "国", "*", "*")
+    analyzer = FakeAnalyzer(
+        tokens={"中国": (("中国", "ちゅうごく", proper_place_pos),)},
+        single_tokens={"年商": ("ねんしょう", _GENERAL_NOUN_POS)},
+    )
+    generator = PrefilterCandidateGenerator(candidates={}, scores={})
+    word = Word("中国", TimeRange(0.0, 0.5), 0.98)
+    sentence = Sentence("中国", TimeRange(0.0, 0.5), (word,))
+    segment = Segment(0, sentence.text, sentence.time_range, (sentence,))
+
+    result = BertHomophoneResolver(
+        candidate_generator=generator,
+        analyzer=analyzer,
+    ).resolve(_request(segment))
+
+    assert tuple(
+        (audit.surface, audit.reason)
+        for audit in result.candidate_generation_audits
+    ) == (("中国", "no_same_reading_lexical_candidate"),)
+
+
+def test_homophone_resolver_audits_missing_inflected_candidate() -> None:
+    verb_pos = ("動詞", "一般", "*", "*", "下一段-マ行", "連用形-一般")
+    analyzer = FakeAnalyzer(
+        tokens={"詰め": (("詰め", "つめ", verb_pos),)},
+        single_tokens={
+            "摘め": ("つめ", verb_pos),
+            "積め": ("つめ", verb_pos),
+        },
+    )
+    generator = PrefilterCandidateGenerator(candidates={}, scores={})
+
+    word = Word("詰め", TimeRange(0.0, 0.5), 0.98)
+    sentence = Sentence("詰め", TimeRange(0.0, 0.5), (word,))
+    segment = Segment(0, sentence.text, sentence.time_range, (sentence,))
+    result = BertHomophoneResolver(
+        candidate_generator=generator,
+        analyzer=analyzer,
+    ).resolve(_request(segment))
+
+    assert tuple(
+        (audit.surface, audit.reason)
+        for audit in result.candidate_generation_audits
+    ) == (("詰め", "inflected_candidate_not_generated"),)
+    assert result.segments[0].text == "詰め"
+
+
+def test_homophone_resolver_audits_different_reading_candidates() -> None:
+    analyzer = FakeAnalyzer(
+        tokens={"中国": (("中国", "ちゅうごく", _GENERAL_NOUN_POS),)},
+        single_tokens={"中学": ("ちゅうがく", _GENERAL_NOUN_POS)},
+    )
+    generator = PrefilterCandidateGenerator(
+        candidates={
+            "中国": (HomophoneLanguageModelCandidate("中学", 0.8),),
+        },
+        scores={"中学": 0.8},
+        original_scores={"中国": 0.1},
+    )
+
+    result = BertHomophoneResolver(
+        candidate_generator=generator,
+        analyzer=analyzer,
+    ).resolve(_request(_segment("中国")))
+
+    audit = result.candidate_generation_audits[0]
+    assert audit.reason == "different_reading_candidate_filtered"
+    assert audit.candidate_count == 1
+    assert audit.candidate_examples == ("中学",)
+    assert result.segments[0].text == "中国"
+    assert result.decisions[0].reason == "no_same_reading_candidate"
+
+
+def test_homophone_resolver_prioritizes_missing_inflection_audit() -> None:
+    verb_pos = ("動詞", "一般", "*", "*", "下一段-マ行", "連用形-一般")
+    analyzer = FakeAnalyzer(
+        tokens={"詰め": (("詰め", "つめ", verb_pos),)},
+        single_tokens={"あり": ("あり", verb_pos)},
+    )
+    generator = PrefilterCandidateGenerator(
+        candidates={
+            "詰め": (HomophoneLanguageModelCandidate("あり", 0.8),),
+        },
+        scores={"あり": 0.8},
+        original_scores={"詰め": 0.1},
+    )
+    word = Word("詰め", TimeRange(0.0, 0.5), 0.98)
+    sentence = Sentence("詰め", TimeRange(0.0, 0.5), (word,))
+    segment = Segment(0, sentence.text, sentence.time_range, (sentence,))
+
+    result = BertHomophoneResolver(
+        candidate_generator=generator,
+        analyzer=analyzer,
+    ).resolve(_request(segment))
+
+    audit = result.candidate_generation_audits[0]
+    assert audit.reason == "inflected_candidate_not_generated"
+    assert audit.candidate_examples == ("あり",)
+    assert result.decisions[0].reason == "no_same_reading_candidate"
+
+
+def test_homophone_resolver_does_not_audit_high_confidence_normal_target() -> None:
+    analyzer = FakeAnalyzer(
+        tokens={"中国": (("中国", "ちゅうごく", _GENERAL_NOUN_POS),)},
+        single_tokens={"中学": ("ちゅうがく", _GENERAL_NOUN_POS)},
+    )
+    generator = PrefilterCandidateGenerator(
+        candidates={
+            "中国": (HomophoneLanguageModelCandidate("中学", 0.8),),
+        },
+        scores={"中学": 0.8},
+        original_scores={"中国": 0.1},
+    )
+    word = Word("中国", TimeRange(0.0, 0.5), 0.95)
+    sentence = Sentence("中国", TimeRange(0.0, 1.0), (word,))
+    segment = Segment(0, sentence.text, sentence.time_range, (sentence,))
+
+    result = BertHomophoneResolver(
+        candidate_generator=generator,
+        analyzer=analyzer,
+    ).resolve(_request(segment))
+
+    assert result.candidate_generation_audits == ()
+    assert result.segments[0].text == "中国"
+    assert result.decisions[0].reason == "no_same_reading_candidate"
+
+
+def test_homophone_resolver_generates_single_character_shadow_without_replacement(
+) -> None:
+    analyzer = FakeAnalyzer(
+        tokens={"得": (("得", "とく", _GENERAL_NOUN_POS),)},
+        single_tokens={
+            "徳": ("とく", _GENERAL_NOUN_POS),
+            "解く": (
+                "とく",
+                ("動詞", "一般", "*", "*", "五段-カ行", "終止形-一般"),
+            ),
+            "とく": ("とく", _GENERAL_NOUN_POS),
+        },
+    )
+    generator = PrefilterCandidateGenerator(
+        candidates={
+            "得": (
+                HomophoneLanguageModelCandidate("徳", 0.8),
+                HomophoneLanguageModelCandidate("解く", 0.2),
+                HomophoneLanguageModelCandidate("とく", 0.1),
+            ),
+        },
+        scores={"得": 0.01, "徳": 0.8, "解く": 0.2, "とく": 0.1},
+    )
+    segment = _segment("得")
+
+    result = BertHomophoneResolver(
+        candidate_generator=generator,
+        analyzer=analyzer,
+    ).resolve(_request(segment))
+
+    shadow = result.shadow_candidates[0]
+    assert shadow.generated_candidates == ("徳", "解く", "とく")
+    assert shadow.filtered_out_candidates == ("解く", "とく")
+    assert (shadow.strategy, shadow.surface, shadow.candidates) == (
+        "single_character",
+        "得",
+        ("徳",),
+    )
+    assert shadow.original_score == 0.01
+    assert tuple(
+        (candidate.text, candidate.score)
+        for candidate in shadow.candidate_scores
+    ) == (("徳", 0.8),)
+    assert tuple(
+        (candidate.text, candidate.rank, candidate.score)
+        for candidate in shadow.ranked_candidates
+    ) == (("徳", 1, 0.8),)
+    assert shadow.top_candidate == "徳"
+    assert shadow.top_score_margin is None
+    assert shadow.top_score_ratio_vs_original == 80.0
+    assert len(generator.shadow_score_batches) == 1
+    assert result.segments == (segment,)
+    assert result.decisions == ()
+
+
+def test_homophone_resolver_generates_cross_morpheme_shadow_without_replacement(
+) -> None:
+    analyzer = FakeAnalyzer(
+        tokens={
+            "年賞": (
+                ("年", "ねん", _GENERAL_NOUN_POS),
+                ("賞", "しょう", _GENERAL_NOUN_POS),
+            )
+        },
+        single_tokens={"年商": ("ねんしょう", _GENERAL_NOUN_POS)},
+    )
+    generator = PrefilterCandidateGenerator(
+        candidates={
+            "年賞": (HomophoneLanguageModelCandidate("年商", 0.8),),
+        },
+        scores={},
+    )
+    segment = _segment("年賞")
+
+    result = BertHomophoneResolver(
+        candidate_generator=generator,
+        analyzer=analyzer,
+    ).resolve(_request(segment))
+
+    shadow = next(
+        item for item in result.shadow_candidates if item.strategy == "cross_morpheme"
+    )
+    assert (shadow.surface, shadow.candidates, shadow.morpheme_span) == (
+        "年賞",
+        ("年商",),
+        ("年", "賞"),
+    )
+    assert result.segments == (segment,)
+    assert result.decisions == ()
+
+
+def test_homophone_resolver_generates_inflected_shadow_without_replacement() -> None:
+    verb_pos = ("動詞", "一般", "*", "*", "下一段-マ行", "連用形-一般")
+    analyzer = FakeAnalyzer(
+        tokens={"詰め": (("詰め", "つめ", verb_pos),)},
+        single_tokens={
+            "摘め": ("つめ", verb_pos),
+            "積め": ("つめ", verb_pos),
+        },
+    )
+    generator = PrefilterCandidateGenerator(
+        candidates={},
+        scores={"詰め": 0.01, "摘め": 0.1, "積め": 0.5},
+        inflected_candidates={"詰め": ("摘め", "積め")},
+    )
+    segment = _segment("詰め")
+
+    result = BertHomophoneResolver(
+        candidate_generator=generator,
+        analyzer=analyzer,
+    ).resolve(_request(segment))
+
+    shadow = result.shadow_candidates[0]
+    assert (shadow.strategy, shadow.surface, shadow.candidates) == (
+        "inflected",
+        "詰め",
+        ("摘め", "積め"),
+    )
+    assert tuple(
+        (candidate.text, candidate.rank)
+        for candidate in shadow.ranked_candidates
+    ) == (("積め", 1), ("摘め", 2))
+    assert shadow.top_candidate == "積め"
+    assert shadow.top_score_margin == 0.4
+    assert shadow.top_score_ratio_vs_original == 50.0
+    assert shadow.relative_acceptance_status == "not_evaluated"
+    assert shadow.relative_acceptance_reason == "context_probe_audit_disabled"
+    assert shadow.score_method == "cheap_prerank_only"
+    assert shadow.accepted_candidate is None
+    assert shadow.context_verifications == ()
+    assert generator.context_probe_batches == []
+    assert result.segments == (segment,)
+    assert result.decisions == ()
+
+
+def test_context_probe_audit_is_opt_in_and_never_accepts_shadow_candidate() -> None:
+    verb_pos = ("動詞", "一般", "*", "*", "下一段-マ行", "連用形-一般")
+    analyzer = FakeAnalyzer(
+        tokens={"詰め": (("詰め", "つめ", verb_pos),)},
+        single_tokens={
+            "摘め": ("つめ", verb_pos),
+            "積め": ("つめ", verb_pos),
+        },
+    )
+    generator = PrefilterCandidateGenerator(
+        candidates={},
+        scores={"詰め": 0.01, "摘め": 0.1, "積め": 0.5},
+        inflected_candidates={"詰め": ("摘め", "積め")},
+    )
+    segment = _segment("詰め")
+
+    result = BertHomophoneResolver(
+        candidate_generator=generator,
+        analyzer=analyzer,
+        enable_context_probe_audit=True,
+    ).resolve(_request(segment))
+
+    shadow = result.shadow_candidates[0]
+    assert shadow.relative_acceptance_status == "audit_only"
+    assert shadow.relative_acceptance_reason == "context_probes_are_non_decisive"
+    assert shadow.score_method == "cheap_prerank_with_context_probe_audit"
+    assert shadow.accepted_candidate is None
+    assert shadow.context_verifications
+    assert len(generator.context_probe_batches) == 1
+    assert result.segments == (segment,)
+    assert result.decisions == ()
+
+
+def test_inflected_surface_is_derived_from_matching_lemma_stems() -> None:
+    assert _inflected_surface_from_lemma("書い", "書く", "描く") == "描い"
+    assert _inflected_surface_from_lemma("詰め", "詰める", "積める") == "積め"
+    assert _inflected_surface_from_lemma("お書き", "書く", "描く") is None
+
+
+def test_asr_reading_variant_allows_one_normalized_sound_difference() -> None:
+    assert _plausible_asr_reading_variant("かく", "えがく")
+    assert _plausible_asr_reading_variant("かい", "えがい")
+    assert not _plausible_asr_reading_variant("かく", "しらべる")
+
+
+def test_context_probe_audit_records_majority_on_both_sides() -> None:
+    bilateral = _context_probe_verification(
+        "候補",
+        ((0.1, 0.1, 0.1), (0.1, 0.1, 0.1)),
+        ((0.2, 0.2, 0.05), (0.2, 0.2, 0.05)),
+    )
+    unilateral = _context_probe_verification(
+        "候補",
+        ((0.1, 0.1, 0.1), (0.1, 0.1, 0.1)),
+        ((0.2, 0.2, 0.05), (0.2, 0.05, 0.05)),
+    )
+
+    assert bilateral.bilateral_majority
+    assert (bilateral.left_wins, bilateral.right_wins) == (2, 2)
+    assert not unilateral.bilateral_majority
+    assert unilateral.reason == "right_probe_majority_missing"
+
+
+def test_inflected_lexical_candidates_include_near_reading_lemma_in_shadow() -> None:
+    analyzer = SudachiReadingAnalyzer()
+    target_morpheme = analyzer.analyze_single_token("書い")
+    candidate_lemma = analyzer.analyze_single_token("描く")
+    assert target_morpheme is not None
+    assert candidate_lemma is not None
+
+    generator = BertMaskedLanguageHomophoneCandidateGenerator(analyzer=analyzer)
+    generator._tokenizer = object()
+    generator._model = object()
+    generator._torch = object()
+    generator._vocabulary_pieces = (
+        _VocabularyPiece(
+            surface=candidate_lemma.surface,
+            reading=candidate_lemma.reading,
+            part_of_speech=candidate_lemma.part_of_speech,
+            dictionary_form=candidate_lemma.dictionary_form,
+        ),
+    )
+    target = HomophoneTarget(
+        text=target_morpheme.surface,
+        reading=target_morpheme.reading,
+        part_of_speech=target_morpheme.part_of_speech,
+        start=0,
+        end=len(target_morpheme.surface),
+    )
+
+    assert generator.inflected_lexical_candidates_for(target) == ("描い",)

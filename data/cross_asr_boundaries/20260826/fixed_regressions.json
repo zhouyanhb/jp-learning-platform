@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "source_artifact": "output/.work/20260826_151812_848646",
+  "source_path": "input/source",
+  "annotation_status": "reviewed",
+  "description": "Fixed real-context cross-ASR boundaries that must form one language sentence.",
+  "settings": {
+    "max_gap_seconds": 4.0
+  },
+  "labels": {
+    "merge": "Both sides belong to one language sentence.",
+    "keep": "The boundary must remain between language sentences.",
+    "uncertain": "Human review cannot confidently choose merge or keep."
+  },
+  "samples": [
+    {
+      "id": "cross-asr-regression-001-podcast-word-fragment",
+      "origin": "real_context_regression",
+      "source_path": "input/source/Podcastを使った話す練習のやり方 ⧸ How to Improve Your Japanese Speaking with Podcasts [vQuGmq_tyyI].webm",
+      "artifact_path": "output/.work/20260826_151812_848646/Podcastを使った話す練習のやり方_How_to_Improve_Your_Japanese_Speaking_with_Podcasts_vQuGmq_tyyI/05_sentence_boundary_resolution.json",
+      "segment_index": 10,
+      "sentence_index": 0,
+      "left_end_seconds": 119.904,
+      "right_start_seconds": 119.904,
+      "gap_seconds": 0.0,
+      "left_context": "どうしてこのポッドキャストを使ったスピーキングの練習っていうのがいいのかっていうのをゆうゆく",
+      "right_context": "んはどうして知っているのかっていう話なんですが、僕自身プライベートレッスンの学生数名に",
+      "expected_text": "どうしてこのポッドキャストを使ったスピーキングの練習っていうのがいいのかっていうのをゆうゆくんはどうして知っているのかっていう話なんですが、僕自身プライベートレッスンの学生数名に",
+      "predicted_label": "keep",
+      "prediction": null,
+      "gold_label": "merge",
+      "review_status": "reviewed",
+      "review_note": "The ASR boundary splits a word before ん and cannot be a language-sentence boundary."
+    },
+    {
+      "id": "cross-asr-regression-002-fujikyu-predicate",
+      "origin": "real_context_regression",
+      "source_path": "input/source/Riding the Fujikyu Railway ｜ Japanese Listening Practice [ev4Xcp57Vx0].webm",
+      "artifact_path": "output/.work/20260826_151812_848646/Riding_the_Fujikyu_Railway_Japanese_Listening_Practice_ev4Xcp57Vx0/05_sentence_boundary_resolution.json",
+      "segment_index": 17,
+      "sentence_index": 0,
+      "left_end_seconds": 181.552,
+      "right_start_seconds": 181.552,
+      "gap_seconds": 0.0,
+      "left_context": "中は",
+      "right_context": "こんな感じです",
+      "expected_text": "中はこんな感じです",
+      "predicted_label": "keep",
+      "prediction": null,
+      "gold_label": "merge",
+      "review_status": "reviewed",
+      "review_note": "The topic phrase requires the following nominal predicate to complete the language sentence."
+    }
+  ]
+}

@@ -197,12 +197,89 @@ class HomophoneResolutionDecision:
 
 
 @dataclass(frozen=True, slots=True)
+class HomophoneCandidateGenerationAudit:
+    """Diagnostic record for a target skipped before candidate acceptance."""
+
+    segment_position: int
+    sentence_index: int
+    surface: str
+    reading: str
+    part_of_speech: tuple[str, ...]
+    target_start: int
+    target_end: int
+    reason: str
+    status: str = "skipped"
+    morpheme_span: tuple[str, ...] = ()
+    candidate_count: int = 0
+    candidate_examples: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class HomophoneShadowRankedCandidate:
+    """One scored shadow candidate in descending contextual rank order."""
+
+    text: str
+    reading: str
+    score: float | None
+    rank: int
+    token_count: int | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class HomophoneShadowContextVerification:
+    """Non-decisive fixed-context evidence for one shortlisted candidate."""
+
+    text: str
+    left_wins: int
+    left_probes: int
+    right_wins: int
+    right_probes: int
+    total_wins: int
+    total_probes: int
+    bilateral_majority: bool
+    reason: str
+
+
+@dataclass(frozen=True, slots=True)
+class HomophoneShadowCandidate:
+    """Candidate generated for evaluation without entering acceptance."""
+
+    segment_position: int
+    sentence_index: int
+    strategy: str
+    surface: str
+    reading: str
+    part_of_speech: tuple[str, ...]
+    target_start: int
+    target_end: int
+    candidates: tuple[str, ...]
+    morpheme_span: tuple[str, ...] = ()
+    generated_candidates: tuple[str, ...] = ()
+    filtered_out_candidates: tuple[str, ...] = ()
+    original_score: float | None = None
+    candidate_scores: tuple[HomophoneCandidateScore, ...] = ()
+    ranked_candidates: tuple[HomophoneShadowRankedCandidate, ...] = ()
+    top_candidate: str | None = None
+    top_score_margin: float | None = None
+    top_score_ratio_vs_original: float | None = None
+    score_method: str = ""
+    original_token_count: int | None = None
+    top_candidate_token_count: int | None = None
+    relative_acceptance_status: str = "not_evaluated"
+    relative_acceptance_reason: str = ""
+    accepted_candidate: str | None = None
+    context_verifications: tuple[HomophoneShadowContextVerification, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
 class HomophoneResolution:
     """Resolved transcript segments after safe homophone replacements."""
 
     source_path: Path
     segments: tuple[Segment, ...]
     decisions: tuple[HomophoneResolutionDecision, ...] = ()
+    candidate_generation_audits: tuple[HomophoneCandidateGenerationAudit, ...] = ()
+    shadow_candidates: tuple[HomophoneShadowCandidate, ...] = ()
 
     def __post_init__(self) -> None:
         segments = _tuple_of_type(self.segments, Segment, "segments")
@@ -218,6 +295,24 @@ class HomophoneResolution:
                 self.decisions,
                 HomophoneResolutionDecision,
                 "decisions",
+            ),
+        )
+        object.__setattr__(
+            self,
+            "candidate_generation_audits",
+            _tuple_of_type(
+                self.candidate_generation_audits,
+                HomophoneCandidateGenerationAudit,
+                "candidate_generation_audits",
+            ),
+        )
+        object.__setattr__(
+            self,
+            "shadow_candidates",
+            _tuple_of_type(
+                self.shadow_candidates,
+                HomophoneShadowCandidate,
+                "shadow_candidates",
             ),
         )
 
@@ -308,18 +403,28 @@ class HomophoneResolutionStage:
         return StageResult(
             stage_name=self.name,
             context=next_context,
-            data={"decisions": resolution.decisions},
+            data={
+                "decisions": resolution.decisions,
+                "candidate_generation_audits": (
+                    resolution.candidate_generation_audits
+                ),
+                "shadow_candidates": resolution.shadow_candidates,
+            },
         )
 
 
 __all__ = [
     "HOMOPHONE_RESOLUTION_STAGE_NAME",
+    "HomophoneCandidateGenerationAudit",
     "HomophoneCandidateScore",
     "HomophoneResolution",
     "HomophoneResolutionDecision",
     "HomophoneResolutionRequest",
     "HomophoneResolutionStage",
     "HomophoneResolver",
+    "HomophoneShadowCandidate",
+    "HomophoneShadowContextVerification",
+    "HomophoneShadowRankedCandidate",
     "HomophoneStageError",
     "InvalidHomophoneResolutionError",
     "InvalidHomophoneResolverError",

@@ -85,7 +85,11 @@ def test_homophone_resolution_stage_replaces_segments(tmp_path: Path) -> None:
     assert isinstance(result, StageResult)
     assert result.stage_name == "homophone-resolution"
     assert result.context.document.segments == (resolved_segment,)
-    assert result.data == {"decisions": (decision,)}
+    assert result.data == {
+        "decisions": (decision,),
+        "candidate_generation_audits": (),
+        "shadow_candidates": (),
+    }
     assert resolver.requests == [
         HomophoneResolutionRequest(
             source_path=source_path,

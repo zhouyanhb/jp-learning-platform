@@ -1355,6 +1355,68 @@ def test_high_confidence_merge_repairs_adjacent_sentences_in_one_asr_segment() -
     )
 
 
+@pytest.mark.parametrize(
+    ("left_text", "right_text", "evidence_name"),
+    (
+        (
+            "ゆうゆく",
+            "んはどうして知っているのかっていう話なんですが、僕自身プライベートレッスンの学生数名に",
+            "word_fragment_reconstruction",
+        ),
+        ("中は", "こんな感じです", "suspended_topic_predicate"),
+    ),
+)
+def test_real_cross_asr_regressions_merge_inside_one_segment(
+    left_text: str,
+    right_text: str,
+    evidence_name: str,
+) -> None:
+    left_word = _word(left_text, 0.0, 1.0)
+    right_word = _word(right_text, 1.0, 2.0)
+    segment = Segment(
+        position=0,
+        text=f"{left_text}{right_text}",
+        time_range=TimeRange(0.0, 2.0),
+        sentences=(
+            Sentence(left_text, left_word.time_range, words=(left_word,)),
+            Sentence(right_text, right_word.time_range, words=(right_word,)),
+        ),
+    )
+
+    result = JapaneseSentenceBoundaryResolver(
+        morphological_analyzer=SudachiMorphologicalAnalyzer()
+    ).resolve(_request(segment))
+
+    assert tuple(sentence.text for sentence in result.segments[0].sentences) == (
+        f"{left_text}{right_text}",
+    )
+    assert len(result.cross_segment_merges) == 1
+    assert evidence_name in {
+        item.name for item in result.cross_segment_merges[0].evidence
+    }
+
+
+def test_suspended_topic_does_not_absorb_independent_response() -> None:
+    request = SentenceBoundaryResolutionRequest(
+        source_path=Path("input.mp3"),
+        working_directory=Path("work"),
+        run_id="run-001",
+        segments=(
+            _sentence_segment(0, "これは", 0.0, 1.0),
+            _sentence_segment(1, "そうですね", 1.0, 2.0),
+        ),
+    )
+
+    result = JapaneseSentenceBoundaryResolver(
+        morphological_analyzer=SudachiMorphologicalAnalyzer()
+    ).resolve(request)
+
+    assert tuple(segment.text for segment in result.segments) == (
+        "これは",
+        "そうですね",
+    )
+
+
 
 
 def test_sentence_boundary_resolver_moves_only_minimal_dependent_prefix() -> None:

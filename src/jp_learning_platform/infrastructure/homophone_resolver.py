@@ -12,10 +12,14 @@ from jp_learning_platform.infrastructure.pipeline_config import (
     DEFAULT_HOMOPHONE_PREFILTER_CONFIG,
 )
 from jp_learning_platform.workflow.homophone_stage import (
+    HomophoneCandidateGenerationAudit,
     HomophoneCandidateScore,
     HomophoneResolution,
     HomophoneResolutionDecision,
     HomophoneResolutionRequest,
+    HomophoneShadowCandidate,
+    HomophoneShadowContextVerification,
+    HomophoneShadowRankedCandidate,
 )
 
 DEFAULT_HOMOPHONE_MODEL_ID = "tohoku-nlp/bert-base-japanese-v3"
@@ -37,6 +41,9 @@ DEFAULT_HOMOPHONE_MAX_TARGETS_PER_SENTENCE = (
 )
 _MIN_CONTEXT_SCORE_DENOMINATOR = 1e-12
 _DEFAULT_SUDACHI_SPLIT_MODE = "C"
+_GENERATION_AUDIT_MAX_CONFIDENCE = 0.8
+_SHADOW_CONTEXT_TOKENS_PER_SIDE = 4
+_SHADOW_CONTEXT_VERIFICATION_LIMIT = 5
 _CONTENT_POS = {"名詞", "動詞", "形容詞", "副詞"}
 _SKIPPED_SURFACES = {"する", "した", "して", "ある", "いる", "ます", "です"}
 _PLACE_NAME_CONTINUATIONS = (
@@ -105,6 +112,15 @@ class HomophoneTarget:
     end: int
 
 
+@dataclass(frozen=True, slots=True)
+class HomophoneReplacementScoringRequest:
+    """One sentence target and its shadow replacements for batch scoring."""
+
+    sentence_text: str
+    target: HomophoneTarget
+    replacements: tuple[str, ...]
+
+
 class HomophoneCandidateGenerator(Protocol):
     """Candidate generator contract used by the resolver."""
 
@@ -143,6 +159,18 @@ class HomophonePrefilterCandidateGenerator(HomophoneCandidateGenerator, Protocol
     def vocabulary_rank_for(self, text: str) -> float:
         """Return a normalized tokenizer vocabulary-rank frequency proxy."""
 
+    def inflected_lexical_candidates_for(
+        self,
+        target: HomophoneTarget,
+    ) -> tuple[str, ...]:
+        """Return same-reading inflected candidates without model inference."""
+
+    def scores_for_replacements(
+        self,
+        requests: tuple[HomophoneReplacementScoringRequest, ...],
+    ) -> tuple[tuple[float | None, ...], ...]:
+        """Batch-score original surfaces and shadow replacements."""
+
 
 @dataclass(frozen=True, slots=True)
 class _AnalyzedMorpheme:
@@ -151,6 +179,7 @@ class _AnalyzedMorpheme:
     part_of_speech: tuple[str, ...]
     start: int
     end: int
+    dictionary_form: str = ""
 
 
 @dataclass(frozen=True, slots=True)
@@ -165,6 +194,8 @@ class _AcceptedChange:
 class _VocabularyPiece:
     surface: str
     reading: str
+    part_of_speech: tuple[str, ...] = ()
+    dictionary_form: str = ""
 
 
 @dataclass(frozen=True, slots=True)
@@ -210,6 +241,7 @@ class SudachiReadingAnalyzer:
                     part_of_speech=tuple(morpheme.part_of_speech()),
                     start=start,
                     end=end,
+                    dictionary_form=str(morpheme.dictionary_form()),
                 )
             )
 
@@ -271,6 +303,18 @@ class BertMaskedLanguageHomophoneCandidateGenerator:
         init=False,
         repr=False,
     )
+    _inflected_candidates_by_suffix: dict[
+        str,
+        tuple[_AnalyzedMorpheme, ...],
+    ] = field(default_factory=dict, init=False, repr=False)
+    _lemma_pieces_by_inflection_class: dict[
+        tuple[str, str, str],
+        tuple[_VocabularyPiece, ...],
+    ] | None = field(default=None, init=False, repr=False)
+    _lemma_inflected_candidates: dict[
+        tuple[str, str, str, str, str],
+        tuple[_AnalyzedMorpheme, ...],
+    ] = field(default_factory=dict, init=False, repr=False)
 
     def __post_init__(self) -> None:
         if isinstance(self.top_k, bool) or not isinstance(self.top_k, int):
@@ -435,6 +479,193 @@ class BertMaskedLanguageHomophoneCandidateGenerator:
 
         return tuple(scores)
 
+    def scores_for_replacements(
+        self,
+        requests: tuple[HomophoneReplacementScoringRequest, ...],
+    ) -> tuple[tuple[float | None, ...], ...]:
+        """Cheaply pre-rank all shadow replacements."""
+        if not requests:
+            return ()
+
+        tokenizer, model, torch = self._load_model()
+        mask_token = tokenizer.mask_token
+        if not mask_token:
+            raise HomophoneResolverDependencyError()
+
+        scores: list[list[float | None]] = [
+            [None] * len(request.replacements) for request in requests
+        ]
+        grouped: dict[int, list[tuple[int, int, str, tuple[int, ...]]]] = {}
+        for request_index, request in enumerate(requests):
+            for replacement_index, replacement in enumerate(request.replacements):
+                token_ids = tuple(
+                    tokenizer.encode(replacement, add_special_tokens=False)
+                )
+                if not token_ids:
+                    continue
+                masks = "".join(mask_token for _ in token_ids)
+                masked_text = (
+                    f"{request.sentence_text[:request.target.start]}"
+                    f"{masks}{request.sentence_text[request.target.end:]}"
+                )
+                grouped.setdefault(len(token_ids), []).append(
+                    (request_index, replacement_index, masked_text, token_ids)
+                )
+
+        batch_size = 32
+        model.eval()
+        for token_count, rows in grouped.items():
+            for offset in range(0, len(rows), batch_size):
+                batch = rows[offset : offset + batch_size]
+                inputs = tokenizer(
+                    [row[2] for row in batch],
+                    return_tensors="pt",
+                    padding=True,
+                )
+                if self.device != "cpu":
+                    inputs = {key: value.to(self.device) for key, value in inputs.items()}
+                with torch.no_grad():
+                    logits = model(**inputs).logits
+                for row_index, (
+                    request_index,
+                    replacement_index,
+                    _,
+                    token_ids,
+                ) in enumerate(batch):
+                    mask_positions = (
+                        inputs["input_ids"][row_index] == tokenizer.mask_token_id
+                    ).nonzero(as_tuple=False)
+                    if len(mask_positions) != token_count:
+                        continue
+                    log_probability = torch.tensor(0.0, device=logits.device)
+                    for position, token_id in zip(
+                        mask_positions,
+                        token_ids,
+                        strict=True,
+                    ):
+                        probability = torch.softmax(
+                            logits[row_index, int(position.item())],
+                            dim=-1,
+                        )[token_id]
+                        log_probability += torch.log(probability.clamp_min(1e-12))
+                    scores[request_index][replacement_index] = float(
+                        torch.exp(log_probability / token_count).item()
+                    )
+        return tuple(tuple(values) for values in scores)
+
+    def context_probe_scores_for_replacements(
+        self,
+        requests: tuple[HomophoneReplacementScoringRequest, ...],
+    ) -> tuple[tuple[tuple[tuple[float, ...], tuple[float, ...]], ...], ...]:
+        """Score fixed left and right context probes for shortlisted replacements."""
+        tokenizer, model, torch = self._load_model()
+        if tokenizer.mask_token_id is None:
+            raise HomophoneResolverDependencyError()
+        results: list[list[list[list[float]]]] = [
+            [[[], []] for _ in request.replacements] for request in requests
+        ]
+        rows: list[tuple[int, int, int, list[int], int, int]] = []
+        for request_index, request in enumerate(requests):
+            prefix_ids = tokenizer.encode(
+                request.sentence_text[: request.target.start],
+                add_special_tokens=False,
+            )
+            suffix_ids = tokenizer.encode(
+                request.sentence_text[request.target.end :],
+                add_special_tokens=False,
+            )
+            left_indexes = range(
+                max(0, len(prefix_ids) - _SHADOW_CONTEXT_TOKENS_PER_SIDE),
+                len(prefix_ids),
+            )
+            right_indexes = range(
+                min(len(suffix_ids), _SHADOW_CONTEXT_TOKENS_PER_SIDE)
+            )
+            for replacement_index, replacement in enumerate(request.replacements):
+                replacement_ids = tokenizer.encode(
+                    replacement,
+                    add_special_tokens=False,
+                )
+                content_ids = [*prefix_ids, *replacement_ids, *suffix_ids]
+                input_ids = tokenizer.build_inputs_with_special_tokens(content_ids)
+                content_start = _subsequence_start(input_ids, content_ids)
+                if content_start is None:
+                    continue
+                for prefix_index in left_indexes:
+                    position = content_start + prefix_index
+                    masked = list(input_ids)
+                    masked[position] = tokenizer.mask_token_id
+                    rows.append(
+                        (
+                            request_index,
+                            replacement_index,
+                            0,
+                            masked,
+                            position,
+                            prefix_ids[prefix_index],
+                        )
+                    )
+                suffix_start = content_start + len(prefix_ids) + len(replacement_ids)
+                for suffix_index in right_indexes:
+                    position = suffix_start + suffix_index
+                    masked = list(input_ids)
+                    masked[position] = tokenizer.mask_token_id
+                    rows.append(
+                        (
+                            request_index,
+                            replacement_index,
+                            1,
+                            masked,
+                            position,
+                            suffix_ids[suffix_index],
+                        )
+                    )
+        model.eval()
+        for offset in range(0, len(rows), 32):
+            batch = rows[offset : offset + 32]
+            inputs = tokenizer.pad(
+                {"input_ids": [row[3] for row in batch]},
+                padding=True,
+                return_tensors="pt",
+            )
+            if self.device != "cpu":
+                inputs = {key: value.to(self.device) for key, value in inputs.items()}
+            with torch.no_grad():
+                logits = model(**inputs).logits
+            for row_index, (
+                request_index,
+                replacement_index,
+                side,
+                _,
+                position,
+                token_id,
+            ) in enumerate(batch):
+                probability = torch.softmax(
+                    logits[row_index, position],
+                    dim=-1,
+                )[token_id]
+                results[request_index][replacement_index][side].append(
+                    float(probability.item())
+                )
+        return tuple(
+            tuple((tuple(sides[0]), tuple(sides[1])) for sides in replacements)
+            for replacements in results
+        )
+
+    def token_counts_for_replacements(
+        self,
+        requests: tuple[HomophoneReplacementScoringRequest, ...],
+    ) -> tuple[tuple[int, ...], ...]:
+        """Return tokenizer piece counts used by shadow score auditing."""
+        tokenizer, _, _ = self._load_model()
+        return tuple(
+            tuple(
+                len(tokenizer.encode(replacement, add_special_tokens=False))
+                for replacement in request.replacements
+            )
+            for request in requests
+        )
+
     def vocabulary_rank_for(self, text: str) -> float:
         """Use normalized token ids as a stable vocabulary-frequency proxy."""
         tokenizer, _, _ = self._load_model()
@@ -443,6 +674,134 @@ class BertMaskedLanguageHomophoneCandidateGenerator:
         if not token_ids:
             return 1.0
         return min(sum(token_ids) / len(token_ids) / vocabulary_size, 1.0)
+
+    def inflected_lexical_candidates_for(
+        self,
+        target: HomophoneTarget,
+    ) -> tuple[str, ...]:
+        """Compose and validate vocabulary stems with the target inflection tail."""
+        suffix = _trailing_hiragana(target.text)
+        if not suffix:
+            return ()
+
+        tokenizer, _, _ = self._load_model()
+        assert self.analyzer is not None
+        if self._vocabulary_pieces is None:
+            self._vocabulary_pieces = self._load_vocabulary_pieces(tokenizer)
+        analyzed_candidates = self._inflected_candidates_by_suffix.get(suffix)
+        if analyzed_candidates is None:
+            generated: list[_AnalyzedMorpheme] = []
+            seen: set[str] = set()
+            for piece in self._vocabulary_pieces:
+                if not _has_kanji(piece.surface) or _has_hiragana(piece.surface):
+                    continue
+                surface = f"{piece.surface}{suffix}"
+                if surface in seen:
+                    continue
+                seen.add(surface)
+                analyzed = self.analyzer.analyze_single_token(surface)
+                if analyzed is not None:
+                    generated.append(analyzed)
+            analyzed_candidates = tuple(generated)
+            self._inflected_candidates_by_suffix[suffix] = analyzed_candidates
+
+        target_morpheme = self.analyzer.analyze_single_token(target.text)
+        lemma_candidates: list[_AnalyzedMorpheme] = []
+        if target_morpheme is not None and target_morpheme.dictionary_form:
+            target_lemma = self.analyzer.analyze_single_token(
+                target_morpheme.dictionary_form
+            )
+            if target_lemma is not None:
+                inflection_class = _inflection_class(
+                    target_morpheme.part_of_speech
+                )
+                cache_key = (
+                    target_lemma.reading,
+                    *inflection_class,
+                    suffix,
+                )
+                cached = self._lemma_inflected_candidates.get(cache_key)
+                if cached is None:
+                    lemma_surfaces: set[str] = set()
+                    generated_lemmas: list[_AnalyzedMorpheme] = []
+                    for piece in self._lemma_pieces_for_inflection_class(
+                        inflection_class
+                    ):
+                        if not _plausible_asr_reading_variant(
+                            target_lemma.reading,
+                            piece.reading,
+                        ):
+                            continue
+                        surface = _inflected_surface_from_lemma(
+                            target_morpheme.surface,
+                            target_morpheme.dictionary_form,
+                            piece.dictionary_form,
+                        )
+                        if not surface or surface in lemma_surfaces:
+                            continue
+                        lemma_surfaces.add(surface)
+                        analyzed = self.analyzer.analyze_single_token(surface)
+                        if (
+                            analyzed is not None
+                            and _plausible_asr_reading_variant(
+                                target.reading,
+                                analyzed.reading,
+                            )
+                        ):
+                            generated_lemmas.append(analyzed)
+                    cached = tuple(generated_lemmas)
+                    self._lemma_inflected_candidates[cache_key] = cached
+                lemma_candidates.extend(cached)
+
+        candidates: list[str] = []
+        seen_candidates: set[str] = set()
+        lemma_candidate_surfaces = {
+            analyzed.surface for analyzed in lemma_candidates
+        }
+        for analyzed in (*lemma_candidates, *analyzed_candidates):
+            if analyzed.surface == target.text:
+                continue
+            if (
+                analyzed.surface not in lemma_candidate_surfaces
+                and analyzed.reading != target.reading
+            ):
+                continue
+            if analyzed.surface in seen_candidates:
+                continue
+            if not _compatible_part_of_speech(
+                target.part_of_speech,
+                analyzed.part_of_speech,
+            ):
+                continue
+            if not _compatible_script_change(target.text, analyzed.surface):
+                continue
+            seen_candidates.add(analyzed.surface)
+            candidates.append(analyzed.surface)
+            if len(candidates) >= self.max_lexical_candidates:
+                break
+        return tuple(candidates)
+
+    def _lemma_pieces_for_inflection_class(
+        self,
+        inflection_class: tuple[str, str, str],
+    ) -> tuple[_VocabularyPiece, ...]:
+        if self._lemma_pieces_by_inflection_class is None:
+            grouped: dict[tuple[str, str, str], list[_VocabularyPiece]] = {}
+            assert self._vocabulary_pieces is not None
+            for piece in self._vocabulary_pieces:
+                if (
+                    not piece.dictionary_form
+                    or piece.surface != piece.dictionary_form
+                ):
+                    continue
+                grouped.setdefault(
+                    _inflection_class(piece.part_of_speech),
+                    [],
+                ).append(piece)
+            self._lemma_pieces_by_inflection_class = {
+                key: tuple(values) for key, values in grouped.items()
+            }
+        return self._lemma_pieces_by_inflection_class.get(inflection_class, ())
 
     def _masked_logits(
         self,
@@ -593,6 +952,8 @@ class BertMaskedLanguageHomophoneCandidateGenerator:
                 _VocabularyPiece(
                     surface=surface,
                     reading=analyzed.reading,
+                    part_of_speech=analyzed.part_of_speech,
+                    dictionary_form=analyzed.dictionary_form,
                 )
             )
 
@@ -650,6 +1011,7 @@ class BertHomophoneResolver:
     min_token_chars: int = DEFAULT_HOMOPHONE_MIN_TOKEN_CHARS
     max_targets_per_sentence: int = DEFAULT_HOMOPHONE_MAX_TARGETS_PER_SENTENCE
     require_original_score: bool = True
+    enable_context_probe_audit: bool = False
 
     def __post_init__(self) -> None:
         if self.candidate_generator is None:
@@ -692,6 +1054,8 @@ class BertHomophoneResolver:
             raise TypeError("max_targets_per_sentence must be an integer.")
         if self.max_targets_per_sentence < 1:
             raise ValueError("max_targets_per_sentence must be positive.")
+        if not isinstance(self.enable_context_probe_audit, bool):
+            raise TypeError("enable_context_probe_audit must be a bool.")
 
     def resolve(self, request: HomophoneResolutionRequest) -> HomophoneResolution:
         if not isinstance(request, HomophoneResolutionRequest):
@@ -699,10 +1063,23 @@ class BertHomophoneResolver:
 
         resolved_segments: list[Segment] = []
         decisions: list[HomophoneResolutionDecision] = []
+        generation_audits: list[HomophoneCandidateGenerationAudit] = []
+        shadow_candidates: list[HomophoneShadowCandidate] = []
         for segment in request.segments:
-            resolved_segment, segment_decisions = self._resolve_segment(segment)
+            shadow_candidates.extend(self._shadow_candidates_for_segment(segment))
+            resolved_segment, segment_decisions, segment_audits = (
+                self._resolve_segment(segment)
+            )
             resolved_segments.append(resolved_segment)
             decisions.extend(segment_decisions)
+            generation_audits.extend(segment_audits)
+
+        shadow_candidates = list(
+            self._score_shadow_candidates(
+                request.segments,
+                tuple(shadow_candidates),
+            )
+        )
 
         confirmed = _unambiguous_confirmed_replacements(
             tuple(decisions),
@@ -724,7 +1101,295 @@ class BertHomophoneResolver:
             source_path=request.source_path,
             segments=tuple(resolved_segments),
             decisions=propagated_decisions,
+            candidate_generation_audits=tuple(generation_audits),
+            shadow_candidates=tuple(shadow_candidates),
         )
+
+    def _score_shadow_candidates(
+        self,
+        segments: tuple[Segment, ...],
+        shadows: tuple[HomophoneShadowCandidate, ...],
+    ) -> tuple[HomophoneShadowCandidate, ...]:
+        assert self.candidate_generator is not None
+        sentence_texts: dict[tuple[int, int], str] = {}
+        for segment in segments:
+            sentences = segment.sentences or (
+                Sentence(segment.text, segment.time_range, ()),
+            )
+            for sentence_index, sentence in enumerate(sentences):
+                sentence_texts[(segment.position, sentence_index)] = sentence.text
+
+        scoreable_indexes: list[int] = []
+        requests: list[HomophoneReplacementScoringRequest] = []
+        for index, shadow in enumerate(shadows):
+            if not shadow.candidates:
+                continue
+            sentence_text = sentence_texts.get(
+                (shadow.segment_position, shadow.sentence_index)
+            )
+            if sentence_text is None:
+                continue
+            scoreable_indexes.append(index)
+            requests.append(
+                HomophoneReplacementScoringRequest(
+                    sentence_text=sentence_text,
+                    target=HomophoneTarget(
+                        text=shadow.surface,
+                        reading=shadow.reading,
+                        part_of_speech=shadow.part_of_speech,
+                        start=shadow.target_start,
+                        end=shadow.target_end,
+                    ),
+                    replacements=(shadow.surface, *shadow.candidates),
+                )
+            )
+        if not requests:
+            return shadows
+
+        batch_score = getattr(
+            self.candidate_generator,
+            "scores_for_replacements",
+            None,
+        )
+        if callable(batch_score):
+            score_rows = tuple(batch_score(tuple(requests)))
+        else:
+            score_rows = tuple(
+                tuple(
+                    self.candidate_generator.score_for(
+                        request.sentence_text,
+                        request.target,
+                        replacement,
+                    )
+                    for replacement in request.replacements
+                )
+                for request in requests
+            )
+        token_count_lookup = getattr(
+            self.candidate_generator,
+            "token_counts_for_replacements",
+            None,
+        )
+        if callable(token_count_lookup):
+            token_count_rows = tuple(token_count_lookup(tuple(requests)))
+        else:
+            token_count_rows = tuple(
+                tuple(None for _ in request.replacements)
+                for request in requests
+            )
+        context_probe_lookup = (
+            getattr(
+                self.candidate_generator,
+                "context_probe_scores_for_replacements",
+                None,
+            )
+            if self.enable_context_probe_audit
+            else None
+        )
+
+        scored = list(shadows)
+        for shadow_index, request, scores, token_counts in zip(
+            scoreable_indexes,
+            requests,
+            score_rows,
+            token_count_rows,
+            strict=True,
+        ):
+            shadow = shadows[shadow_index]
+            original_score = scores[0] if scores else None
+            candidate_scores = tuple(
+                HomophoneCandidateScore(
+                    text=text,
+                    reading=shadow.reading,
+                    score=score,
+                )
+                for text, score in zip(
+                    request.replacements[1:],
+                    scores[1:],
+                    strict=True,
+                )
+            )
+            ranked_candidates = _rank_shadow_candidates(
+                candidate_scores,
+                token_counts=token_counts[1:],
+            )
+            top_score = (
+                ranked_candidates[0].score if ranked_candidates else None
+            )
+            if callable(context_probe_lookup):
+                acceptance_status = "pending_context_verification"
+                acceptance_reason = "shortlisted_by_cheap_score"
+            else:
+                acceptance_status = "not_evaluated"
+                acceptance_reason = "context_probe_audit_disabled"
+            scored[shadow_index] = replace(
+                shadow,
+                original_score=original_score,
+                candidate_scores=candidate_scores,
+                ranked_candidates=ranked_candidates,
+                top_candidate=(
+                    ranked_candidates[0].text if ranked_candidates else None
+                ),
+                top_score_margin=_top_score_margin(ranked_candidates),
+                top_score_ratio_vs_original=_score_ratio(
+                    top_score,
+                    original_score,
+                ),
+                score_method=(
+                    "cheap_prerank_with_context_probe_audit"
+                    if callable(context_probe_lookup)
+                    else "cheap_prerank_only"
+                ),
+                original_token_count=(token_counts[0] if token_counts else None),
+                top_candidate_token_count=(
+                    ranked_candidates[0].token_count
+                    if ranked_candidates
+                    else None
+                ),
+                relative_acceptance_status=acceptance_status,
+                relative_acceptance_reason=acceptance_reason,
+            )
+        if not callable(context_probe_lookup):
+            return tuple(scored)
+
+        verification_indexes: list[int] = []
+        verification_requests: list[HomophoneReplacementScoringRequest] = []
+        for shadow_index in scoreable_indexes:
+            shadow = scored[shadow_index]
+            shortlisted = tuple(
+                candidate.text
+                for candidate in shadow.ranked_candidates[
+                    :_SHADOW_CONTEXT_VERIFICATION_LIMIT
+                ]
+            )
+            if not shortlisted:
+                continue
+            sentence_text = sentence_texts[
+                (shadow.segment_position, shadow.sentence_index)
+            ]
+            verification_indexes.append(shadow_index)
+            verification_requests.append(
+                HomophoneReplacementScoringRequest(
+                    sentence_text=sentence_text,
+                    target=HomophoneTarget(
+                        text=shadow.surface,
+                        reading=shadow.reading,
+                        part_of_speech=shadow.part_of_speech,
+                        start=shadow.target_start,
+                        end=shadow.target_end,
+                    ),
+                    replacements=(shadow.surface, *shortlisted),
+                )
+            )
+        probe_rows = tuple(context_probe_lookup(tuple(verification_requests)))
+        for shadow_index, request, replacement_probes in zip(
+            verification_indexes,
+            verification_requests,
+            probe_rows,
+            strict=True,
+        ):
+            original_probes = replacement_probes[0]
+            verifications = tuple(
+                _context_probe_verification(text, original_probes, probes)
+                for text, probes in zip(
+                    request.replacements[1:],
+                    replacement_probes[1:],
+                    strict=True,
+                )
+            )
+            scored[shadow_index] = replace(
+                scored[shadow_index],
+                relative_acceptance_status="audit_only",
+                relative_acceptance_reason="context_probes_are_non_decisive",
+                accepted_candidate=None,
+                context_verifications=verifications,
+            )
+        return tuple(scored)
+
+    def _shadow_candidates_for_segment(
+        self,
+        segment: Segment,
+    ) -> tuple[HomophoneShadowCandidate, ...]:
+        assert self.analyzer is not None
+        assert self.candidate_generator is not None
+        lexical_lookup = getattr(
+            self.candidate_generator,
+            "lexical_candidates_for",
+            None,
+        )
+        inflected_lookup = getattr(
+            self.candidate_generator,
+            "inflected_lexical_candidates_for",
+            None,
+        )
+        if not callable(lexical_lookup):
+            return ()
+
+        sentences = segment.sentences or (
+            Sentence(segment.text, segment.time_range, ()),
+        )
+        shadows: list[HomophoneShadowCandidate] = []
+        for sentence_index, sentence in enumerate(sentences):
+            morphemes = self.analyzer.analyze(sentence.text)
+            for morpheme in morphemes:
+                if _is_general_single_character_noun(morpheme):
+                    target = _homophone_target(morpheme)
+                    shadows.append(
+                        _shadow_candidate(
+                            self.analyzer,
+                            segment.position,
+                            sentence_index,
+                            "single_character",
+                            target,
+                            tuple(lexical_lookup(target)),
+                            (morpheme.surface,),
+                        )
+                    )
+                if (
+                    callable(inflected_lookup)
+                    and _is_inflected_content_morpheme(morpheme)
+                    and _has_kanji(morpheme.surface)
+                    and bool(_trailing_hiragana(morpheme.surface))
+                ):
+                    target = _homophone_target(morpheme)
+                    shadows.append(
+                        _shadow_candidate(
+                            self.analyzer,
+                            segment.position,
+                            sentence_index,
+                            "inflected",
+                            target,
+                            tuple(inflected_lookup(target)),
+                            (morpheme.surface,),
+                        )
+                    )
+            for left, right in zip(morphemes, morphemes[1:]):
+                if not (
+                    _is_content_morpheme(left)
+                    and _is_content_morpheme(right)
+                    and len(left.surface) < self.min_token_chars
+                    and len(right.surface) < self.min_token_chars
+                ):
+                    continue
+                target = HomophoneTarget(
+                    text=left.surface + right.surface,
+                    reading=left.reading + right.reading,
+                    part_of_speech=right.part_of_speech,
+                    start=left.start,
+                    end=right.end,
+                )
+                shadows.append(
+                    _shadow_candidate(
+                        self.analyzer,
+                        segment.position,
+                        sentence_index,
+                        "cross_morpheme",
+                        target,
+                        tuple(lexical_lookup(target)),
+                        (left.surface, right.surface),
+                    )
+                )
+        return tuple(shadows)
 
     def _propagate_decision(
         self,
@@ -764,7 +1429,11 @@ class BertHomophoneResolver:
     def _resolve_segment(
         self,
         segment: Segment,
-    ) -> tuple[Segment, tuple[HomophoneResolutionDecision, ...]]:
+    ) -> tuple[
+        Segment,
+        tuple[HomophoneResolutionDecision, ...],
+        tuple[HomophoneCandidateGenerationAudit, ...],
+    ]:
         sentences = segment.sentences or (
             Sentence(
                 text=segment.text,
@@ -775,14 +1444,16 @@ class BertHomophoneResolver:
 
         resolved_sentences: list[Sentence] = []
         decisions: list[HomophoneResolutionDecision] = []
+        generation_audits: list[HomophoneCandidateGenerationAudit] = []
         for sentence_index, sentence in enumerate(sentences):
-            resolved_sentence, sentence_decisions = self._resolve_sentence(
+            resolved_sentence, sentence_decisions, sentence_audits = self._resolve_sentence(
                 segment.position,
                 sentence_index,
                 sentence,
             )
             resolved_sentences.append(resolved_sentence)
             decisions.extend(sentence_decisions)
+            generation_audits.extend(sentence_audits)
 
         segment_text = "".join(sentence.text for sentence in resolved_sentences)
         start_seconds = min(
@@ -801,6 +1472,7 @@ class BertHomophoneResolver:
                 sentences=tuple(resolved_sentences),
             ),
             tuple(decisions),
+            tuple(generation_audits),
         )
 
     def _resolve_sentence(
@@ -808,17 +1480,24 @@ class BertHomophoneResolver:
         segment_position: int,
         sentence_index: int,
         sentence: Sentence,
-    ) -> tuple[Sentence, tuple[HomophoneResolutionDecision, ...]]:
+    ) -> tuple[
+        Sentence,
+        tuple[HomophoneResolutionDecision, ...],
+        tuple[HomophoneCandidateGenerationAudit, ...],
+    ]:
         assert self.analyzer is not None
         morphemes = self.analyzer.analyze(sentence.text)
-        selected_targets, original_scores = self._prefilter_targets(
+        selected_targets, original_scores, prefilter_audits = self._prefilter_targets(
+            segment_position,
+            sentence_index,
             sentence,
             morphemes,
         )
+        generation_audits = list(prefilter_audits)
         decisions: list[HomophoneResolutionDecision] = []
         changes: list[_AcceptedChange] = []
         for morpheme in selected_targets:
-            decision = self._decision_for_target(
+            decision, target_audits = self._decision_for_target(
                 segment_position=segment_position,
                 sentence_index=sentence_index,
                 sentence_text=sentence.text,
@@ -831,6 +1510,7 @@ class BertHomophoneResolver:
                     (morpheme.start, morpheme.end) in original_scores
                 ),
             )
+            generation_audits.extend(target_audits)
             if decision is None:
                 continue
 
@@ -846,7 +1526,7 @@ class BertHomophoneResolver:
                 )
 
         if not changes:
-            return sentence, tuple(decisions)
+            return sentence, tuple(decisions), tuple(generation_audits)
 
         text = _apply_text_changes(sentence.text, tuple(changes))
         words = _apply_word_changes(sentence.words, tuple(changes))
@@ -858,13 +1538,63 @@ class BertHomophoneResolver:
                 asr_boundary_word_indexes=sentence.asr_boundary_word_indexes,
             ),
             tuple(decisions),
+            tuple(generation_audits),
         )
 
     def _prefilter_targets(
         self,
+        segment_position: int,
+        sentence_index: int,
         sentence: Sentence,
         morphemes: tuple[_AnalyzedMorpheme, ...],
-    ) -> tuple[tuple[_AnalyzedMorpheme, ...], dict[tuple[int, int], float | None]]:
+    ) -> tuple[
+        tuple[_AnalyzedMorpheme, ...],
+        dict[tuple[int, int], float | None],
+        tuple[HomophoneCandidateGenerationAudit, ...],
+    ]:
+        audits: list[HomophoneCandidateGenerationAudit] = []
+        for morpheme in morphemes:
+            if (
+                _is_content_morpheme(morpheme)
+                and len(morpheme.surface) < self.min_token_chars
+                and (
+                    _is_general_single_character_noun(morpheme)
+                    or _should_record_generation_audit(
+                        sentence.words,
+                        morpheme.surface,
+                        max_confidence=self.max_asr_confidence,
+                    )
+                )
+            ):
+                audits.append(
+                    _generation_audit(
+                        segment_position,
+                        sentence_index,
+                        morpheme,
+                        "single_character_filtered",
+                    )
+                )
+        for left, right in zip(morphemes, morphemes[1:]):
+            if (
+                _is_content_morpheme(left)
+                and _is_content_morpheme(right)
+                and len(left.surface) < self.min_token_chars
+                and len(right.surface) < self.min_token_chars
+            ):
+                audits.append(
+                    HomophoneCandidateGenerationAudit(
+                        segment_position=segment_position,
+                        sentence_index=sentence_index,
+                        surface=left.surface + right.surface,
+                        reading=left.reading + right.reading,
+                        part_of_speech=left.part_of_speech,
+                        target_start=left.start,
+                        target_end=right.end,
+                        reason="cross_morpheme_target_not_generated",
+                        status="diagnostic_only",
+                        morpheme_span=(left.surface, right.surface),
+                    )
+                )
         eligible = tuple(
             morpheme for morpheme in morphemes if self._should_consider(morpheme)
         )
@@ -885,7 +1615,7 @@ class BertHomophoneResolver:
             None,
         )
         if not callable(lexical_lookup):
-            return eligible[: self.max_targets_per_sentence], {}
+            return eligible[: self.max_targets_per_sentence], {}, tuple(audits)
 
         targets: list[HomophoneTarget] = []
         candidate_counts: list[int] = []
@@ -900,13 +1630,34 @@ class BertHomophoneResolver:
             )
             candidates = tuple(lexical_lookup(target))
             if not candidates:
+                if (
+                    _is_inflected_content_morpheme(morpheme)
+                    or _is_proper_noun(morpheme)
+                    or _should_record_generation_audit(
+                        sentence.words,
+                        morpheme.surface,
+                    )
+                ):
+                    reason = (
+                        "inflected_candidate_not_generated"
+                        if _is_inflected_content_morpheme(morpheme)
+                        else "no_same_reading_lexical_candidate"
+                    )
+                    audits.append(
+                        _generation_audit(
+                            segment_position,
+                            sentence_index,
+                            morpheme,
+                            reason,
+                        )
+                    )
                 continue
             targets.append(target)
             candidate_counts.append(len(candidates))
             filtered_morphemes.append(morpheme)
 
         if not targets:
-            return (), {}
+            return (), {}, tuple(audits)
 
         if callable(batch_score):
             scores = tuple(batch_score(sentence.text, tuple(targets)))
@@ -944,12 +1695,23 @@ class BertHomophoneResolver:
 
         ranked.sort(key=_prefilter_sort_key)
         selected = tuple(ranked[: self.max_targets_per_sentence])
+        for item in ranked[self.max_targets_per_sentence :]:
+            audits.append(
+                _generation_audit(
+                    segment_position,
+                    sentence_index,
+                    item.morpheme,
+                    "prefilter_target_limit",
+                    candidate_count=item.lexical_candidate_count,
+                )
+            )
         return (
             tuple(item.morpheme for item in selected),
             {
                 (item.morpheme.start, item.morpheme.end): item.original_score
                 for item in selected
             },
+            tuple(audits),
         )
 
     def _decision_for_target(
@@ -962,9 +1724,12 @@ class BertHomophoneResolver:
         morpheme: _AnalyzedMorpheme,
         prefetched_original_score: float | None = None,
         has_prefetched_original_score: bool = False,
-    ) -> HomophoneResolutionDecision | None:
+    ) -> tuple[
+        HomophoneResolutionDecision | None,
+        tuple[HomophoneCandidateGenerationAudit, ...],
+    ]:
         if not self._should_consider(morpheme):
-            return None
+            return None, ()
 
         assert self.candidate_generator is not None
         assert self.analyzer is not None
@@ -982,6 +1747,7 @@ class BertHomophoneResolver:
 
         scored_candidates: list[HomophoneCandidateScore] = []
         candidate_part_of_speech: dict[str, tuple[str, ...]] = {}
+        different_reading_candidates: list[str] = []
         for candidate in language_model_candidates:
             analyzed_candidate = self.analyzer.analyze_single_token(candidate.text)
             if analyzed_candidate is None:
@@ -989,6 +1755,7 @@ class BertHomophoneResolver:
             if analyzed_candidate.surface == morpheme.surface:
                 continue
             if analyzed_candidate.reading != morpheme.reading:
+                different_reading_candidates.append(analyzed_candidate.surface)
                 continue
             if not _compatible_part_of_speech(
                 morpheme.part_of_speech,
@@ -1017,19 +1784,48 @@ class BertHomophoneResolver:
                 morpheme.surface,
             )
         if not scored_candidates:
-            return HomophoneResolutionDecision(
-                segment_position=segment_position,
-                sentence_index=sentence_index,
-                original_text=morpheme.surface,
-                selected_text=morpheme.surface,
-                reading=morpheme.reading,
-                accepted=False,
-                reason="no_same_reading_candidate",
-                original_score=original_score,
-                selected_score=None,
-                candidates=(),
-                target_start=morpheme.start,
-                target_end=morpheme.end,
+            audits = ()
+            if (
+                different_reading_candidates
+                and (
+                    _is_inflected_content_morpheme(morpheme)
+                    or _should_record_generation_audit(
+                        sentence_words,
+                        morpheme.surface,
+                    )
+                )
+            ):
+                reason = (
+                    "inflected_candidate_not_generated"
+                    if _is_inflected_content_morpheme(morpheme)
+                    else "different_reading_candidate_filtered"
+                )
+                audits = (
+                    _generation_audit(
+                        segment_position,
+                        sentence_index,
+                        morpheme,
+                        reason,
+                        candidate_count=len(different_reading_candidates),
+                        candidate_examples=tuple(different_reading_candidates[:5]),
+                    ),
+                )
+            return (
+                HomophoneResolutionDecision(
+                    segment_position=segment_position,
+                    sentence_index=sentence_index,
+                    original_text=morpheme.surface,
+                    selected_text=morpheme.surface,
+                    reading=morpheme.reading,
+                    accepted=False,
+                    reason="no_same_reading_candidate",
+                    original_score=original_score,
+                    selected_score=None,
+                    candidates=(),
+                    target_start=morpheme.start,
+                    target_end=morpheme.end,
+                ),
+                audits,
             )
 
         selected = max(
@@ -1053,21 +1849,24 @@ class BertHomophoneResolver:
                 selected_score=selected_score,
                 asr_confidence=asr_confidence,
             )
-        return HomophoneResolutionDecision(
-            segment_position=segment_position,
-            sentence_index=sentence_index,
-            original_text=morpheme.surface,
-            selected_text=selected.text if accepted else morpheme.surface,
-            reading=morpheme.reading,
-            accepted=accepted,
-            reason=reason,
-            original_score=original_score,
-            selected_score=selected_score,
-            candidates=tuple(scored_candidates),
-            target_start=morpheme.start,
-            target_end=morpheme.end,
-            asr_confidence=asr_confidence,
-            score_ratio=_score_ratio(selected_score, original_score),
+        return (
+            HomophoneResolutionDecision(
+                segment_position=segment_position,
+                sentence_index=sentence_index,
+                original_text=morpheme.surface,
+                selected_text=selected.text if accepted else morpheme.surface,
+                reading=morpheme.reading,
+                accepted=accepted,
+                reason=reason,
+                original_score=original_score,
+                selected_score=selected_score,
+                candidates=tuple(scored_candidates),
+                target_start=morpheme.start,
+                target_end=morpheme.end,
+                asr_confidence=asr_confidence,
+                score_ratio=_score_ratio(selected_score, original_score),
+            ),
+            (),
         )
 
     def _should_consider(self, morpheme: _AnalyzedMorpheme) -> bool:
@@ -1133,6 +1932,107 @@ def _score_ratio(
     if selected_score is None or original_score is None:
         return None
     return selected_score / max(original_score, _MIN_CONTEXT_SCORE_DENOMINATOR)
+
+
+def _rank_shadow_candidates(
+    candidates: tuple[HomophoneCandidateScore, ...],
+    *,
+    token_counts: tuple[int | None, ...] = (),
+) -> tuple[HomophoneShadowRankedCandidate, ...]:
+    count_by_text = {
+        candidate.text: token_count
+        for candidate, token_count in zip(candidates, token_counts)
+    }
+    ordered = sorted(
+        candidates,
+        key=lambda candidate: (
+            candidate.score is None,
+            -(candidate.score or 0.0),
+            candidate.text,
+        ),
+    )
+    return tuple(
+        HomophoneShadowRankedCandidate(
+            text=candidate.text,
+            reading=candidate.reading,
+            score=candidate.score,
+            rank=index,
+            token_count=count_by_text.get(candidate.text),
+        )
+        for index, candidate in enumerate(ordered, start=1)
+    )
+
+
+def _context_probe_verification(
+    text: str,
+    original: tuple[tuple[float, ...], tuple[float, ...]],
+    candidate: tuple[tuple[float, ...], tuple[float, ...]],
+) -> HomophoneShadowContextVerification:
+    original_left, original_right = original
+    candidate_left, candidate_right = candidate
+    left_probes = min(len(original_left), len(candidate_left))
+    right_probes = min(len(original_right), len(candidate_right))
+    left_wins = sum(
+        candidate_score > original_score
+        for original_score, candidate_score in zip(
+            original_left[:left_probes],
+            candidate_left[:left_probes],
+            strict=True,
+        )
+    )
+    right_wins = sum(
+        candidate_score > original_score
+        for original_score, candidate_score in zip(
+            original_right[:right_probes],
+            candidate_right[:right_probes],
+            strict=True,
+        )
+    )
+    total_wins = left_wins + right_wins
+    total_probes = left_probes + right_probes
+    has_both_sides = left_probes > 0 and right_probes > 0
+    left_majority = left_wins * 2 > left_probes
+    right_majority = right_wins * 2 > right_probes
+    total_majority = total_wins * 2 > total_probes
+    bilateral_majority = (
+        has_both_sides
+        and left_majority
+        and right_majority
+        and total_majority
+    )
+    if not has_both_sides:
+        reason = "missing_bilateral_context"
+    elif not left_majority:
+        reason = "left_probe_majority_missing"
+    elif not right_majority:
+        reason = "right_probe_majority_missing"
+    elif not total_majority:
+        reason = "overall_probe_majority_missing"
+    else:
+        reason = "bilateral_probe_majority"
+    return HomophoneShadowContextVerification(
+        text=text,
+        left_wins=left_wins,
+        left_probes=left_probes,
+        right_wins=right_wins,
+        right_probes=right_probes,
+        total_wins=total_wins,
+        total_probes=total_probes,
+        bilateral_majority=bilateral_majority,
+        reason=reason,
+    )
+
+
+def _top_score_margin(
+    ranked: tuple[HomophoneShadowRankedCandidate, ...],
+) -> float | None:
+    if len(ranked) < 2:
+        return None
+    first = ranked[0].score
+    second = ranked[1].score
+    if first is None or second is None:
+        return None
+    return first - second
 
 
 def _apply_text_changes(
@@ -1377,6 +2277,169 @@ def _compatible_part_of_speech(
     return True
 
 
+def _inflection_class(part_of_speech: tuple[str, ...]) -> tuple[str, str, str]:
+    return (
+        _pos(part_of_speech, 0),
+        _pos(part_of_speech, 1),
+        _pos(part_of_speech, 4),
+    )
+
+
+def _is_content_morpheme(morpheme: _AnalyzedMorpheme) -> bool:
+    return (
+        morpheme.surface not in _SKIPPED_SURFACES
+        and _pos(morpheme.part_of_speech, 0) in _CONTENT_POS
+        and _has_japanese_text(morpheme.surface)
+    )
+
+
+def _is_inflected_content_morpheme(morpheme: _AnalyzedMorpheme) -> bool:
+    return (
+        _pos(morpheme.part_of_speech, 0) in {"動詞", "形容詞"}
+        and _pos(morpheme.part_of_speech, 5) not in {"", "*"}
+    )
+
+
+def _is_general_single_character_noun(morpheme: _AnalyzedMorpheme) -> bool:
+    return (
+        len(morpheme.surface) == 1
+        and _pos(morpheme.part_of_speech, 0) == "名詞"
+        and _pos(morpheme.part_of_speech, 1) == "普通名詞"
+        and _pos(morpheme.part_of_speech, 2) == "一般"
+    )
+
+
+def _is_proper_noun(morpheme: _AnalyzedMorpheme) -> bool:
+    return (
+        _pos(morpheme.part_of_speech, 0) == "名詞"
+        and _pos(morpheme.part_of_speech, 1) == "固有名詞"
+    )
+
+
+def _generation_audit(
+    segment_position: int,
+    sentence_index: int,
+    morpheme: _AnalyzedMorpheme,
+    reason: str,
+    *,
+    candidate_count: int = 0,
+    candidate_examples: tuple[str, ...] = (),
+) -> HomophoneCandidateGenerationAudit:
+    return HomophoneCandidateGenerationAudit(
+        segment_position=segment_position,
+        sentence_index=sentence_index,
+        surface=morpheme.surface,
+        reading=morpheme.reading,
+        part_of_speech=morpheme.part_of_speech,
+        target_start=morpheme.start,
+        target_end=morpheme.end,
+        reason=reason,
+        candidate_count=candidate_count,
+        candidate_examples=candidate_examples,
+    )
+
+
+def _homophone_target(morpheme: _AnalyzedMorpheme) -> HomophoneTarget:
+    return HomophoneTarget(
+        text=morpheme.surface,
+        reading=morpheme.reading,
+        part_of_speech=morpheme.part_of_speech,
+        start=morpheme.start,
+        end=morpheme.end,
+    )
+
+
+def _shadow_candidate(
+    analyzer: SudachiReadingAnalyzer,
+    segment_position: int,
+    sentence_index: int,
+    strategy: str,
+    target: HomophoneTarget,
+    candidates: tuple[str, ...],
+    morpheme_span: tuple[str, ...],
+) -> HomophoneShadowCandidate:
+    generated_candidates = tuple(
+        dict.fromkeys(
+            candidate for candidate in candidates if candidate != target.text
+        )
+    )
+    unique_candidates = tuple(
+        candidate
+        for candidate in generated_candidates
+        if _compatible_shadow_candidate(
+            analyzer,
+            target,
+            candidate,
+            strategy,
+        )
+    )
+    retained = set(unique_candidates)
+    return HomophoneShadowCandidate(
+        segment_position=segment_position,
+        sentence_index=sentence_index,
+        strategy=strategy,
+        surface=target.text,
+        reading=target.reading,
+        part_of_speech=target.part_of_speech,
+        target_start=target.start,
+        target_end=target.end,
+        candidates=unique_candidates,
+        morpheme_span=morpheme_span,
+        generated_candidates=generated_candidates,
+        filtered_out_candidates=tuple(
+            candidate
+            for candidate in generated_candidates
+            if candidate not in retained
+        ),
+    )
+
+
+def _compatible_shadow_candidate(
+    analyzer: SudachiReadingAnalyzer,
+    target: HomophoneTarget,
+    candidate: str,
+    strategy: str,
+) -> bool:
+    analyzed = analyzer.analyze_single_token(candidate)
+    if analyzed is None:
+        return False
+    if analyzed.reading != target.reading and not (
+        strategy == "inflected"
+        and _plausible_asr_reading_variant(target.reading, analyzed.reading)
+    ):
+        return False
+    if not _compatible_part_of_speech(target.part_of_speech, analyzed.part_of_speech):
+        return False
+    if not _compatible_script_change(target.text, analyzed.surface):
+        return False
+    if _pos(target.part_of_speech, 0) == "名詞":
+        target_subtype = _pos(target.part_of_speech, 2)
+        candidate_subtype = _pos(analyzed.part_of_speech, 2)
+        if (
+            target_subtype not in {"", "*"}
+            and candidate_subtype not in {"", "*"}
+            and target_subtype != candidate_subtype
+        ):
+            return False
+    if strategy == "inflected":
+        for index in (4, 5):
+            expected = _pos(target.part_of_speech, index)
+            actual = _pos(analyzed.part_of_speech, index)
+            if expected not in {"", "*"} and expected != actual:
+                return False
+    return True
+
+
+def _should_record_generation_audit(
+    words: tuple[Word, ...],
+    surface: str,
+    *,
+    max_confidence: float = _GENERATION_AUDIT_MAX_CONFIDENCE,
+) -> bool:
+    confidence = _surface_confidence(words, surface)
+    return confidence is None or confidence <= max_confidence
+
+
 def _compatible_script_change(original: str, candidate: str) -> bool:
     return _script_profile(original) == _script_profile(candidate)
 
@@ -1430,6 +2493,81 @@ def _has_kanji(value: str) -> bool:
             return True
 
     return False
+
+
+def _has_hiragana(value: str) -> bool:
+    return any("ぁ" <= character <= "ゖ" for character in value)
+
+
+def _trailing_hiragana(value: str) -> str:
+    index = len(value)
+    while index > 0 and "ぁ" <= value[index - 1] <= "ゖ":
+        index -= 1
+    return value[index:]
+
+
+def _inflected_surface_from_lemma(
+    source_surface: str,
+    source_lemma: str,
+    candidate_lemma: str,
+) -> str | None:
+    source_tail = _trailing_hiragana(source_surface)
+    source_lemma_tail = _trailing_hiragana(source_lemma)
+    candidate_lemma_tail = _trailing_hiragana(candidate_lemma)
+    if not source_tail or not source_lemma_tail or not candidate_lemma_tail:
+        return None
+
+    source_stem = source_surface[: -len(source_tail)]
+    source_lemma_stem = source_lemma[: -len(source_lemma_tail)]
+    candidate_stem = candidate_lemma[: -len(candidate_lemma_tail)]
+    if not source_stem or source_stem != source_lemma_stem or not candidate_stem:
+        return None
+    return f"{candidate_stem}{source_tail}"
+
+
+def _plausible_asr_reading_variant(original: str, candidate: str) -> bool:
+    original_units = _devoiced_reading_units(original)
+    candidate_units = _devoiced_reading_units(candidate)
+    if not original_units or not candidate_units:
+        return False
+    if abs(len(original_units) - len(candidate_units)) > 1:
+        return False
+    return _edit_distance(original_units, candidate_units) <= 1
+
+
+def _devoiced_reading_units(value: str) -> tuple[str, ...]:
+    normalized = unicodedata.normalize("NFD", _normalize_reading(value))
+    return tuple(
+        character
+        for character in normalized
+        if character not in {"\u3099", "\u309a"}
+    )
+
+
+def _edit_distance(left: tuple[str, ...], right: tuple[str, ...]) -> int:
+    previous = list(range(len(right) + 1))
+    for left_index, left_item in enumerate(left, start=1):
+        current = [left_index]
+        for right_index, right_item in enumerate(right, start=1):
+            current.append(
+                min(
+                    current[-1] + 1,
+                    previous[right_index] + 1,
+                    previous[right_index - 1] + (left_item != right_item),
+                )
+            )
+        previous = current
+    return previous[-1]
+
+
+def _subsequence_start(sequence: list[int], subsequence: list[int]) -> int | None:
+    if not subsequence:
+        return None
+    limit = len(sequence) - len(subsequence) + 1
+    for index in range(max(limit, 0)):
+        if sequence[index : index + len(subsequence)] == subsequence:
+            return index
+    return None
 
 
 __all__ = [
