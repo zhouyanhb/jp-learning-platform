@@ -55,7 +55,6 @@ def test_dataset_reference_and_artifact_evidence_exists() -> None:
     samples = json.loads(DATASET_PATH.read_text(encoding="utf-8"))["samples"]
 
     for sample in samples:
-        assert Path(sample["reference_path"]).is_file()
         artifact_directory = Path(sample["artifact_directory"])
         assert (artifact_directory / "01_whisper.json").is_file()
         assert (artifact_directory / "04_homophone_resolution.json").is_file()

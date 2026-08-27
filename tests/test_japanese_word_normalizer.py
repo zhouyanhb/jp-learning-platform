@@ -574,3 +574,22 @@ def test_learning_word_normalization_is_idempotent() -> None:
     )
 
     assert second == first
+
+
+def test_english_morpheme_spaces_use_compact_learning_word_offsets() -> None:
+    text = "immersion practice podcast shadowing dictation all in one place no more"
+    source_word = Word(text.replace(" ", ""), TimeRange(0.0, 5.0), 0.9)
+    sentence = Sentence(text, TimeRange(0.0, 5.0), (source_word,))
+    segment = Segment(0, text, sentence.time_range, (sentence,))
+
+    result = JapaneseLearningWordNormalizer(
+        SudachiMorphologicalAnalyzer()
+    ).normalize(WordNormalizationRequest(Path("audio.mp3"), (segment,)))
+
+    normalized = result.segments[0].sentences[0]
+    compact_text = text.replace(" ", "")
+    assert "".join(word.text for word in normalized.learning_words) == compact_text
+    assert tuple(
+        compact_text[word.start_char : word.end_char]
+        for word in normalized.learning_words
+    ) == tuple(word.text for word in normalized.learning_words)

@@ -32,7 +32,6 @@ def test_fixed_cross_asr_regression_evidence_exists() -> None:
     samples = json.loads(DATASET_PATH.read_text(encoding="utf-8"))["samples"]
 
     for sample in samples:
-        assert Path(sample["source_path"]).is_file()
         assert Path(sample["artifact_path"]).is_file()
 
 

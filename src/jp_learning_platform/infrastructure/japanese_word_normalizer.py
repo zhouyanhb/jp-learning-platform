@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 import unicodedata
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Protocol
 
 from jp_learning_platform.domain import (
@@ -23,6 +23,10 @@ from jp_learning_platform.infrastructure.pipeline_config import (
 )
 
 DEFAULT_LOCAL_REANALYSIS_MAX_MORPHEMES = 3
+
+
+def _compact_learning_text(text: str) -> str:
+    return "".join(character for character in text if not character.isspace())
 
 
 class WordNormalizerDependencyError(RuntimeError):
@@ -157,7 +161,11 @@ class JapaneseLearningWordNormalizer:
     ) -> Sentence:
         if sentence.learning_words_suppressed:
             return sentence
-        morphemes = self._analyzer.analyze(sentence.text)
+        morphemes = tuple(
+            replace(item, surface=_compact_learning_text(item.surface))
+            for item in self._analyzer.analyze(sentence.text)
+            if _compact_learning_text(item.surface)
+        )
         morphemes = self._repair_contextual_functional_boundaries(morphemes)
         units = self._learning_units(morphemes, has_structural_number)
         if not units:
