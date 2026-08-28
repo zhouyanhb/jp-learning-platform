@@ -316,6 +316,15 @@ class FasterWhisperTranscriber:
                     morphology_validation_passed=assessment[
                         "morphology_passed"
                     ],
+                    lexical_uncertainty_detected=assessment[
+                        "lexical_uncertainty_detected"
+                    ],
+                    lexical_uncertainty_reasons=assessment[
+                        "lexical_uncertainty_reasons"
+                    ],
+                    uncertain_noun_sequences=assessment[
+                        "uncertain_noun_sequences"
+                    ],
                     validation_passed=assessment["validation_passed"],
                     automatic_replacement_allowed=False,
                     review_reasons=tuple(reasons),
@@ -1257,6 +1266,19 @@ def _assess_omission_shadow_candidates(
     morphology_passed = bool(
         morphology_penalties and not any(morphology_penalties)
     )
+    uncertain_noun_sequences = tuple(
+        dict.fromkeys(
+            sequence
+            for text in texts
+            if (sequence := _sentence_initial_uncertain_noun_sequence(text, analyzer))
+        )
+    )
+    lexical_uncertainty_detected = bool(uncertain_noun_sequences)
+    lexical_uncertainty_reasons = (
+        ("unlexicalized_sentence_initial_noun_sequence",)
+        if lexical_uncertainty_detected
+        else ()
+    )
     core_passed = bool(
         core_characters
         and core_morphemes
@@ -1270,6 +1292,7 @@ def _assess_omission_shadow_candidates(
         and morphology_passed
         and core_passed
         and no_lexical_disagreement
+        and not lexical_uncertainty_detected
     )
     reasons: list[str] = []
     if not core_passed:
@@ -1284,6 +1307,8 @@ def _assess_omission_shadow_candidates(
         reasons.append("language_model_validation_failed")
     if not morphology_passed:
         reasons.append("morphology_validation_failed")
+    if lexical_uncertainty_detected:
+        reasons.append("lexical_uncertainty_requires_review")
     if validation_passed:
         reasons.append("multi_evidence_validation_passed")
     return {
@@ -1299,6 +1324,9 @@ def _assess_omission_shadow_candidates(
         "confidence_passed": confidence_passed,
         "language_model_passed": language_model_passed,
         "morphology_passed": morphology_passed,
+        "lexical_uncertainty_detected": lexical_uncertainty_detected,
+        "lexical_uncertainty_reasons": lexical_uncertainty_reasons,
+        "uncertain_noun_sequences": uncertain_noun_sequences,
         "validation_passed": validation_passed,
         "reasons": tuple(reasons),
     }
@@ -1371,6 +1399,37 @@ def _contains_context_anchor(
         (len(left) >= 8 and left[-8:] in normalized)
         or (len(right) >= 8 and right[:8] in normalized)
     )
+
+
+def _sentence_initial_uncertain_noun_sequence(
+    text: str,
+    analyzer: JapaneseMorphologicalAnalyzer,
+) -> str:
+    morphemes = tuple(
+        morpheme
+        for morpheme in analyzer.analyze(text)
+        if morpheme.part_of_speech[0] != "補助記号"
+    )
+    topic_index = next(
+        (
+            index
+            for index, morpheme in enumerate(morphemes)
+            if morpheme.surface == "は"
+            and morpheme.part_of_speech[:2] == ("助詞", "係助詞")
+        ),
+        None,
+    )
+    if topic_index is None or topic_index < 2:
+        return ""
+    topic = morphemes[:topic_index]
+    if not all(
+        morpheme.part_of_speech[:2] == ("名詞", "普通名詞")
+        and len(morpheme.surface) == 1
+        and not morpheme.surface.isdigit()
+        for morpheme in topic
+    ):
+        return ""
+    return "".join(morpheme.surface for morpheme in topic)
 
 
 def _finite_or_none(value: float) -> float | None:

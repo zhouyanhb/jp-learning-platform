@@ -13,6 +13,7 @@ from jp_learning_platform.infrastructure.faster_whisper_transcriber import (
     _has_ordered_text_anchors,
     _instantiate_whisper_model,
     _short_utterance_structure_penalty,
+    _sentence_initial_uncertain_noun_sequence,
 )
 from jp_learning_platform.infrastructure.japanese_word_normalizer import (
     SudachiMorphologicalAnalyzer,
@@ -249,6 +250,71 @@ def test_omission_shadow_ignores_punctuation_but_exposes_lexical_disagreement(
     assert "lexical_candidate_disagreement" in audit.review_reasons
     assert not audit.validation_passed
     assert not audit.automatic_replacement_allowed
+
+
+def test_omission_shadow_requires_review_for_unlexicalized_initial_nouns(
+    tmp_path: Path,
+) -> None:
+    recovered = _external_segment(
+        "陸豪は非常に好奇心が強く仕事に対して真面目です。",
+        27.0,
+        37.8,
+        0.95,
+    )
+    model = RetryWhisperModel([(recovered,), (recovered,), (recovered,)])
+    transcriber = FasterWhisperTranscriber()
+    transcriber._model = model
+    request = TranscriptOmissionShadowRequest(
+        source_path=tmp_path / "news.m4a",
+        segments=(
+            _domain_segment(0, "前の安定したニュース文脈です。", 18.0, 26.5),
+            _domain_segment(1, "後の安定したニュース文脈です。", 38.1, 43.8),
+        ),
+        candidates=(
+            TranscriptAnomalyCandidate(
+                kind="possible_asr_omission",
+                time_range=TimeRange(26.5, 38.1),
+                segment_positions=(0, 1),
+                confidence=0.8,
+                evidence=(
+                    "long_uncovered_time_range",
+                    "substantial_stable_context",
+                ),
+            ),
+        ),
+    )
+
+    audit = transcriber.recognize_omission_candidates(request)[0]
+
+    assert audit.consensus_reached
+    assert audit.context_validation_passed
+    assert audit.confidence_validation_passed
+    assert audit.language_model_validation_passed
+    assert audit.morphology_validation_passed
+    assert audit.lexical_uncertainty_detected
+    assert audit.uncertain_noun_sequences == ("陸豪",)
+    assert audit.lexical_uncertainty_reasons == (
+        "unlexicalized_sentence_initial_noun_sequence",
+    )
+    assert "lexical_uncertainty_requires_review" in audit.review_reasons
+    assert not audit.validation_passed
+    assert not audit.automatic_replacement_allowed
+
+
+@pytest.mark.parametrize(
+    "text",
+    (
+        "日本は美しいです。",
+        "東京大学は有名です。",
+        "衣装の状態は問題ありません。",
+    ),
+)
+def test_common_topic_phrases_are_not_marked_as_uncertain_noun_sequences(
+    text: str,
+) -> None:
+    analyzer = SudachiMorphologicalAnalyzer()
+
+    assert not _sentence_initial_uncertain_noun_sequence(text, analyzer)
 
 
 def _domain_segment(position: int, text: str, start: float, end: float) -> Segment:

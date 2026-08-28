@@ -62,6 +62,9 @@ class TranscriptOmissionShadowAudit:
     confidence_validation_passed: bool = False
     language_model_validation_passed: bool = False
     morphology_validation_passed: bool = False
+    lexical_uncertainty_detected: bool = False
+    lexical_uncertainty_reasons: tuple[str, ...] = ()
+    uncertain_noun_sequences: tuple[str, ...] = ()
     validation_passed: bool = False
     automatic_replacement_allowed: bool = False
     review_reasons: tuple[str, ...] = ()
