@@ -1372,6 +1372,10 @@ def _candidate_morpheme_disagreements(
                     continue
                 left_fragment = "".join(left[left_start:left_end])
                 right_fragment = "".join(right[right_start:right_end])
+                if _normalize_consensus_text(
+                    left_fragment
+                ) == _normalize_consensus_text(right_fragment):
+                    continue
                 key = (operation, left_fragment, right_fragment)
                 if key in seen:
                     continue

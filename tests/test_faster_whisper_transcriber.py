@@ -10,6 +10,7 @@ from jp_learning_platform.infrastructure import FasterWhisperTranscriber
 from jp_learning_platform.infrastructure.faster_whisper_transcriber import (
     _extract_external_retry_between_anchors,
     _extract_external_retry_window,
+    _candidate_morpheme_disagreements,
     _has_ordered_text_anchors,
     _instantiate_whisper_model,
     _short_utterance_structure_penalty,
@@ -250,6 +251,14 @@ def test_omission_shadow_ignores_punctuation_but_exposes_lexical_disagreement(
     assert "lexical_candidate_disagreement" in audit.review_reasons
     assert not audit.validation_passed
     assert not audit.automatic_replacement_allowed
+
+
+def test_morpheme_boundary_only_difference_is_not_a_lexical_disagreement() -> None:
+    disagreements = _candidate_morpheme_disagreements(
+        (("関し", "て", "は"), ("関し", "ては"))
+    )
+
+    assert disagreements == ()
 
 
 def test_omission_shadow_requires_review_for_unlexicalized_initial_nouns(

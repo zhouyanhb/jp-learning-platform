@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "language": "ja",
+  "annotation_status": "reviewed",
+  "description": "Reviewed long-gap shadow retries. This dataset evaluates anomaly detection and non-destructive text recovery only; it must not drive sentence boundaries or automatic replacement.",
+  "documents": [
+    {
+      "id": "episode-5",
+      "source_path": "input/source/第5集 演我！i人就是这样的啊.mp4",
+      "reference_path": "input/source/第5集 演我！i人就是这样的啊.srt",
+      "artifact_directory": "output/.work/20260828_142434_410341/第5集_演我_i人就是这样的啊"
+    },
+    {
+      "id": "episode-6",
+      "source_path": "input/source/第6集 小小年纪就一把年纪.mp4",
+      "reference_path": "input/source/第6集 小小年纪就一把年纪.srt",
+      "artifact_directory": "output/.work/20260828_142434_410341/第6集_小小年纪就一把年纪"
+    }
+  ],
+  "samples": [
+    {
+      "id": "negative-episode-5-music-transition",
+      "document_id": "episode-5",
+      "time_range": {"start_seconds": 115.950, "end_seconds": 124.281},
+      "content_category": "music_transition",
+      "reference_text": "♪～",
+      "expected_omission": false,
+      "expected_recovery_text": "",
+      "review_status": "reviewed",
+      "review_note": "The interval is a music transition. The retry hallucinated closing and food-related phrases and must remain rejected."
+    },
+    {
+      "id": "negative-episode-5-footsteps-and-knock",
+      "document_id": "episode-5",
+      "time_range": {"start_seconds": 2416.230, "end_seconds": 2432.301},
+      "content_category": "sound_effect_transition",
+      "reference_text": "（足音）（ノック）はい？",
+      "expected_omission": false,
+      "expected_recovery_text": "",
+      "review_status": "reviewed",
+      "review_note": "The long interval is dominated by footsteps and a knock. The isolated response is insufficient evidence for replacing the interval."
+    },
+    {
+      "id": "negative-episode-6-normal-pause-anchor-contamination",
+      "document_id": "episode-6",
+      "time_range": {"start_seconds": 1072.160, "end_seconds": 1080.570},
+      "content_category": "normal_pause",
+      "reference_text": "そう。／私的には結構な衝撃的な事実…",
+      "expected_omission": false,
+      "expected_recovery_text": "",
+      "review_status": "reviewed",
+      "review_note": "The retry merely repeats both neighboring anchors across a normal pause and must remain rejected."
+    },
+    {
+      "id": "positive-episode-6-foreground-speech-in-music",
+      "document_id": "episode-6",
+      "time_range": {"start_seconds": 2245.420, "end_seconds": 2264.501},
+      "content_category": "foreground_speech_in_music",
+      "reference_text": "あっ、早苗ちゃん、ありがとう！",
+      "expected_omission": true,
+      "expected_recovery_text": "あっ、早苗ちゃん、ありがとう！",
+      "review_status": "reviewed",
+      "review_note": "A short foreground utterance inside a music-heavy transition is missing. The current retries only reproduce the right anchor."
+    }
+  ]
+}
