@@ -170,6 +170,8 @@ def test_omission_shadow_retries_without_vad_and_never_replaces_segments(
     assert audits[0].consensus_reached
     assert audits[0].candidate_consensus_text == recovered.text
     assert audits[0].recovered_time_coverage == (0.931, 0.931, 0.931)
+    assert audits[0].validation_passed
+    assert not audits[0].automatic_replacement_allowed
     assert all(call["vad_filter"] is False for call in model.calls)
     assert all(call["clip_timestamps"] == [25.0, 39.6] for call in model.calls)
     assert (left.text, right.text) == (
@@ -188,6 +190,7 @@ def _external_segment(
         text=text,
         start=start,
         end=end,
+        avg_logprob=-0.2,
         words=(
             SimpleNamespace(
                 word=text,
@@ -197,6 +200,55 @@ def _external_segment(
             ),
         ),
     )
+
+
+def test_omission_shadow_ignores_punctuation_but_exposes_lexical_disagreement(
+    tmp_path: Path,
+) -> None:
+    candidates = (
+        _external_segment("一緒の状態は問題ありません。", 27.0, 37.8, 0.9),
+        _external_segment("一緒の状態は問題ありません", 27.0, 37.8, 0.9),
+        _external_segment("衣装の状態は問題ありません。", 27.0, 37.8, 0.9),
+    )
+    model = RetryWhisperModel([(item,) for item in candidates])
+    transcriber = FasterWhisperTranscriber()
+    transcriber._model = model
+    request = TranscriptOmissionShadowRequest(
+        source_path=tmp_path / "news.m4a",
+        segments=(
+            _domain_segment(0, "前の安定したニュース文脈です。", 18.0, 26.5),
+            _domain_segment(1, "後の安定したニュース文脈です。", 38.1, 43.8),
+        ),
+        candidates=(
+            TranscriptAnomalyCandidate(
+                kind="possible_asr_omission",
+                time_range=TimeRange(26.5, 38.1),
+                segment_positions=(0, 1),
+                confidence=0.8,
+                evidence=(
+                    "long_uncovered_time_range",
+                    "substantial_stable_context",
+                ),
+            ),
+        ),
+    )
+
+    audit = transcriber.recognize_omission_candidates(request)[0]
+
+    assert audit.candidate_consensus_count == 2
+    assert audit.normalized_candidate_texts[:2] == (
+        "一緒の状態は問題ありません",
+        "一緒の状態は問題ありません",
+    )
+    assert "状態" in audit.core_character_consensus
+    assert "状態" in audit.core_morpheme_consensus
+    assert any(
+        {item.left_fragment, item.right_fragment} == {"一緒", "衣装"}
+        for item in audit.candidate_disagreements
+    )
+    assert "lexical_candidate_disagreement" in audit.review_reasons
+    assert not audit.validation_passed
+    assert not audit.automatic_replacement_allowed
 
 
 def _domain_segment(position: int, text: str, start: float, end: float) -> Segment:

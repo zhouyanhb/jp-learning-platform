@@ -111,6 +111,7 @@ from jp_learning_platform.workflow.transcript_anomaly_stage import (
 from jp_learning_platform.workflow.transcript_omission_shadow_stage import (
     OMISSION_SHADOW_EVIDENCE,
     TRANSCRIPT_OMISSION_SHADOW_STAGE_NAME,
+    TranscriptOmissionCandidateDisagreement,
     TranscriptOmissionShadowAudit,
     TranscriptOmissionShadowRecognizer,
     TranscriptOmissionShadowRequest,

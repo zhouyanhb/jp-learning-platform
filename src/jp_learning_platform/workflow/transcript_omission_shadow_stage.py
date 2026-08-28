@@ -29,6 +29,14 @@ class TranscriptOmissionShadowRequest:
 
 
 @dataclass(frozen=True, slots=True)
+class TranscriptOmissionCandidateDisagreement:
+    candidate_indexes: tuple[int, int]
+    left_fragment: str
+    right_fragment: str
+    operation: str
+
+
+@dataclass(frozen=True, slots=True)
 class TranscriptOmissionShadowAudit:
     time_range: TimeRange
     segment_positions: tuple[int, ...]
@@ -40,6 +48,22 @@ class TranscriptOmissionShadowAudit:
     candidate_consensus_count: int = 0
     candidate_count: int = 0
     consensus_reached: bool = False
+    normalized_candidate_texts: tuple[str, ...] = ()
+    core_character_consensus: str = ""
+    core_character_coverage: tuple[float, ...] = ()
+    core_morpheme_consensus: tuple[str, ...] = ()
+    candidate_disagreements: tuple[
+        TranscriptOmissionCandidateDisagreement, ...
+    ] = ()
+    candidate_confidences: tuple[float | None, ...] = ()
+    candidate_language_model_scores: tuple[float | None, ...] = ()
+    candidate_morphology_penalties: tuple[int, ...] = ()
+    context_validation_passed: bool = False
+    confidence_validation_passed: bool = False
+    language_model_validation_passed: bool = False
+    morphology_validation_passed: bool = False
+    validation_passed: bool = False
+    automatic_replacement_allowed: bool = False
     review_reasons: tuple[str, ...] = ()
 
 

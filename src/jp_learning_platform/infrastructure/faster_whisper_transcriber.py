@@ -7,6 +7,7 @@ from difflib import SequenceMatcher
 from math import inf, isfinite
 from types import SimpleNamespace
 from typing import Any
+import unicodedata
 
 from jp_learning_platform.domain import Segment, Sentence, TimeRange, Word
 from jp_learning_platform.infrastructure.pipeline_config import (
@@ -26,6 +27,7 @@ from jp_learning_platform.workflow.whisper_stage import (
     WhisperTranscriptionRequest,
 )
 from jp_learning_platform.workflow.transcript_omission_shadow_stage import (
+    TranscriptOmissionCandidateDisagreement,
     TranscriptOmissionShadowAudit,
     TranscriptOmissionShadowRequest,
 )
@@ -224,6 +226,7 @@ class FasterWhisperTranscriber:
             raw_texts: list[str] = []
             extracted_texts: list[str] = []
             coverages: list[float] = []
+            decoded_candidates: list[tuple[Any, ...]] = []
             for candidate_index in range(self.retry_local_candidate_count):
                 options = self._transcription_options()
                 options.update(
@@ -248,6 +251,7 @@ class FasterWhisperTranscriber:
                     decoded,
                     candidate.time_range,
                 )
+                decoded_candidates.append(extracted)
                 extracted_texts.append(_external_text(extracted).strip())
                 coverages.append(
                     _external_time_coverage(extracted, candidate.time_range)
@@ -259,6 +263,15 @@ class FasterWhisperTranscriber:
                 consensus_text
                 and consensus_count == self.retry_local_candidate_count
             )
+            analyzer = self._get_morphological_analyzer()
+            assessment = _assess_omission_shadow_candidates(
+                tuple(extracted_texts),
+                tuple(decoded_candidates),
+                tuple(coverages),
+                left.text if left is not None else "",
+                right.text if right is not None else "",
+                analyzer,
+            )
             reasons: list[str] = []
             if not any(extracted_texts):
                 reasons.append("no_candidate_text")
@@ -268,6 +281,7 @@ class FasterWhisperTranscriber:
                 reasons.append("insufficient_time_coverage")
             if consensus_reached:
                 reasons.append("candidate_consensus_reached")
+            reasons.extend(assessment["reasons"])
             audits.append(
                 TranscriptOmissionShadowAudit(
                     time_range=candidate.time_range,
@@ -280,6 +294,30 @@ class FasterWhisperTranscriber:
                     candidate_consensus_count=consensus_count,
                     candidate_count=self.retry_local_candidate_count,
                     consensus_reached=consensus_reached,
+                    normalized_candidate_texts=assessment["normalized_texts"],
+                    core_character_consensus=assessment["core_characters"],
+                    core_character_coverage=assessment["core_coverage"],
+                    core_morpheme_consensus=assessment["core_morphemes"],
+                    candidate_disagreements=assessment["disagreements"],
+                    candidate_confidences=assessment["confidences"],
+                    candidate_language_model_scores=assessment[
+                        "language_model_scores"
+                    ],
+                    candidate_morphology_penalties=assessment[
+                        "morphology_penalties"
+                    ],
+                    context_validation_passed=assessment["context_passed"],
+                    confidence_validation_passed=assessment[
+                        "confidence_passed"
+                    ],
+                    language_model_validation_passed=assessment[
+                        "language_model_passed"
+                    ],
+                    morphology_validation_passed=assessment[
+                        "morphology_passed"
+                    ],
+                    validation_passed=assessment["validation_passed"],
+                    automatic_replacement_allowed=False,
                     review_reasons=tuple(reasons),
                 )
             )
@@ -1148,7 +1186,7 @@ def _external_time_coverage(
 def _candidate_text_consensus(texts: tuple[str, ...]) -> tuple[str, int]:
     grouped: dict[str, list[str]] = {}
     for text in texts:
-        normalized = _normalized_external_text((SimpleNamespace(text=text),))
+        normalized = _normalize_consensus_text(text)
         if normalized:
             grouped.setdefault(normalized, []).append(text)
     if not grouped:
@@ -1158,6 +1196,185 @@ def _candidate_text_consensus(texts: tuple[str, ...]) -> tuple[str, int]:
         key=lambda item: (len(item[1]), len(item[0])),
     )
     return variants[0], len(variants)
+
+
+def _assess_omission_shadow_candidates(
+    texts: tuple[str, ...],
+    candidates: tuple[tuple[Any, ...], ...],
+    coverages: tuple[float, ...],
+    left_context: str,
+    right_context: str,
+    analyzer: JapaneseMorphologicalAnalyzer,
+) -> dict[str, object]:
+    normalized = tuple(_normalize_consensus_text(text) for text in texts)
+    core_characters = _common_ordered_items(normalized)
+    core_coverage = tuple(
+        round(len(core_characters) / len(text), 3) if text else 0.0
+        for text in normalized
+    )
+    morpheme_sequences = tuple(
+        tuple(
+            morpheme.surface
+            for morpheme in analyzer.analyze(text)
+            if morpheme.part_of_speech[0] != "補助記号"
+        )
+        for text in texts
+    )
+    core_morphemes = _common_ordered_items(morpheme_sequences)
+    disagreements = _candidate_morpheme_disagreements(morpheme_sequences)
+    confidences = tuple(
+        _finite_or_none(_external_segment_confidence(candidate))
+        for candidate in candidates
+    )
+    language_model_scores = tuple(
+        _mean_finite_attribute(candidate, "avg_logprob")
+        for candidate in candidates
+    )
+    morphology_penalties = tuple(
+        _morphological_structure_penalty(text, analyzer)
+        + _grammatical_structure_penalty(text, analyzer)
+        for text in texts
+    )
+    context_passed = bool(
+        texts
+        and all(coverage >= 0.5 for coverage in coverages)
+        and not any(
+            _contains_context_anchor(text, left_context, right_context)
+            for text in texts
+        )
+    )
+    confidence_passed = bool(
+        confidences
+        and all(value is not None and value >= 0.65 for value in confidences)
+    )
+    language_model_passed = bool(
+        language_model_scores
+        and all(
+            value is not None and value >= -1.0
+            for value in language_model_scores
+        )
+    )
+    morphology_passed = bool(
+        morphology_penalties and not any(morphology_penalties)
+    )
+    core_passed = bool(
+        core_characters
+        and core_morphemes
+        and all(value >= 0.8 for value in core_coverage)
+    )
+    no_lexical_disagreement = not disagreements
+    validation_passed = bool(
+        context_passed
+        and confidence_passed
+        and language_model_passed
+        and morphology_passed
+        and core_passed
+        and no_lexical_disagreement
+    )
+    reasons: list[str] = []
+    if not core_passed:
+        reasons.append("insufficient_core_consensus")
+    if disagreements:
+        reasons.append("lexical_candidate_disagreement")
+    if not context_passed:
+        reasons.append("context_coverage_validation_failed")
+    if not confidence_passed:
+        reasons.append("candidate_confidence_validation_failed")
+    if not language_model_passed:
+        reasons.append("language_model_validation_failed")
+    if not morphology_passed:
+        reasons.append("morphology_validation_failed")
+    if validation_passed:
+        reasons.append("multi_evidence_validation_passed")
+    return {
+        "normalized_texts": normalized,
+        "core_characters": "".join(core_characters),
+        "core_coverage": core_coverage,
+        "core_morphemes": core_morphemes,
+        "disagreements": disagreements,
+        "confidences": confidences,
+        "language_model_scores": language_model_scores,
+        "morphology_penalties": morphology_penalties,
+        "context_passed": context_passed,
+        "confidence_passed": confidence_passed,
+        "language_model_passed": language_model_passed,
+        "morphology_passed": morphology_passed,
+        "validation_passed": validation_passed,
+        "reasons": tuple(reasons),
+    }
+
+
+def _normalize_consensus_text(text: str) -> str:
+    normalized = unicodedata.normalize("NFKC", text)
+    return "".join(
+        character
+        for character in normalized
+        if not character.isspace()
+        and not unicodedata.category(character).startswith(("P", "S"))
+    )
+
+
+def _common_ordered_items(sequences):
+    if not sequences:
+        return ()
+    common = tuple(sequences[0])
+    for sequence in sequences[1:]:
+        matcher = SequenceMatcher(None, common, tuple(sequence), autojunk=False)
+        common = tuple(
+            common[index]
+            for block in matcher.get_matching_blocks()
+            for index in range(block.a, block.a + block.size)
+        )
+    return common
+
+
+def _candidate_morpheme_disagreements(
+    sequences: tuple[tuple[str, ...], ...],
+) -> tuple[TranscriptOmissionCandidateDisagreement, ...]:
+    disagreements: list[TranscriptOmissionCandidateDisagreement] = []
+    seen: set[tuple[str, str, str]] = set()
+    for left_index, left in enumerate(sequences):
+        for right_index in range(left_index + 1, len(sequences)):
+            right = sequences[right_index]
+            matcher = SequenceMatcher(None, left, right, autojunk=False)
+            for operation, left_start, left_end, right_start, right_end in (
+                matcher.get_opcodes()
+            ):
+                if operation == "equal":
+                    continue
+                left_fragment = "".join(left[left_start:left_end])
+                right_fragment = "".join(right[right_start:right_end])
+                key = (operation, left_fragment, right_fragment)
+                if key in seen:
+                    continue
+                seen.add(key)
+                disagreements.append(
+                    TranscriptOmissionCandidateDisagreement(
+                        candidate_indexes=(left_index, right_index),
+                        left_fragment=left_fragment,
+                        right_fragment=right_fragment,
+                        operation=operation,
+                    )
+                )
+    return tuple(disagreements)
+
+
+def _contains_context_anchor(
+    candidate: str,
+    left_context: str,
+    right_context: str,
+) -> bool:
+    normalized = _normalize_consensus_text(candidate)
+    left = _normalize_consensus_text(left_context)
+    right = _normalize_consensus_text(right_context)
+    return bool(
+        (len(left) >= 8 and left[-8:] in normalized)
+        or (len(right) >= 8 and right[:8] in normalized)
+    )
+
+
+def _finite_or_none(value: float) -> float | None:
+    return value if isfinite(value) else None
 
 
 def _local_decode_profile(candidate_index: int) -> dict[str, object]:
