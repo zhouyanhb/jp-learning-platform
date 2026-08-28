@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "language": "ja",
+  "annotation_status": "reviewed",
+  "description": "Fixed reviewed ASR-content anomalies. These labels evaluate the anomaly layer only and must not drive language sentence boundaries.",
+  "documents": [
+    {
+      "id": "drug-detection-dogs",
+      "source_path": "input/source/「仕事にひたすらまじめ」麻薬探知犬３頭が同時にデビュー　神戸空港の国際化に伴う密輸の取締り強化へ　神戸税関（2026年8月27日）.m4a",
+      "reference_path": "input/source/「仕事にひたすらまじめ」麻薬探知犬３頭が同時にデビュー　神戸空港の国際化に伴う密輸の取締り強化へ　神戸税関（2026年8月27日）.ja-orig.srt",
+      "artifact_directory": "output/.work/20260827_205056_073441/仕事にひたすらまし_め_麻薬探知犬３頭か_同時にテ_ヒ_ュー_神戸空港の国際化に伴う密輸の取締り強化へ_神戸税関_2026年8月27日"
+    },
+    {
+      "id": "jidai-festival",
+      "source_path": "input/source/“時代祭”前に衣装を虫干し　紫式部の装束など500点を点検「安心して本番迎えられる」【京都・平安神宮】（2026年8月27日）.m4a",
+      "reference_path": "input/source/“時代祭”前に衣装を虫干し　紫式部の装束など500点を点検「安心して本番迎えられる」【京都・平安神宮】（2026年8月27日）.ja-orig.srt",
+      "artifact_directory": "output/.work/20260827_205056_073441/時代祭_前に衣装を虫干し_紫式部の装束なと_500点を点検_安心して本番迎えられる_京都_平安神宮_2026年8月27日"
+    },
+    {
+      "id": "fusuma-paintings",
+      "source_path": "input/source/「ご縁をつないで…」四季の花々描いた襖絵　中国の画家が泉涌寺に奉納　国境越えたコラボレーションが実現　京都・東山区（2026年8月26日）.m4a",
+      "reference_path": "input/source/「ご縁をつないで…」四季の花々描いた襖絵　中国の画家が泉涌寺に奉納　国境越えたコラボレーションが実現　京都・東山区（2026年8月26日）.ja-orig.srt",
+      "artifact_directory": "output/.work/20260827_205056_073441/こ_縁をつないて_四季の花々描いた襖絵_中国の画家か_泉涌寺に奉納_国境越えたコラホ_レーションか_実現_京都_東山区_2026年8月26日"
+    },
+    {
+      "id": "horse-festival",
+      "source_path": "input/source/Japan’s 400-Year-Old Horse Festival ｜ Easy Japanese Listening Practice (N5–N4).m4a",
+      "reference_path": "input/source/Japan’s 400-Year-Old Horse Festival ｜ Easy Japanese Listening Practice (N5–N4).ja.srt",
+      "artifact_directory": "output/.work/20260827_205056_073441/Japan_s_400-Year-Old_Horse_Festival_Easy_Japanese_Listening_Practice_N5_N4"
+    }
+  ],
+  "samples": [
+    {
+      "id": "omission-interview-dog-handler",
+      "document_id": "drug-detection-dogs",
+      "time_range": {"start_seconds": 29.199, "end_seconds": 38.151},
+      "content_category": "interview_quote",
+      "reference_text": "陸は非常に好奇心が強く、仕事に対してひたすら真面目です。",
+      "observed_text": "",
+      "evaluated_anomaly_kinds": ["possible_asr_omission"],
+      "gold_anomaly_kinds": ["possible_asr_omission"],
+      "review_status": "reviewed",
+      "review_note": "The interview speaker is absent between two narration segments."
+    },
+    {
+      "id": "omission-interview-costume-condition",
+      "document_id": "jidai-festival",
+      "time_range": {"start_seconds": 35.760, "end_seconds": 47.229},
+      "content_category": "interview_quote",
+      "reference_text": "衣装の状態は特に問題なく、点数に関しても大体足りておりましたので、安心して本番を迎えられるかなと思います。",
+      "observed_text": "",
+      "evaluated_anomaly_kinds": ["possible_asr_omission"],
+      "gold_anomaly_kinds": ["possible_asr_omission"],
+      "review_status": "reviewed",
+      "review_note": "The complete interview answer is absent before the closing narration."
+    },
+    {
+      "id": "omission-interview-art-and-connections",
+      "document_id": "fusuma-paintings",
+      "time_range": {"start_seconds": 29.720, "end_seconds": 42.350},
+      "content_category": "interview_quote",
+      "reference_text": "芸術に関しましては、それぞれの思いを大切にいたしまして、そのご縁を繋いでいきたい。",
+      "observed_text": "",
+      "evaluated_anomaly_kinds": ["possible_asr_omission"],
+      "gold_anomaly_kinds": ["possible_asr_omission"],
+      "review_status": "reviewed",
+      "review_note": "The quoted speaker is absent between narration segments."
+    },
+    {
+      "id": "omission-horse-english-promotion",
+      "document_id": "horse-festival",
+      "time_range": {"start_seconds": 186.519, "end_seconds": 226.519},
+      "content_category": "mixed_language_promotion",
+      "reference_text": "Are you a complete beginner and never know what to study next? ... Enjoy the rest of the video.",
+      "observed_text": "ランダムアップス&ビデオス。ちょっとプレスプレイ&スタディ。",
+      "evaluated_anomaly_kinds": [
+        "possible_asr_omission",
+        "possible_mixed_language_asr_error"
+      ],
+      "gold_anomaly_kinds": [
+        "possible_asr_omission",
+        "possible_mixed_language_asr_error"
+      ],
+      "review_status": "reviewed",
+      "review_note": "Most of the English insert is omitted and the remaining fragments are rendered as Japanese gibberish."
+    },
+    {
+      "id": "omission-horse-overlapping-friends",
+      "document_id": "horse-festival",
+      "time_range": {"start_seconds": 441.680, "end_seconds": 475.029},
+      "content_category": "overlapping_background_speech",
+      "reference_text": "久しぶり、元気しとった、YouTube出ていい、子供は二人おる。",
+      "observed_text": "",
+      "evaluated_anomaly_kinds": [
+        "possible_asr_omission",
+        "possible_background_speech"
+      ],
+      "gold_anomaly_kinds": [
+        "possible_asr_omission",
+        "possible_background_speech"
+      ],
+      "review_status": "reviewed",
+      "review_note": "A multi-speaker reunion is largely absent or only fragmentarily represented."
+    },
+    {
+      "id": "negative-horse-fast-reaction",
+      "document_id": "horse-festival",
+      "time_range": {"start_seconds": 944.319, "end_seconds": 964.826},
+      "content_category": "foreground_reaction",
+      "reference_text": "早い、早い。",
+      "observed_text": "早い早い。",
+      "evaluated_anomaly_kinds": ["possible_asr_omission"],
+      "gold_anomaly_kinds": [],
+      "review_status": "reviewed",
+      "review_note": "The reaction is present in the latest output and is a fixed negative guard."
+    },
+    {
+      "id": "negative-horse-arrival-reaction",
+      "document_id": "horse-festival",
+      "time_range": {"start_seconds": 1160.000, "end_seconds": 1168.000},
+      "content_category": "foreground_reaction",
+      "reference_text": "来た来た。",
+      "observed_text": "来た来た。",
+      "evaluated_anomaly_kinds": ["possible_asr_omission"],
+      "gold_anomaly_kinds": [],
+      "review_status": "reviewed",
+      "review_note": "The short reaction is recognized and must not become an omission false positive."
+    }
+  ]
+}

@@ -107,6 +107,27 @@ def test_can_match_artifacts_from_a_new_run_by_source_name(tmp_path: Path) -> No
     assert report["results"][0]["artifact_directory"] == str(artifact)
 
 
+def test_does_not_resolve_when_wrong_target_contains_expected_target(
+    tmp_path: Path,
+) -> None:
+    artifact = _artifact_directory(tmp_path, "overlap", "大学部です")
+    dataset = tmp_path / "dataset.json"
+    dataset.write_text(
+        json.dumps(
+            {
+                "samples": [
+                    _sample("one", "unresolved", artifact, "大学部", "大学")
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    report = evaluate_local_asr_regressions(dataset)
+
+    assert report["results"][0]["status"] == "unresolved"
+
+
 def _sample(
     sample_id: str,
     status: str,

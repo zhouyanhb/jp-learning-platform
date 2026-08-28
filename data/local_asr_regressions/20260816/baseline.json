@@ -320,6 +320,104 @@
         "decision_reason": "candidate_score_too_low"
       },
       "review_note": "作分 is a generated same-reading negative candidate; the correct original 作文 must continue to win."
+    },
+    {
+      "id": "local-asr-012-street-hair-extension",
+      "status": "unresolved",
+      "failure_layer": "local_asr_candidate_generation",
+      "source_path": "input/source/What Did Japanese People Do Today？ ｜ Easy Japanese Street Interviews (N5–N4).m4a",
+      "reference_path": "input/source/What Did Japanese People Do Today？ ｜ Easy Japanese Street Interviews (N5–N4).ja.srt",
+      "reference_lines": [1, 14],
+      "artifact_directory": "output/.work/20260827_205056_073441/What_Did_Japanese_People_Do_Today_Easy_Japanese_Street_Interviews_N5_N4",
+      "segment_position": 0,
+      "sentence_index": 0,
+      "time_range": {"start_seconds": 1.04, "end_seconds": 1.869},
+      "observed_text": "髪の毛のエッグステイツに行きました",
+      "expected_text": "今日はあの髪の毛のエクステ付けに来ました。",
+      "target_observed": "エッグステイツに行きました",
+      "target_expected": "エクステ付けに来ました",
+      "whisper_text": "髪の毛のエッグステイツに行きました",
+      "homophone_text": "髪の毛のエッグステイツに行きました",
+      "audit": {
+        "candidate_generated": false,
+        "decision_reason": "no_local_asr_candidate_for_multi_token_loanword_error",
+        "root_cause": "multi_token_phonetic_substitution"
+      },
+      "review_note": "A loanword plus predicate is misrecognized across several tokens; this is not a sentence-boundary repair."
+    },
+    {
+      "id": "local-asr-013-street-university",
+      "status": "unresolved",
+      "failure_layer": "local_asr_candidate_generation",
+      "source_path": "input/source/What Did Japanese People Do Today？ ｜ Easy Japanese Street Interviews (N5–N4).m4a",
+      "reference_path": "input/source/What Did Japanese People Do Today？ ｜ Easy Japanese Street Interviews (N5–N4).ja.srt",
+      "reference_lines": [13, 23],
+      "artifact_directory": "output/.work/20260827_205056_073441/What_Did_Japanese_People_Do_Today_Easy_Japanese_Street_Interviews_N5_N4",
+      "segment_position": 1,
+      "sentence_index": 0,
+      "time_range": {"start_seconds": 4.707, "end_seconds": 5.398},
+      "context_before": "私は学校に行ってました",
+      "observed_text": "大学部です",
+      "expected_text": "大学です。",
+      "target_observed": "大学部",
+      "target_expected": "大学",
+      "whisper_text": "大学部です",
+      "homophone_text": "大学部です",
+      "audit": {
+        "candidate_generated": false,
+        "decision_reason": "no_local_asr_candidate_for_spurious_suffix",
+        "root_cause": "spurious_syllable_insertion"
+      },
+      "review_note": "The extra suffix changes a complete short answer and should require conservative local ASR evidence."
+    },
+    {
+      "id": "local-asr-014-street-fukuoka",
+      "status": "unresolved",
+      "failure_layer": "local_asr_candidate_generation",
+      "source_path": "input/source/What Did Japanese People Do Today？ ｜ Easy Japanese Street Interviews (N5–N4).m4a",
+      "reference_path": "input/source/What Did Japanese People Do Today？ ｜ Easy Japanese Street Interviews (N5–N4).ja.srt",
+      "reference_lines": [1033, 1043],
+      "artifact_directory": "output/.work/20260827_205056_073441/What_Did_Japanese_People_Do_Today_Easy_Japanese_Street_Interviews_N5_N4",
+      "segment_position": 2,
+      "sentence_index": 0,
+      "time_range": {"start_seconds": 5.5, "end_seconds": 10.857},
+      "observed_text": "初車フォーカーがちょっと来てて",
+      "expected_text": "福岡からちょっと来てて。",
+      "target_observed": "初車フォーカー",
+      "target_expected": "福岡から",
+      "whisper_text": "初車フォーカーがちょっと来てて",
+      "homophone_text": "初車フォーカーがちょっと来てて",
+      "audit": {
+        "candidate_generated": false,
+        "decision_reason": "no_local_asr_candidate_for_place_name_phrase",
+        "root_cause": "multi_token_phonetic_substitution"
+      },
+      "review_note": "The repeated subtitle later provides a clear place-name reading; correction belongs to local ASR evaluation."
+    },
+    {
+      "id": "local-asr-015-street-hamburger",
+      "status": "unresolved",
+      "failure_layer": "local_asr_candidate_generation",
+      "source_path": "input/source/What Did Japanese People Do Today？ ｜ Easy Japanese Street Interviews (N5–N4).m4a",
+      "reference_path": "input/source/What Did Japanese People Do Today？ ｜ Easy Japanese Street Interviews (N5–N4).ja.srt",
+      "reference_lines": [63, 68],
+      "artifact_directory": "output/.work/20260827_205056_073441/What_Did_Japanese_People_Do_Today_Easy_Japanese_Street_Interviews_N5_N4",
+      "segment_position": 4,
+      "sentence_index": 0,
+      "time_range": {"start_seconds": 12.081, "end_seconds": 14.498},
+      "context_before": "ハンバーガーショップに行って",
+      "observed_text": "ハンバーガーと会いました",
+      "expected_text": "ハンバーガー食べました。",
+      "target_observed": "と会いました",
+      "target_expected": "食べました",
+      "whisper_text": "ハンバーガーと会いました",
+      "homophone_text": "ハンバーガーと会いました",
+      "audit": {
+        "candidate_generated": false,
+        "decision_reason": "no_local_asr_candidate_for_predicate_substitution",
+        "root_cause": "multi_token_phonetic_substitution"
+      },
+      "review_note": "Selectional context strongly exposes the predicate error, but final replacement still needs local ASR evidence."
     }
   ]
 }

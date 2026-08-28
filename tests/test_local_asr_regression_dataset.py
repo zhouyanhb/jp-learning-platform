@@ -14,7 +14,7 @@ def test_fixed_local_asr_dataset_has_reviewed_unique_samples() -> None:
     samples = dataset["samples"]
 
     assert dataset["annotation_status"] == "reviewed"
-    assert len(samples) == 11
+    assert len(samples) == 15
     assert len({sample["id"] for sample in samples}) == len(samples)
     assert {sample["status"] for sample in samples} == {
         "unresolved",
@@ -40,6 +40,10 @@ def test_fixed_local_asr_dataset_covers_expected_targets_and_layers() -> None:
         "特急券",
         "都留市駅",
         "作文",
+        "エクステ付けに来ました",
+        "大学",
+        "福岡から",
+        "食べました",
     }
     assert {
         sample["failure_layer"] for sample in samples

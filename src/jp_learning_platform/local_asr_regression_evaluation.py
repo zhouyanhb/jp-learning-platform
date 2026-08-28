@@ -208,10 +208,10 @@ def _sample_status(
         return "missing_artifact"
     if sample["status"] == "resolved_regression_guard":
         return "regression_guard_passed" if final["contains_expected"] else "regressed"
-    if final["contains_expected"]:
-        return "resolved"
     if final["contains_observed"]:
         return "unresolved"
+    if final["contains_expected"]:
+        return "resolved"
     return "changed_unverified"
 
 
@@ -268,4 +268,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
