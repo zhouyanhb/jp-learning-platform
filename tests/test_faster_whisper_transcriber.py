@@ -11,6 +11,7 @@ from jp_learning_platform.infrastructure.faster_whisper_transcriber import (
     _extract_external_retry_between_anchors,
     _extract_external_retry_window,
     _candidate_morpheme_disagreements,
+    _foreground_probe_windows,
     _has_ordered_text_anchors,
     _instantiate_whisper_model,
     _short_utterance_structure_penalty,
@@ -259,6 +260,280 @@ def test_morpheme_boundary_only_difference_is_not_a_lexical_disagreement() -> No
     )
 
     assert disagreements == ()
+
+
+def test_long_omission_shadow_generates_independent_foreground_probes(
+    tmp_path: Path,
+) -> None:
+    full_gap = _external_segment("右側の文脈です。", 39.0, 40.0, 0.8)
+    foreground = _external_segment("あっ、ありがとう！", 24.0, 25.5, 0.9)
+    windows = _foreground_probe_windows(TimeRange(20.0, 40.0))
+    model = RetryWhisperModel(
+        [(full_gap,), (full_gap,), (full_gap,)]
+        + [(foreground,) for _window in windows]
+    )
+    transcriber = FasterWhisperTranscriber()
+    transcriber._model = model
+    request = TranscriptOmissionShadowRequest(
+        source_path=tmp_path / "drama.mp4",
+        segments=(
+            _domain_segment(0, "左側の文脈です。", 15.0, 20.0),
+            _domain_segment(1, "右側の文脈です。", 40.0, 45.0),
+        ),
+        candidates=(
+            TranscriptAnomalyCandidate(
+                kind="possible_asr_omission",
+                time_range=TimeRange(20.0, 40.0),
+                segment_positions=(0, 1),
+                confidence=0.8,
+                evidence=(
+                    "long_uncovered_time_range",
+                    "substantial_stable_context",
+                ),
+            ),
+        ),
+    )
+
+    audit = transcriber.recognize_omission_candidates(request)[0]
+
+    assert audit.foreground_probe_attempted
+    assert len(audit.foreground_probe_audits) == len(windows)
+    assert any(
+        probe.extracted_text == "あっ、ありがとう！"
+        for probe in audit.foreground_probe_audits
+    )
+    assert all(
+        call["condition_on_previous_text"] is False
+        and call["vad_filter"] is False
+        for call in model.calls[3:]
+    )
+    assert not audit.automatic_replacement_allowed
+
+
+def test_foreground_probe_windows_cover_both_ends_with_bounded_work() -> None:
+    windows = _foreground_probe_windows(TimeRange(20.0, 40.0))
+
+    assert len(windows) == 6
+    assert windows[0] == TimeRange(20.0, 24.0)
+    assert windows[-1] == TimeRange(36.0, 40.0)
+
+
+def test_foreground_probe_filters_repetition_and_marks_lexical_conflict(
+    tmp_path: Path,
+) -> None:
+    time_range = TimeRange(20.0, 40.0)
+    windows = _foreground_probe_windows(time_range)
+    full_gap_candidate = _external_segment(
+        "あ、たなえちゃんありがとう!",
+        35.0,
+        36.0,
+        0.48,
+    )
+    probe_responses = [
+        (
+            _external_segment(
+                "ご視聴ありがとうございました。",
+                window.start_seconds,
+                window.end_seconds,
+                0.8,
+            ),
+        )
+        for window in windows[:3]
+    ]
+    probe_responses.extend(
+        [
+            (
+                _external_segment(
+                    "日本語の書き起こし" * 8,
+                    windows[3].start_seconds,
+                    windows[3].end_seconds,
+                    0.9,
+                ),
+            ),
+            (
+                _external_segment(
+                    "編曲" * 20,
+                    windows[4].start_seconds,
+                    windows[4].end_seconds,
+                    0.9,
+                ),
+            ),
+            (
+                _external_segment(
+                    "カナヲちゃんありがとう!",
+                    windows[5].start_seconds,
+                    windows[5].end_seconds,
+                    0.63,
+                ),
+            ),
+        ]
+    )
+    model = RetryWhisperModel(
+        [(), (full_gap_candidate,), (), *probe_responses]
+    )
+    transcriber = FasterWhisperTranscriber()
+    transcriber._model = model
+    request = TranscriptOmissionShadowRequest(
+        source_path=tmp_path / "drama.mp4",
+        segments=(
+            _domain_segment(0, "左側の文脈です。", 15.0, 20.0),
+            _domain_segment(1, "右側の文脈です。", 40.0, 45.0),
+        ),
+        candidates=(
+            TranscriptAnomalyCandidate(
+                kind="possible_asr_omission",
+                time_range=time_range,
+                segment_positions=(0, 1),
+                confidence=0.8,
+                evidence=(
+                    "long_uncovered_time_range",
+                    "substantial_stable_context",
+                ),
+            ),
+        ),
+    )
+
+    audit = transcriber.recognize_omission_candidates(request)[0]
+
+    assert all(
+        "repeated_across_probe_windows" in probe.hallucination_reasons
+        for probe in audit.foreground_probe_audits[:3]
+    )
+    assert "repeated_text_cycle" in audit.foreground_probe_audits[3].hallucination_reasons
+    assert "repeated_text_cycle" in audit.foreground_probe_audits[4].hallucination_reasons
+    assert audit.foreground_filtered_candidate_texts == (
+        "あ、たなえちゃんありがとう!",
+        "カナヲちゃんありがとう!",
+    )
+    assert audit.foreground_stable_morpheme_consensus == ("ちゃん", "ありがとう")
+    assert audit.foreground_lexical_uncertainty_detected
+    assert audit.foreground_lexical_uncertainty_reasons == (
+        "conflicting_lexical_fragments_across_candidates",
+    )
+    assert any(
+        {disagreement.left_fragment, disagreement.right_fragment}
+        == {"あたなえ", "カナヲ"}
+        for disagreement in audit.foreground_candidate_disagreements
+    )
+    assert not audit.automatic_replacement_allowed
+
+
+def test_foreground_alignment_excludes_context_anchor_and_requires_support(
+    tmp_path: Path,
+) -> None:
+    time_range = TimeRange(20.0, 40.0)
+    windows = _foreground_probe_windows(time_range)
+    right_anchor = _external_segment("もちろん今回も", 39.0, 40.0, 0.8)
+    foreground = _external_segment(
+        "カナヲちゃんありがとう!",
+        windows[-1].start_seconds,
+        windows[-1].end_seconds,
+        0.63,
+    )
+    model = RetryWhisperModel(
+        [(right_anchor,), (right_anchor,), ()]
+        + [() for _window in windows[:-1]]
+        + [(foreground,)]
+    )
+    transcriber = FasterWhisperTranscriber()
+    transcriber._model = model
+    request = TranscriptOmissionShadowRequest(
+        source_path=tmp_path / "drama.mp4",
+        segments=(
+            _domain_segment(0, "前の文章です。", 15.0, 20.0),
+            _domain_segment(1, "もちろん今回も続けます。", 40.0, 45.0),
+        ),
+        candidates=(
+            TranscriptAnomalyCandidate(
+                kind="possible_asr_omission",
+                time_range=time_range,
+                segment_positions=(0, 1),
+                confidence=0.8,
+                evidence=(
+                    "long_uncovered_time_range",
+                    "substantial_stable_context",
+                ),
+            ),
+        ),
+    )
+
+    audit = transcriber.recognize_omission_candidates(request)[0]
+
+    assert audit.foreground_filtered_candidate_texts == (
+        "カナヲちゃんありがとう!",
+    )
+    assert audit.foreground_full_gap_candidate_rejection_reasons == (
+        ("context_anchor",),
+        ("context_anchor",),
+        ("empty_candidate",),
+    )
+    assert audit.foreground_stable_character_consensus == ""
+    assert audit.foreground_stable_morpheme_consensus == ()
+    assert audit.foreground_candidate_disagreements == ()
+    assert not audit.foreground_lexical_uncertainty_detected
+    assert audit.foreground_lexical_uncertainty_reasons == ()
+    assert audit.foreground_alignment_reasons == (
+        "insufficient_independent_support",
+    )
+    assert not audit.automatic_replacement_allowed
+
+
+def test_foreground_alignment_excludes_repeated_full_gap_hallucination(
+    tmp_path: Path,
+) -> None:
+    time_range = TimeRange(20.0, 40.0)
+    windows = _foreground_probe_windows(time_range)
+    repeated = _external_segment("おもちゃ" + "もちゃ" * 80, 30.0, 35.0, 0.9)
+    foreground = _external_segment(
+        "カナヲちゃんありがとう!",
+        windows[-1].start_seconds,
+        windows[-1].end_seconds,
+        0.63,
+    )
+    model = RetryWhisperModel(
+        [(), (repeated,), ()]
+        + [() for _window in windows[:-1]]
+        + [(foreground,)]
+    )
+    transcriber = FasterWhisperTranscriber()
+    transcriber._model = model
+    request = TranscriptOmissionShadowRequest(
+        source_path=tmp_path / "drama.mp4",
+        segments=(
+            _domain_segment(0, "前の文章です。", 15.0, 20.0),
+            _domain_segment(1, "後ろの文章です。", 40.0, 45.0),
+        ),
+        candidates=(
+            TranscriptAnomalyCandidate(
+                kind="possible_asr_omission",
+                time_range=time_range,
+                segment_positions=(0, 1),
+                confidence=0.8,
+                evidence=(
+                    "long_uncovered_time_range",
+                    "substantial_stable_context",
+                ),
+            ),
+        ),
+    )
+
+    audit = transcriber.recognize_omission_candidates(request)[0]
+
+    assert audit.foreground_full_gap_candidate_rejection_reasons == (
+        ("empty_candidate",),
+        ("repeated_text_cycle",),
+        ("empty_candidate",),
+    )
+    assert audit.foreground_filtered_candidate_texts == (
+        "カナヲちゃんありがとう!",
+    )
+    assert audit.foreground_stable_character_consensus == ""
+    assert audit.foreground_stable_morpheme_consensus == ()
+    assert not audit.foreground_lexical_uncertainty_detected
+    assert audit.foreground_alignment_reasons == (
+        "insufficient_independent_support",
+    )
+    assert not audit.automatic_replacement_allowed
 
 
 def test_omission_shadow_requires_review_for_unlexicalized_initial_nouns(

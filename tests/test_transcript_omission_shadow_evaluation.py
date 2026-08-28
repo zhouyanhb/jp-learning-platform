@@ -16,7 +16,13 @@ def test_reports_detection_recovery_and_unsafe_validation(tmp_path: Path) -> Non
             {
                 "data": {
                     "audits": [
-                        _audit(1.0, 2.0, ["あっ、ありがとう！"], False),
+                        _audit(
+                            1.0,
+                            2.0,
+                            [],
+                            False,
+                            foreground_candidates=["あっ、ありがとう！"],
+                        ),
                         _audit(3.0, 4.0, ["幻覚です"], True),
                     ]
                 }
@@ -57,6 +63,8 @@ def test_reports_detection_recovery_and_unsafe_validation(tmp_path: Path) -> Non
         "recall": 1.0,
     }
     assert report["metrics"]["recovery"]["recall"] == 1.0
+    assert report["metrics"]["recovery"]["recovered_by_full_gap"] == 0
+    assert report["metrics"]["recovery"]["recovered_by_foreground_probe"] == 1
     assert report["metrics"]["validation"] == {"passed": 1, "unsafe": 1}
 
 
@@ -83,9 +91,14 @@ def _audit(
     end: float,
     candidates: list[str],
     validation_passed: bool,
+    foreground_candidates: list[str] | None = None,
 ) -> dict[str, object]:
     return {
         "time_range": {"start_seconds": start, "end_seconds": end},
         "extracted_candidate_texts": candidates,
+        "foreground_probe_audits": [
+            {"extracted_text": text}
+            for text in (foreground_candidates or [])
+        ],
         "validation_passed": validation_passed,
     }

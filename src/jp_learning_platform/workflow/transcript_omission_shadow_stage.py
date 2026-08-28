@@ -37,10 +37,38 @@ class TranscriptOmissionCandidateDisagreement:
 
 
 @dataclass(frozen=True, slots=True)
+class TranscriptOmissionForegroundProbeAudit:
+    time_range: TimeRange
+    raw_text: str
+    extracted_text: str
+    confidence: float | None
+    language_model_score: float | None
+    morphology_penalty: int
+    context_anchor_detected: bool
+    hallucination_reasons: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
 class TranscriptOmissionShadowAudit:
     time_range: TimeRange
     segment_positions: tuple[int, ...]
     retry_attempted: bool
+    foreground_probe_attempted: bool = False
+    foreground_probe_audits: tuple[
+        TranscriptOmissionForegroundProbeAudit, ...
+    ] = ()
+    foreground_filtered_candidate_texts: tuple[str, ...] = ()
+    foreground_full_gap_candidate_rejection_reasons: tuple[
+        tuple[str, ...], ...
+    ] = ()
+    foreground_stable_character_consensus: str = ""
+    foreground_stable_morpheme_consensus: tuple[str, ...] = ()
+    foreground_candidate_disagreements: tuple[
+        TranscriptOmissionCandidateDisagreement, ...
+    ] = ()
+    foreground_lexical_uncertainty_detected: bool = False
+    foreground_lexical_uncertainty_reasons: tuple[str, ...] = ()
+    foreground_alignment_reasons: tuple[str, ...] = ()
     raw_candidate_texts: tuple[str, ...] = ()
     extracted_candidate_texts: tuple[str, ...] = ()
     recovered_time_coverage: tuple[float, ...] = ()

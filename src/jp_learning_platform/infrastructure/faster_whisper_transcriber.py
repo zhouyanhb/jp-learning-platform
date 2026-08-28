@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from collections import Counter
+from dataclasses import dataclass, field, replace
 from difflib import SequenceMatcher
 from math import inf, isfinite
 from types import SimpleNamespace
@@ -28,9 +29,15 @@ from jp_learning_platform.workflow.whisper_stage import (
 )
 from jp_learning_platform.workflow.transcript_omission_shadow_stage import (
     TranscriptOmissionCandidateDisagreement,
+    TranscriptOmissionForegroundProbeAudit,
     TranscriptOmissionShadowAudit,
     TranscriptOmissionShadowRequest,
 )
+
+_FOREGROUND_PROBE_MINIMUM_GAP_SECONDS = 14.0
+_FOREGROUND_PROBE_WINDOW_SECONDS = 4.0
+_FOREGROUND_PROBE_STRIDE_SECONDS = 3.0
+_FOREGROUND_PROBE_MAX_WINDOWS = 6
 
 DEFAULT_WHISPER_MODEL_SIZE = DEFAULT_WHISPER_TRANSCRIPTION_CONFIG.model_size
 DEFAULT_WHISPER_LANGUAGE = DEFAULT_WHISPER_TRANSCRIPTION_CONFIG.language
@@ -272,6 +279,24 @@ class FasterWhisperTranscriber:
                 right.text if right is not None else "",
                 analyzer,
             )
+            foreground_probes = self._recognize_foreground_probe_candidates(
+                model,
+                str(request.source_path),
+                candidate.time_range,
+                left.text if left is not None else "",
+                right.text if right is not None else "",
+                analyzer,
+            )
+            foreground_probes = _annotate_foreground_probe_hallucinations(
+                foreground_probes
+            )
+            foreground_assessment = _assess_foreground_probe_candidates(
+                tuple(extracted_texts),
+                foreground_probes,
+                left.text if left is not None else "",
+                right.text if right is not None else "",
+                analyzer,
+            )
             reasons: list[str] = []
             if not any(extracted_texts):
                 reasons.append("no_candidate_text")
@@ -287,6 +312,32 @@ class FasterWhisperTranscriber:
                     time_range=candidate.time_range,
                     segment_positions=candidate.segment_positions,
                     retry_attempted=True,
+                    foreground_probe_attempted=bool(foreground_probes),
+                    foreground_probe_audits=foreground_probes,
+                    foreground_filtered_candidate_texts=foreground_assessment[
+                        "filtered_texts"
+                    ],
+                    foreground_full_gap_candidate_rejection_reasons=(
+                        foreground_assessment["full_gap_rejection_reasons"]
+                    ),
+                    foreground_stable_character_consensus=foreground_assessment[
+                        "stable_characters"
+                    ],
+                    foreground_stable_morpheme_consensus=foreground_assessment[
+                        "stable_morphemes"
+                    ],
+                    foreground_candidate_disagreements=foreground_assessment[
+                        "disagreements"
+                    ],
+                    foreground_lexical_uncertainty_detected=foreground_assessment[
+                        "lexical_uncertainty_detected"
+                    ],
+                    foreground_lexical_uncertainty_reasons=foreground_assessment[
+                        "lexical_uncertainty_reasons"
+                    ],
+                    foreground_alignment_reasons=foreground_assessment[
+                        "alignment_reasons"
+                    ],
                     raw_candidate_texts=tuple(raw_texts),
                     extracted_candidate_texts=tuple(extracted_texts),
                     recovered_time_coverage=tuple(coverages),
@@ -328,6 +379,61 @@ class FasterWhisperTranscriber:
                     validation_passed=assessment["validation_passed"],
                     automatic_replacement_allowed=False,
                     review_reasons=tuple(reasons),
+                )
+            )
+        return tuple(audits)
+
+    def _recognize_foreground_probe_candidates(
+        self,
+        model: Any,
+        source_path: str,
+        time_range: TimeRange,
+        left_context: str,
+        right_context: str,
+        analyzer: JapaneseMorphologicalAnalyzer,
+    ) -> tuple[TranscriptOmissionForegroundProbeAudit, ...]:
+        audits: list[TranscriptOmissionForegroundProbeAudit] = []
+        for window in _foreground_probe_windows(time_range):
+            options = self._transcription_options()
+            options.update(
+                {
+                    "clip_timestamps": [
+                        window.start_seconds,
+                        window.end_seconds,
+                    ],
+                    "initial_prompt": self.initial_prompt,
+                    "condition_on_previous_text": False,
+                    "vad_filter": False,
+                    "hallucination_silence_threshold": None,
+                    "temperature": 0.0,
+                }
+            )
+            external_segments, _info = model.transcribe(source_path, **options)
+            decoded = tuple(external_segments)
+            extracted = _segments_inside_time_range(decoded, window)
+            raw_text = _external_text(decoded).strip()
+            extracted_text = _external_text(extracted).strip()
+            audits.append(
+                TranscriptOmissionForegroundProbeAudit(
+                    time_range=window,
+                    raw_text=raw_text,
+                    extracted_text=extracted_text,
+                    confidence=_finite_or_none(
+                        _external_segment_confidence(extracted)
+                    ),
+                    language_model_score=_mean_finite_attribute(
+                        extracted,
+                        "avg_logprob",
+                    ),
+                    morphology_penalty=(
+                        _morphological_structure_penalty(extracted_text, analyzer)
+                        + _grammatical_structure_penalty(extracted_text, analyzer)
+                    ),
+                    context_anchor_detected=_contains_context_anchor(
+                        extracted_text,
+                        left_context,
+                        right_context,
+                    ),
                 )
             )
         return tuple(audits)
@@ -1189,6 +1295,191 @@ def _external_time_coverage(
     return round(
         min(1.0, covered / time_range.duration_seconds),
         3,
+    )
+
+
+def _foreground_probe_windows(time_range: TimeRange) -> tuple[TimeRange, ...]:
+    if time_range.duration_seconds < _FOREGROUND_PROBE_MINIMUM_GAP_SECONDS:
+        return ()
+    latest_start = time_range.end_seconds - _FOREGROUND_PROBE_WINDOW_SECONDS
+    starts: list[float] = []
+    current = time_range.start_seconds
+    while (
+        current <= latest_start
+        and len(starts) < _FOREGROUND_PROBE_MAX_WINDOWS - 1
+    ):
+        starts.append(current)
+        current += _FOREGROUND_PROBE_STRIDE_SECONDS
+    if not starts or starts[-1] < latest_start:
+        starts.append(latest_start)
+    return tuple(
+        TimeRange(
+            round(start, 3),
+            round(start + _FOREGROUND_PROBE_WINDOW_SECONDS, 3),
+        )
+        for start in starts
+    )
+
+
+def _annotate_foreground_probe_hallucinations(
+    audits: tuple[TranscriptOmissionForegroundProbeAudit, ...],
+) -> tuple[TranscriptOmissionForegroundProbeAudit, ...]:
+    normalized = tuple(
+        _normalize_consensus_text(audit.extracted_text) for audit in audits
+    )
+    counts = Counter(text for text in normalized if text)
+    annotated: list[TranscriptOmissionForegroundProbeAudit] = []
+    for audit, text in zip(audits, normalized, strict=True):
+        reasons: list[str] = []
+        if text and _has_repeated_text_cycle(text):
+            reasons.append("repeated_text_cycle")
+        if text and counts[text] >= 3:
+            reasons.append("repeated_across_probe_windows")
+        annotated.append(replace(audit, hallucination_reasons=tuple(reasons)))
+    return tuple(annotated)
+
+
+def _has_repeated_text_cycle(text: str) -> bool:
+    minimum_repetitions = 4
+    minimum_repeated_characters = 12
+    for start in range(len(text)):
+        remaining = len(text) - start
+        for unit_length in range(1, min(30, remaining // minimum_repetitions) + 1):
+            unit = text[start : start + unit_length]
+            repetitions = 1
+            cursor = start + unit_length
+            while text[cursor : cursor + unit_length] == unit:
+                repetitions += 1
+                cursor += unit_length
+            repeated_length = repetitions * unit_length
+            if (
+                repetitions >= minimum_repetitions
+                and repeated_length >= minimum_repeated_characters
+                and repeated_length >= len(text) * 0.5
+            ):
+                return True
+    return False
+
+
+def _assess_foreground_probe_candidates(
+    full_gap_texts: tuple[str, ...],
+    probes: tuple[TranscriptOmissionForegroundProbeAudit, ...],
+    left_context: str,
+    right_context: str,
+    analyzer: JapaneseMorphologicalAnalyzer,
+) -> dict[str, object]:
+    full_gap_rejection_reasons = tuple(
+        _foreground_full_gap_rejection_reasons(
+            text,
+            left_context,
+            right_context,
+        )
+        for text in full_gap_texts
+    )
+    filtered_texts = tuple(
+        dict.fromkeys(
+            text.strip()
+            for text in (
+                *(
+                    text
+                    for text, rejection_reasons in zip(
+                        full_gap_texts,
+                        full_gap_rejection_reasons,
+                        strict=True,
+                    )
+                    if not rejection_reasons
+                ),
+                *(
+                    probe.extracted_text
+                    for probe in probes
+                    if not probe.hallucination_reasons
+                    and not _is_foreground_context_anchor(
+                        probe.extracted_text,
+                        left_context,
+                        right_context,
+                    )
+                ),
+            )
+            if text.strip()
+        )
+    )
+    normalized = tuple(_normalize_consensus_text(text) for text in filtered_texts)
+    morphemes = tuple(
+        tuple(
+            morpheme.surface
+            for morpheme in analyzer.analyze(text)
+            if morpheme.part_of_speech[0] != "補助記号"
+        )
+        for text in filtered_texts
+    )
+    has_independent_support = len(filtered_texts) >= 2
+    stable_morphemes = (
+        _common_ordered_items(morphemes) if has_independent_support else ()
+    )
+    stable_characters = (
+        _common_ordered_items(normalized)
+        if has_independent_support and stable_morphemes
+        else ()
+    )
+    disagreements = (
+        _candidate_morpheme_disagreements(morphemes)
+        if has_independent_support
+        else ()
+    )
+    lexical_uncertainty = bool(has_independent_support and disagreements)
+    return {
+        "filtered_texts": filtered_texts,
+        "full_gap_rejection_reasons": full_gap_rejection_reasons,
+        "stable_characters": "".join(stable_characters),
+        "stable_morphemes": stable_morphemes,
+        "disagreements": disagreements,
+        "lexical_uncertainty_detected": lexical_uncertainty,
+        "lexical_uncertainty_reasons": (
+            ("conflicting_lexical_fragments_across_candidates",)
+            if lexical_uncertainty
+            else ()
+        ),
+        "alignment_reasons": (
+            ()
+            if has_independent_support
+            else ("insufficient_independent_support",)
+        ),
+    }
+
+
+def _foreground_full_gap_rejection_reasons(
+    text: str,
+    left_context: str,
+    right_context: str,
+) -> tuple[str, ...]:
+    normalized = _normalize_consensus_text(text)
+    reasons: list[str] = []
+    if not normalized:
+        reasons.append("empty_candidate")
+    if normalized and _has_repeated_text_cycle(normalized):
+        reasons.append("repeated_text_cycle")
+    if normalized and _is_foreground_context_anchor(
+        text,
+        left_context,
+        right_context,
+    ):
+        reasons.append("context_anchor")
+    return tuple(reasons)
+
+
+def _is_foreground_context_anchor(
+    candidate: str,
+    left_context: str,
+    right_context: str,
+) -> bool:
+    if _contains_context_anchor(candidate, left_context, right_context):
+        return True
+    normalized = _normalize_consensus_text(candidate)
+    left = _normalize_consensus_text(left_context)
+    right = _normalize_consensus_text(right_context)
+    return bool(
+        len(normalized) >= 5
+        and (left.endswith(normalized) or right.startswith(normalized))
     )
 
 

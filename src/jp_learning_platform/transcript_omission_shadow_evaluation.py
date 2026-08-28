@@ -106,11 +106,26 @@ def _evaluate_sample(
         detector_status = "true_negative"
 
     target = _normalize_text(str(sample.get("expected_recovery_text") or ""))
-    recovered = bool(target) and any(
-        target in _normalize_text(str(candidate))
+    full_gap_candidates = [
+        str(candidate)
         for audit in matching
         for candidate in audit.get("extracted_candidate_texts") or ()
+    ]
+    foreground_probe_candidates = [
+        str(probe.get("extracted_text") or "")
+        for audit in matching
+        for probe in audit.get("foreground_probe_audits") or ()
+        if not probe.get("hallucination_reasons")
+    ]
+    recovered_by_full_gap = bool(target) and any(
+        target in _normalize_text(str(candidate))
+        for candidate in full_gap_candidates
     )
+    recovered_by_foreground_probe = bool(target) and any(
+        target in _normalize_text(candidate)
+        for candidate in foreground_probe_candidates
+    )
+    recovered = recovered_by_full_gap or recovered_by_foreground_probe
     if not expected_omission:
         recovery_status = "not_applicable"
     elif recovered:
@@ -130,6 +145,8 @@ def _evaluate_sample(
         "detector_status": detector_status,
         "recovery_status": recovery_status,
         "target_recovered": recovered,
+        "recovered_by_full_gap": recovered_by_full_gap,
+        "recovered_by_foreground_probe": recovered_by_foreground_probe,
         "validation_passed": validation_passed,
         "unsafe_validation": unsafe_validation,
         "artifact_directory": str(artifact_directory) if artifact_directory else None,
@@ -216,6 +233,12 @@ def _metrics(results: list[dict[str, object]]) -> dict[str, object]:
             "recall": _ratio(
                 recovery["true_positive"],
                 recovery["true_positive"] + recovery["false_negative"],
+            ),
+            "recovered_by_full_gap": sum(
+                bool(item["recovered_by_full_gap"]) for item in results
+            ),
+            "recovered_by_foreground_probe": sum(
+                bool(item["recovered_by_foreground_probe"]) for item in results
             ),
         },
         "validation": {
