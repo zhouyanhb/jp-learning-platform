@@ -54,6 +54,50 @@ def test_does_not_label_stable_silence_gap_as_missing_content() -> None:
     assert candidates == ()
 
 
+def test_detects_long_gap_enclosed_by_substantial_stable_context() -> None:
+    segments = (
+        _segment(
+            0,
+            "取締りの強化が求められる中、三頭がデビューしました。",
+            18.0,
+            26.5,
+            0.9,
+        ),
+        _segment(
+            1,
+            "三頭はこれから各地の水際での活躍を目指します。",
+            38.1,
+            43.8,
+            0.9,
+        ),
+    )
+
+    candidates = ConservativeTranscriptAnomalyDetector().detect(
+        TranscriptAnomalyRequest(Path("news.m4a"), segments)
+    )
+
+    assert len(candidates) == 1
+    assert candidates[0].kind == "possible_asr_omission"
+    assert candidates[0].time_range == TimeRange(26.5, 38.1)
+    assert candidates[0].evidence == (
+        "long_uncovered_time_range",
+        "substantial_stable_context",
+    )
+
+
+def test_does_not_treat_long_gap_between_short_utterances_as_omission() -> None:
+    segments = (
+        _segment(0, "はい。", 0.0, 1.0, 0.95),
+        _segment(1, "そう。", 12.0, 13.0, 0.95),
+    )
+
+    candidates = ConservativeTranscriptAnomalyDetector().detect(
+        TranscriptAnomalyRequest(Path("conversation.m4a"), segments)
+    )
+
+    assert candidates == ()
+
+
 def test_detects_low_confidence_gap_inside_one_asr_segment() -> None:
     time_range = TimeRange(35.0, 42.0)
     sentence = Sentence(

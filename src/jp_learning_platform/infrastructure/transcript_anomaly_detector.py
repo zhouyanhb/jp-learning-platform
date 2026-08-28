@@ -21,6 +21,9 @@ from jp_learning_platform.workflow.transcript_anomaly_stage import (
 @dataclass(frozen=True, slots=True)
 class ConservativeTranscriptAnomalyDetector:
     min_coverage_gap_seconds: float = 1.5
+    min_stable_context_gap_seconds: float = 8.0
+    min_stable_context_duration_seconds: float = 3.0
+    min_stable_context_characters: int = 12
     uncertain_edge_confidence: float = 0.65
     max_secondary_speech_seconds: float = 3.0
     secondary_speech_confidence: float = 0.55
@@ -164,10 +167,40 @@ class ConservativeTranscriptAnomalyDetector:
         for left, right in zip(segments, segments[1:]):
             gap = right.time_range.start_seconds - left.time_range.end_seconds
             edge_confidence = _edge_confidence(left, right)
-            if gap >= self.min_coverage_gap_seconds and (
+            uncertain_edges = gap >= self.min_coverage_gap_seconds and (
                 edge_confidence is not None
                 and edge_confidence <= self.uncertain_edge_confidence
-            ):
+            )
+            stable_context_discontinuity = (
+                gap >= self.min_stable_context_gap_seconds
+                and _has_substantial_context(
+                    left,
+                    self.min_stable_context_duration_seconds,
+                    self.min_stable_context_characters,
+                )
+                and _has_substantial_context(
+                    right,
+                    self.min_stable_context_duration_seconds,
+                    self.min_stable_context_characters,
+                )
+            )
+            if uncertain_edges or stable_context_discontinuity:
+                evidence = (
+                    ("uncovered_time_range", "low_confidence_edges")
+                    if uncertain_edges
+                    else (
+                        "long_uncovered_time_range",
+                        "substantial_stable_context",
+                    )
+                )
+                confidence = (
+                    round(1.0 - edge_confidence, 3)
+                    if uncertain_edges and edge_confidence is not None
+                    else _stable_gap_confidence(
+                        gap,
+                        self.min_stable_context_gap_seconds,
+                    )
+                )
                 candidates.append(
                     TranscriptAnomalyCandidate(
                         kind="possible_asr_omission",
@@ -176,8 +209,8 @@ class ConservativeTranscriptAnomalyDetector:
                             right.time_range.start_seconds,
                         ),
                         segment_positions=(left.position, right.position),
-                        confidence=round(1.0 - edge_confidence, 3),
-                        evidence=("uncovered_time_range", "low_confidence_edges"),
+                        confidence=confidence,
+                        evidence=evidence,
                     )
                 )
 
@@ -223,6 +256,23 @@ def _edge_confidence(left: Segment, right: Segment) -> float | None:
     right_values = [word.confidence for word in right.sentences[0].words[:3]] if right.sentences else []
     values = [value for value in (*left_values, *right_values) if value is not None]
     return fmean(values) if values else None
+
+
+def _has_substantial_context(
+    segment: Segment,
+    minimum_duration_seconds: float,
+    minimum_characters: int,
+) -> bool:
+    lexical_characters = sum(character.isalnum() for character in segment.text)
+    return (
+        segment.time_range.duration_seconds >= minimum_duration_seconds
+        and lexical_characters >= minimum_characters
+        and _segment_confidence(segment) is not None
+    )
+
+
+def _stable_gap_confidence(gap: float, minimum_gap: float) -> float:
+    return round(min(0.9, 0.7 + (gap - minimum_gap) / 100.0), 3)
 
 
 def _is_repeated_laughter(text: str) -> bool:
