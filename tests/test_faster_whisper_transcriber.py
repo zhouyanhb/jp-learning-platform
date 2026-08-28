@@ -5,6 +5,7 @@ from types import SimpleNamespace
 
 import pytest
 
+from jp_learning_platform.domain import Segment, Sentence, TimeRange, Word
 from jp_learning_platform.infrastructure import FasterWhisperTranscriber
 from jp_learning_platform.infrastructure.faster_whisper_transcriber import (
     _extract_external_retry_between_anchors,
@@ -21,7 +22,11 @@ from jp_learning_platform.infrastructure.transcript_anomaly_detector import (
 )
 from jp_learning_platform.workflow import WhisperTranscriptionRequest
 from jp_learning_platform.workflow.transcript_anomaly_stage import (
+    TranscriptAnomalyCandidate,
     TranscriptAnomalyRequest,
+)
+from jp_learning_platform.workflow.transcript_omission_shadow_stage import (
+    TranscriptOmissionShadowRequest,
 )
 
 
@@ -127,6 +132,52 @@ class RetryWhisperModel:
         return response, object()
 
 
+def test_omission_shadow_retries_without_vad_and_never_replaces_segments(
+    tmp_path: Path,
+) -> None:
+    recovered = _external_segment(
+        "陸は仕事に対してひたすら真面目です。",
+        27.0,
+        37.8,
+        0.9,
+    )
+    model = RetryWhisperModel([(recovered,), (recovered,), (recovered,)])
+    transcriber = FasterWhisperTranscriber()
+    transcriber._model = model
+    left = _domain_segment(0, "三頭がデビューしました。", 18.0, 26.5)
+    right = _domain_segment(1, "三頭は各地で活躍します。", 38.1, 43.8)
+    candidate = TranscriptAnomalyCandidate(
+        kind="possible_asr_omission",
+        time_range=TimeRange(26.5, 38.1),
+        segment_positions=(0, 1),
+        confidence=0.74,
+        evidence=(
+            "long_uncovered_time_range",
+            "substantial_stable_context",
+        ),
+    )
+
+    audits = transcriber.recognize_omission_candidates(
+        TranscriptOmissionShadowRequest(
+            source_path=tmp_path / "news.m4a",
+            segments=(left, right),
+            candidates=(candidate,),
+        )
+    )
+
+    assert len(audits) == 1
+    assert audits[0].candidate_consensus_count == 3
+    assert audits[0].consensus_reached
+    assert audits[0].candidate_consensus_text == recovered.text
+    assert audits[0].recovered_time_coverage == (0.931, 0.931, 0.931)
+    assert all(call["vad_filter"] is False for call in model.calls)
+    assert all(call["clip_timestamps"] == [25.0, 39.6] for call in model.calls)
+    assert (left.text, right.text) == (
+        "三頭がデビューしました。",
+        "三頭は各地で活躍します。",
+    )
+
+
 def _external_segment(
     text: str,
     start: float,
@@ -146,6 +197,16 @@ def _external_segment(
             ),
         ),
     )
+
+
+def _domain_segment(position: int, text: str, start: float, end: float) -> Segment:
+    time_range = TimeRange(start, end)
+    sentence = Sentence(
+        text,
+        time_range,
+        (Word(text, time_range, 0.9),),
+    )
+    return Segment(position, text, time_range, (sentence,))
 
 
 def test_retries_only_low_confidence_segments_with_reliable_audio_context(

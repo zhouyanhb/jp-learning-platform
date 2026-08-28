@@ -108,6 +108,14 @@ from jp_learning_platform.workflow.transcript_anomaly_stage import (
     TRANSCRIPT_ANOMALY_ISOLATION_STAGE_NAME,
     TranscriptAnomalyIsolationStage,
 )
+from jp_learning_platform.workflow.transcript_omission_shadow_stage import (
+    OMISSION_SHADOW_EVIDENCE,
+    TRANSCRIPT_OMISSION_SHADOW_STAGE_NAME,
+    TranscriptOmissionShadowAudit,
+    TranscriptOmissionShadowRecognizer,
+    TranscriptOmissionShadowRequest,
+    TranscriptOmissionShadowStage,
+)
 from jp_learning_platform.workflow.subtitle_builder_stage import (
     InvalidSubtitleBuildError,
     InvalidSubtitleBuilderError,

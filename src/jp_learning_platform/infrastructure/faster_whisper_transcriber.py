@@ -25,6 +25,10 @@ from jp_learning_platform.workflow.whisper_stage import (
     WhisperTranscript,
     WhisperTranscriptionRequest,
 )
+from jp_learning_platform.workflow.transcript_omission_shadow_stage import (
+    TranscriptOmissionShadowAudit,
+    TranscriptOmissionShadowRequest,
+)
 
 DEFAULT_WHISPER_MODEL_SIZE = DEFAULT_WHISPER_TRANSCRIPTION_CONFIG.model_size
 DEFAULT_WHISPER_LANGUAGE = DEFAULT_WHISPER_TRANSCRIPTION_CONFIG.language
@@ -205,6 +209,81 @@ class FasterWhisperTranscriber:
             short_anomaly_retry_audits=short_anomaly_retry_audits,
             short_utterance_analysis_audits=short_utterance_analysis_audits,
         )
+
+    def recognize_omission_candidates(
+        self,
+        request: TranscriptOmissionShadowRequest,
+    ) -> tuple[TranscriptOmissionShadowAudit, ...]:
+        model = self._load_model()
+        by_position = {segment.position: segment for segment in request.segments}
+        audits: list[TranscriptOmissionShadowAudit] = []
+        for candidate in request.candidates:
+            left = by_position.get(candidate.segment_positions[0])
+            right = by_position.get(candidate.segment_positions[-1])
+            prompt = left.text[-160:] if left is not None else self.initial_prompt
+            raw_texts: list[str] = []
+            extracted_texts: list[str] = []
+            coverages: list[float] = []
+            for candidate_index in range(self.retry_local_candidate_count):
+                options = self._transcription_options()
+                options.update(
+                    {
+                        "clip_timestamps": [
+                            max(0.0, candidate.time_range.start_seconds - 1.5),
+                            candidate.time_range.end_seconds + 1.5,
+                        ],
+                        "initial_prompt": prompt,
+                        "condition_on_previous_text": False,
+                        "vad_filter": False,
+                    }
+                )
+                options.update(_local_decode_profile(candidate_index))
+                external_segments, _info = model.transcribe(
+                    str(request.source_path),
+                    **options,
+                )
+                decoded = tuple(external_segments)
+                raw_texts.append(_external_text(decoded).strip())
+                extracted = _segments_inside_time_range(
+                    decoded,
+                    candidate.time_range,
+                )
+                extracted_texts.append(_external_text(extracted).strip())
+                coverages.append(
+                    _external_time_coverage(extracted, candidate.time_range)
+                )
+            consensus_text, consensus_count = _candidate_text_consensus(
+                tuple(extracted_texts)
+            )
+            consensus_reached = bool(
+                consensus_text
+                and consensus_count == self.retry_local_candidate_count
+            )
+            reasons: list[str] = []
+            if not any(extracted_texts):
+                reasons.append("no_candidate_text")
+            if not consensus_reached:
+                reasons.append("candidate_consensus_missing")
+            if max(coverages, default=0.0) < 0.5:
+                reasons.append("insufficient_time_coverage")
+            if consensus_reached:
+                reasons.append("candidate_consensus_reached")
+            audits.append(
+                TranscriptOmissionShadowAudit(
+                    time_range=candidate.time_range,
+                    segment_positions=candidate.segment_positions,
+                    retry_attempted=True,
+                    raw_candidate_texts=tuple(raw_texts),
+                    extracted_candidate_texts=tuple(extracted_texts),
+                    recovered_time_coverage=tuple(coverages),
+                    candidate_consensus_text=consensus_text,
+                    candidate_consensus_count=consensus_count,
+                    candidate_count=self.retry_local_candidate_count,
+                    consensus_reached=consensus_reached,
+                    review_reasons=tuple(reasons),
+                )
+            )
+        return tuple(audits)
 
     def _transcription_options(self) -> dict[str, object]:
         return {
@@ -1010,6 +1089,75 @@ def _external_segment_confidence(segments: tuple[Any, ...]) -> float:
 
 def _normalized_external_text(segments: tuple[Any, ...]) -> str:
     return "".join(_external_text(segments).split())
+
+
+def _segments_inside_time_range(
+    segments: tuple[Any, ...],
+    time_range: TimeRange,
+) -> tuple[Any, ...]:
+    return tuple(
+        segment
+        for segment in segments
+        if (
+            float(getattr(segment, "start"))
+            + float(getattr(segment, "end"))
+        )
+        / 2
+        >= time_range.start_seconds
+        and (
+            float(getattr(segment, "start"))
+            + float(getattr(segment, "end"))
+        )
+        / 2
+        <= time_range.end_seconds
+    )
+
+
+def _external_time_coverage(
+    segments: tuple[Any, ...],
+    time_range: TimeRange,
+) -> float:
+    intervals = sorted(
+        (
+            max(time_range.start_seconds, float(getattr(segment, "start"))),
+            min(time_range.end_seconds, float(getattr(segment, "end"))),
+        )
+        for segment in segments
+    )
+    covered = 0.0
+    current_start = 0.0
+    current_end = 0.0
+    for start, end in intervals:
+        if end <= start:
+            continue
+        if covered == 0.0 and current_end == 0.0:
+            current_start, current_end = start, end
+        elif start <= current_end:
+            current_end = max(current_end, end)
+        else:
+            covered += current_end - current_start
+            current_start, current_end = start, end
+    if current_end > current_start:
+        covered += current_end - current_start
+    return round(
+        min(1.0, covered / time_range.duration_seconds),
+        3,
+    )
+
+
+def _candidate_text_consensus(texts: tuple[str, ...]) -> tuple[str, int]:
+    grouped: dict[str, list[str]] = {}
+    for text in texts:
+        normalized = _normalized_external_text((SimpleNamespace(text=text),))
+        if normalized:
+            grouped.setdefault(normalized, []).append(text)
+    if not grouped:
+        return "", 0
+    _normalized, variants = max(
+        grouped.items(),
+        key=lambda item: (len(item[1]), len(item[0])),
+    )
+    return variants[0], len(variants)
 
 
 def _local_decode_profile(candidate_index: int) -> dict[str, object]:

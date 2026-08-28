@@ -64,6 +64,9 @@ from jp_learning_platform.workflow.transcript_anomaly_stage import (
     TranscriptAnomalyIsolationStage,
     TranscriptAnomalyDetector,
 )
+from jp_learning_platform.workflow.transcript_omission_shadow_stage import (
+    TranscriptOmissionShadowStage,
+)
 from jp_learning_platform.workflow.word_normalization_stage import (
     WordNormalizationStage,
     WordNormalizer,
@@ -831,6 +834,13 @@ class SubtitlePipelineRunner:
             stages.append(
                 TranscriptAnomalyAnalysisStage(self.transcript_anomaly_detector)
             )
+            if hasattr(self.transcriber, "recognize_omission_candidates"):
+                stages.append(
+                    TranscriptOmissionShadowStage(
+                        self.transcript_anomaly_detector,
+                        self.transcriber,
+                    )
+                )
 
         if self.sentence_boundary_resolver is not None:
             stages.append(

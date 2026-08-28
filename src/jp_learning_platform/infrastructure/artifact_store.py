@@ -30,6 +30,7 @@ STAGE_ARTIFACT_FILENAMES: Mapping[str, str] = {
     "overlap-text-cleanup": "04a_overlap_text_cleanup.json",
     "repeated-text-cleanup": "04b_repeated_text_cleanup.json",
     "transcript-anomaly-analysis": "04c_transcript_anomaly_analysis.json",
+    "transcript-omission-shadow": "04d_transcript_omission_shadow.json",
     "transcript-anomaly-isolation": "05c_transcript_anomaly_isolation.json",
     "sentence-boundary-resolution": "05_sentence_boundary_resolution.json",
     "punctuation-attribution": "05a_punctuation_attribution.json",
