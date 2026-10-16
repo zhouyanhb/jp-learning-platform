@@ -18,8 +18,10 @@ from jp_learning_platform.infrastructure.homophone_resolver import (
     HomophoneReplacementScoringRequest,
     HomophoneTarget,
     SudachiReadingAnalyzer,
+    _AcceptedChange,
     _AnalyzedMorpheme,
     _VocabularyPiece,
+    _apply_word_changes_and_boundaries,
     _context_probe_verification,
     _inflected_surface_from_lemma,
     _plausible_asr_reading_variant,
@@ -35,6 +37,55 @@ from jp_learning_platform.workflow import (
 _NOUN_POS = ("名詞", "普通名詞", "サ変可能", "*", "*", "*")
 _GENERAL_NOUN_POS = ("名詞", "普通名詞", "一般", "*", "*", "*")
 _PERSON_NAME_POS = ("名詞", "固有名詞", "人名", "姓", "*", "*")
+
+
+def test_word_change_remaps_asr_boundaries_after_multi_word_replacement() -> None:
+    words = (
+        Word("前", TimeRange(0.0, 0.1), 0.9),
+        Word("年", TimeRange(0.1, 0.2), 0.9),
+        Word("賞", TimeRange(0.2, 0.3), 0.9),
+        Word("後", TimeRange(0.3, 0.4), 0.9),
+    )
+
+    resolved_words, boundaries = _apply_word_changes_and_boundaries(
+        words,
+        (
+            _AcceptedChange(
+                start=1,
+                end=3,
+                original_text="年賞",
+                selected_text="年商",
+            ),
+        ),
+        (1, 2, 3),
+    )
+
+    assert tuple(word.text for word in resolved_words) == ("前", "年商", "後")
+    assert boundaries == (1, 2)
+
+
+def test_word_change_drops_boundary_inside_sentence_initial_replacement() -> None:
+    words = (
+        Word("年", TimeRange(0.0, 0.1), 0.9),
+        Word("賞", TimeRange(0.1, 0.2), 0.9),
+        Word("後", TimeRange(0.2, 0.3), 0.9),
+    )
+
+    resolved_words, boundaries = _apply_word_changes_and_boundaries(
+        words,
+        (
+            _AcceptedChange(
+                start=0,
+                end=2,
+                original_text="年賞",
+                selected_text="年商",
+            ),
+        ),
+        (1, 2),
+    )
+
+    assert tuple(word.text for word in resolved_words) == ("年商", "後")
+    assert boundaries == (1,)
 
 
 @dataclass(slots=True)

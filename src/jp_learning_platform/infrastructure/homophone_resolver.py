@@ -1529,13 +1529,17 @@ class BertHomophoneResolver:
             return sentence, tuple(decisions), tuple(generation_audits)
 
         text = _apply_text_changes(sentence.text, tuple(changes))
-        words = _apply_word_changes(sentence.words, tuple(changes))
+        words, asr_boundaries = _apply_word_changes_and_boundaries(
+            sentence.words,
+            tuple(changes),
+            sentence.asr_boundary_word_indexes,
+        )
         return (
             Sentence(
                 text=text,
                 time_range=sentence.time_range,
                 words=words,
-                asr_boundary_word_indexes=sentence.asr_boundary_word_indexes,
+                asr_boundary_word_indexes=asr_boundaries,
             ),
             tuple(decisions),
             tuple(generation_audits),
@@ -2141,12 +2145,17 @@ def _apply_accepted_decisions(
             if not changes:
                 resolved_sentences.append(sentence)
                 continue
+            words, asr_boundaries = _apply_word_changes_and_boundaries(
+                sentence.words,
+                changes,
+                sentence.asr_boundary_word_indexes,
+            )
             resolved_sentences.append(
                 Sentence(
                     text=_apply_text_changes(sentence.text, changes),
                     time_range=sentence.time_range,
-                    words=_apply_word_changes(sentence.words, changes),
-                    asr_boundary_word_indexes=sentence.asr_boundary_word_indexes,
+                    words=words,
+                    asr_boundary_word_indexes=asr_boundaries,
                 )
             )
         resolved_segments.append(
@@ -2200,15 +2209,26 @@ def _apply_word_changes(
     words: tuple[Word, ...],
     changes: tuple[_AcceptedChange, ...],
 ) -> tuple[Word, ...]:
+    return _apply_word_changes_and_boundaries(words, changes, ())[0]
+
+
+def _apply_word_changes_and_boundaries(
+    words: tuple[Word, ...],
+    changes: tuple[_AcceptedChange, ...],
+    asr_boundary_word_indexes: tuple[int, ...],
+) -> tuple[tuple[Word, ...], tuple[int, ...]]:
     if not words:
-        return words
+        return words, ()
 
     pending = list(changes)
     resolved_words: list[Word] = []
+    boundary_mapping: dict[int, int | None] = {0: 0}
     word_index = 0
     while word_index < len(words):
+        boundary_mapping.setdefault(word_index, len(resolved_words))
         word = words[word_index]
         replacement = None
+        replacement_already_applied = False
         for index, change in enumerate(pending):
             if word.text == change.original_text:
                 replacement = pending.pop(index)
@@ -2237,7 +2257,11 @@ def _apply_word_changes(
                             ),
                         )
                     )
+                    for boundary_index in range(word_index + 1, end_index + 1):
+                        boundary_mapping[boundary_index] = None
                     word_index = end_index + 1
+                    boundary_mapping[word_index] = len(resolved_words)
+                    replacement_already_applied = True
                     break
                 if not change.original_text.startswith(combined):
                     break
@@ -2247,9 +2271,15 @@ def _apply_word_changes(
         if replacement is None:
             resolved_words.append(word)
             word_index += 1
+            boundary_mapping[word_index] = len(resolved_words)
+            continue
+
+        if replacement_already_applied:
             continue
 
         if word_index > 0 and resolved_words[-1].text == replacement.selected_text:
+            word_index += 1
+            boundary_mapping[word_index] = len(resolved_words)
             continue
 
         resolved_words.append(
@@ -2260,8 +2290,16 @@ def _apply_word_changes(
             )
         )
         word_index += 1
+        boundary_mapping[word_index] = len(resolved_words)
 
-    return tuple(resolved_words)
+    boundary_mapping[len(words)] = len(resolved_words)
+    remapped_boundaries = tuple(
+        mapped_index
+        for boundary_index in asr_boundary_word_indexes
+        if (mapped_index := boundary_mapping.get(boundary_index)) is not None
+        and 0 < mapped_index < len(resolved_words)
+    )
+    return tuple(resolved_words), tuple(dict.fromkeys(remapped_boundaries))
 
 
 def _compatible_part_of_speech(
